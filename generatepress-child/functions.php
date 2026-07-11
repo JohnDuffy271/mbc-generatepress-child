@@ -78,7 +78,7 @@ function mbc_enqueue_shared_assets() {
             'mbc-shared',
             get_stylesheet_directory_uri() . '/assets/mbc-shared.css',
             array(),
-            '1.0.1'
+            '1.0.2'
         );
         wp_enqueue_script(
             'mbc-shared',
