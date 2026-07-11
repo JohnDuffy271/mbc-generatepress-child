@@ -98,7 +98,7 @@ function mbc_front_page_assets() {
             'mbc-split-layout',
             get_stylesheet_directory_uri() . '/assets/split-layout.css',
             array( 'mbc-shared' ),
-            '1.0.3'
+            '1.0.4'
         );
         wp_enqueue_script(
             'mbc-split-layout',

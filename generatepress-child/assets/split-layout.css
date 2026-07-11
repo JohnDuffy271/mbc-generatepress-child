@@ -406,6 +406,7 @@ body.admin-bar .mbc-sidebar-left {
     flex-direction: column;
     height: auto; min-height: 100vh;
     margin-left: 0;
+    width: 100vw;
     overflow: visible;
   }
   .mbc-hero-panel {
@@ -416,6 +417,7 @@ body.admin-bar .mbc-sidebar-left {
   .mbc-divider { display: none; }
   .mbc-news-panel {
     flex: none;
+    width: 100% !important;
     height: auto;
     overflow: visible;
   }
@@ -433,7 +435,7 @@ body.admin-bar .mbc-sidebar-left {
   #mbc-img-load-bar  { padding: 5px 20px; }
   .mbc-hero-content  { padding: 24px 28px; }
   .mbc-nav { padding: 0 20px; }
-  .mbc-nav-links { display: none; } /* hide nav links on mobile — burger menu needed */
+  .mbc-nav-links { display: none; }
   .mbc-services-strip { grid-template-columns: 1fr; }
   .mbc-svc { border-right: none; border-bottom: 1px solid #1e1e1e; }
   .mbc-svc:last-child { border-bottom: none; }
