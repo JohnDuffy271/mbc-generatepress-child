@@ -51,12 +51,13 @@ body.admin-bar .mbc-sidebar-left {
   position: relative; z-index: 200;
   background: rgba(17,17,17,.95);
 }
-.mbc-nav-logo { display: flex; align-items: center; padding: 10px 36px 8px; border-bottom: 1px solid #1e1e1e; }
+.mbc-nav-logo { display: flex; align-items: center; padding: 9px 36px 8px; border-bottom: 1px solid #1e1e1e; }
 .mbc-nav-logo a { display: flex; }
 .mbc-site-name {
   font-family: 'Playfair Display', serif; color: #fff;
-  font-size: 1.05rem; line-height: 1; white-space: nowrap; margin: 0;
+  font-size: 1.4rem; font-weight: 700; line-height: 1; white-space: nowrap; margin: 0;
 }
+.mbc-site-name em { color: #c9a84c; font-style: italic; font-weight: 400; }
 .mbc-site-sub {
   font-size: .52rem; color: #c9a84c;
   letter-spacing: .14em; text-transform: uppercase; margin-top: 2px;

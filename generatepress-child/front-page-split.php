@@ -30,9 +30,7 @@
     <nav class="mbc-nav">
       <div class="mbc-nav-logo">
         <div>
-        <p class="mbc-site-name"><?php bloginfo( 'name' ); ?> &mdash; Leeds</p>
-        <!-- <p class="mbc-site-name"><?php bloginfo( 'name' ); ?></p>
-          <p class="mbc-site-sub">Leeds</p> -->
+        <h2 class="mbc-site-name"><?php bloginfo( 'name' ); ?> &mdash; <em>Leeds</em></h2>
         </div>
       </div>
       <?php
