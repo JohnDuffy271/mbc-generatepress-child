@@ -3,6 +3,7 @@
  * GeneratePress Child Theme — functions.php
  * Moortown Baptist Church sandbox
  * Edited by Claude 11 July 2026
+ * Further changes made (dummy)
  */
 
 require_once get_stylesheet_directory() . '/includes/mbc-youtube-feed.php';
