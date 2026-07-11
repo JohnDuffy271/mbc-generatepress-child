@@ -443,9 +443,10 @@ body.admin-bar .mbc-sidebar-left {
 
 @media (max-width: 480px) {
   .mbc-news-grid {
-    grid-template-columns: 1fr !important;
+   grid-template-columns: 1fr !important;
+   grid-auto-rows: 220px;
   }
-  .mbc-post-card { min-height: 160px; }
+  .mbc-post-card { min-height: 220px; }
   .mbc-headline { font-size: 2.4rem !important; }
 }
 
