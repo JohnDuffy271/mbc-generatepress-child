@@ -39,7 +39,7 @@ body.admin-bar .mbc-sidebar-left {
 .mbc-hero-panel {
   background: #111;
   display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
+  position: relative; overflow: visible;
   flex-shrink: 0;
 }
 
@@ -48,7 +48,7 @@ body.admin-bar .mbc-sidebar-left {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 36px; height: 54px; flex-shrink: 0;
   border-bottom: 1px solid #1e1e1e;
-  position: relative; z-index: 10;
+  position: relative; z-index: 200;
   background: rgba(17,17,17,.95);
 }
 .mbc-nav-logo { display: flex; align-items: center; gap: 10px; }
@@ -78,6 +78,7 @@ body.admin-bar .mbc-sidebar-left {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
   background-repeat: no-repeat;
+  overflow: hidden;
 }
 .mbc-hero-overlay {
   position: absolute; inset: 0;
@@ -414,6 +415,15 @@ body.admin-bar .mbc-sidebar-left {
     flex: none;
     min-height: 60vh;
   }
+  /* Fix 1: nav sticky on mobile so title isn't clipped */
+  .mbc-nav {
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  /* Fix 3: hide lonely "LEEDS" sub on mobile */
+  .mbc-site-sub { display: none; }
   .mbc-divider { display: none; }
   .mbc-news-panel {
     flex: none;
@@ -421,20 +431,21 @@ body.admin-bar .mbc-sidebar-left {
     height: auto;
     overflow: visible;
   }
+  /* Fix 2: proper card height on mobile */
   .mbc-news-grid {
     height: auto;
     grid-template-columns: 1fr 1fr !important;
     grid-template-rows: auto !important;
+    grid-auto-rows: 200px;
     overflow: visible;
   }
   .mbc-post-card {
-    min-height: 180px;
+    min-height: 200px;
     display: flex !important;
   }
   .mbc-img-controls { padding: 5px 20px; }
   #mbc-img-load-bar  { padding: 5px 20px; }
   .mbc-hero-content  { padding: 24px 28px; }
-  .mbc-nav { padding: 0 20px; }
   .mbc-nav-links { display: none; }
   .mbc-services-strip { grid-template-columns: 1fr; }
   .mbc-svc { border-right: none; border-bottom: 1px solid #1e1e1e; }
@@ -444,8 +455,9 @@ body.admin-bar .mbc-sidebar-left {
 @media (max-width: 480px) {
   .mbc-news-grid {
     grid-template-columns: 1fr !important;
+    grid-auto-rows: 220px;
   }
-  .mbc-post-card { min-height: 160px; }
+  .mbc-post-card { min-height: 220px; }
   .mbc-headline { font-size: 2.4rem !important; }
 }
 
