@@ -98,13 +98,13 @@ function mbc_front_page_assets() {
             'mbc-split-layout',
             get_stylesheet_directory_uri() . '/assets/split-layout.css',
             array( 'mbc-shared' ),
-            '1.0.5'
+            '1.0.6'
         );
         wp_enqueue_script(
             'mbc-split-layout',
             get_stylesheet_directory_uri() . '/assets/split-layout.js',
             array( 'mbc-shared' ),
-            '1.0.5',
+            '1.0.6',
             true
         );
     }
