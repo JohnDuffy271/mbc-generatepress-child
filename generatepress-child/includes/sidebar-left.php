@@ -51,7 +51,7 @@
     <!-- Embedded map -->
     <div class="mbc-sb-map">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2353.4!2d-1.5385!3d53.8385!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48795c3f1234abcd%3A0x1234!2sMoortown%20Baptist%20Church!5e0!3m2!1sen!2suk!4v1234567890"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2353.959908146083!2d-1.5476459225088997!3d53.843576972437674!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48795bdbb22b38cd%3A0xa7288f4617decf52!2sMoortown%20Baptist%20Church!5e0!3m2!1sen!2suk!4v1783767128060!5m2!1sen!2suk"
         width="100%" height="160" style="border:0;filter:grayscale(1) invert(0.85) contrast(0.9)"
         allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
       </iframe>

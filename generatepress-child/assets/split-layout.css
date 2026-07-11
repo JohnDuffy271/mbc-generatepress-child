@@ -405,6 +405,7 @@ body.admin-bar .mbc-sidebar-left {
   .mbc-screen {
     flex-direction: column;
     height: auto; min-height: 100vh;
+    margin-left: 0;
     overflow: visible;
   }
   .mbc-hero-panel {
