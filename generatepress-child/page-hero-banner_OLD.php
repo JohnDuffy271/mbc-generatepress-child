@@ -20,11 +20,13 @@
 <?php wp_body_open(); ?>
 <style>
 /* ── ELEMENTOR CONTAINER RESET ── */
+/* Force Elementor footer widget to be truly full width */
 .mbc-pb-content-wrap .elementor,
 .elementor-widget-html {
   width: 100% !important;
   max-width: 100% !important;
 }
+/* Ensure get_footer() output aligns with page content */
 .site-footer {
   width: 100%;
   box-sizing: border-box;
@@ -35,10 +37,11 @@ body.mbc-page-banner {
   background:#111; color:rgba(255,255,255,.78);
   display:flex; flex-direction:column; min-height:100vh;
 }
+/* Ensure layout and footer stack vertically, never side by side */
 .mbc-pb-layout,
 .mbc-footer { width:100%; flex-shrink:0; }
 
-/* Nav */
+/* Nav — same as Option A */
 .mbc-pb-nav {
   position: fixed;
   top: 0; left: 0; right: 0; z-index: 1000;
@@ -74,24 +77,25 @@ body.mbc-page-banner {
 .mbc-pb-nav-links li a:hover,
 .mbc-pb-nav-links li.current-menu-item a { color: #c9a84c; }
 
-/* Banner image — increased height */
+/* Banner image */
 .mbc-pb-banner {
   margin-top: 58px;
   width: 100%;
-  height: 55vh;
-  min-height: 320px;
-  max-height: 580px;
+  height: 40vh;
+  min-height: 240px;
+  max-height: 420px;
   position: relative;
   overflow: hidden;
 }
 .mbc-pb-banner-bg {
   position: absolute; inset: 0;
   background-size: cover;
-  background-position: center top;
+  background-position: center;
   background-repeat: no-repeat;
   background-color: #1a1a2e;
   transition: transform 8s ease;
 }
+/* Subtle parallax feel on load */
 .mbc-pb-banner:hover .mbc-pb-banner-bg { transform: scale(1.03); }
 .mbc-pb-banner-overlay {
   position: absolute; inset: 0;
@@ -101,6 +105,7 @@ body.mbc-page-banner {
     rgba(11,11,11,.5) 100%
   );
 }
+/* Gold bottom edge */
 .mbc-pb-banner::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -108,7 +113,7 @@ body.mbc-page-banner {
   background: linear-gradient(90deg, transparent, #c9a84c 30%, #c9a84c 70%, transparent);
 }
 
-/* Title block */
+/* Title block — sits below banner on dark bg */
 .mbc-pb-title-block {
   background: #111;
   padding: 40px 56px 32px;
@@ -162,6 +167,7 @@ body.mbc-page-banner {
   width: 100%;
   box-sizing: border-box;
 }
+/* Full-width footer below the grid */
 .mbc-footer {
   width: 100% !important;
   display: block !important;
@@ -364,6 +370,7 @@ body.mbc-page-banner {
   display:block; clear:both;
   margin-left:220px;
 }
+
 .mbc-footer-grid {
   display:grid; grid-template-columns:1fr 1fr;
   gap:40px; padding:32px 56px 28px; align-items:center;
