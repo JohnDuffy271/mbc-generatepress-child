@@ -55,8 +55,9 @@ body.admin-bar .mbc-sidebar-left {
 .mbc-nav-logo a { display: flex; }
 .mbc-site-name {
   font-family: 'Playfair Display', serif; color: #fff;
-  font-size: 1.05rem; line-height: 1; white-space: nowrap; margin: 0;
+  font-size: 1.4rem; font-weight: 700; line-height: 1; white-space: nowrap; margin: 0;
 }
+.mbc-site-name em { color: #c9a84c; font-style: italic; font-weight: 400; }
 .mbc-site-sub {
   font-size: .52rem; color: #c9a84c;
   letter-spacing: .14em; text-transform: uppercase; margin-top: 2px;
