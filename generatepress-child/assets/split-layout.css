@@ -45,7 +45,7 @@ body.admin-bar .mbc-sidebar-left {
 
 /* Nav */
 .mbc-nav {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-start; gap: 40px;
   padding: 0 36px; height: 54px; flex-shrink: 0;
   border-bottom: 1px solid #1e1e1e;
   position: relative; z-index: 200;
