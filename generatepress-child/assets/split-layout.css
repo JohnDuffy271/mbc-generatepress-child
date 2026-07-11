@@ -45,33 +45,36 @@ body.admin-bar .mbc-sidebar-left {
 
 /* Nav */
 .mbc-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 36px; height: 54px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: stretch;
+  flex-shrink: 0;
   border-bottom: 1px solid #1e1e1e;
   position: relative; z-index: 200;
   background: rgba(17,17,17,.95);
 }
-.mbc-nav-logo { display: flex; align-items: center; gap: 10px; }
+.mbc-nav-logo { display: flex; align-items: center; padding: 10px 36px 8px; border-bottom: 1px solid #1e1e1e; }
 .mbc-nav-logo a { display: flex; }
 .mbc-site-name {
   font-family: 'Playfair Display', serif; color: #fff;
-  font-size: .88rem; line-height: 1; white-space: nowrap; margin: 0;
+  font-size: 1.05rem; line-height: 1; white-space: nowrap; margin: 0;
 }
 .mbc-site-sub {
   font-size: .52rem; color: #c9a84c;
   letter-spacing: .14em; text-transform: uppercase; margin-top: 2px;
 }
 .mbc-nav-links {
-  display: flex; list-style: none; margin: 0; padding: 0; gap: 0;
+  display: flex; list-style: none; margin: 0; padding: 0 0 0 36px; gap: 0;
+  height: 36px; align-items: center;
 }
 .mbc-nav-links li a {
   color: rgba(255,255,255,.38); text-decoration: none;
   font-family: 'Outfit', sans-serif; font-size: .68rem;
   font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-  margin-left: 14px; white-space: nowrap;
+  margin-right: 20px; white-space: nowrap;
   transition: color .2s;
 }
 .mbc-nav-links li a:hover { color: #c9a84c; }
+.mbc-nav-links li.current-menu-item > a,
+.mbc-nav-links li.current-menu-ancestor > a { color: #c9a84c; }
 
 /* Hero layers */
 .mbc-hero-bg {
@@ -612,7 +615,7 @@ body.admin-bar .mbc-sidebar-left {
 .mbc-mobile-menu {
   display: none;
   position: absolute;
-  top: 54px; left: 0; right: 0;
+  top: 40px; left: 0; right: 0;
   background: #0a0a0a;
   border-bottom: 1px solid #222;
   z-index: 500;
