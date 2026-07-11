@@ -184,7 +184,7 @@ body.admin-bar .mbc-page-index    .mbc-page-wrap {
 .mbc-sidebar-left {
   background: #0d0d0d;
   border-right: 1px solid #1e1e1e;
-  padding: 72px 20px 28px; /* 72px top = nav height + breathing room */
+  padding: 72px 20px 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -202,7 +202,7 @@ body.admin-bar .mbc-page-index    .mbc-page-wrap {
   z-index: 100;
 }
 body.admin-bar .mbc-sidebar-left {
-  padding-top: 104px; /* 32px admin bar + 58px nav + 14px */
+  padding-top: 104px;
 }
 
 /* Sidebar card */
@@ -356,13 +356,13 @@ body.admin-bar .mbc-sidebar-left {
    PAGE BANNER (used on Standard Page + Banner Hero)
 ═══════════════════════════════════════════════════ */
 .mbc-banner {
-  width: 100%; height: 38vh;
-  min-height: 220px; max-height: 400px;
+  width: 100%; height: 55vh;
+  min-height: 320px; max-height: 580px;
   position: relative; overflow: hidden; flex-shrink: 0;
 }
 .mbc-banner-bg {
   position: absolute; inset: 0;
-  background-size: cover; background-position: center;
+  background-size: cover; background-position: center top;
   background-color: #1a1a2e;
   transition: transform 8s ease;
 }
@@ -488,7 +488,6 @@ body.admin-bar .mbc-sidebar-left {
   font-size: 1.4rem; color: #fff; font-weight: 700; margin-bottom: 24px;
 }
 .mbc-comments h2 em { color: #c9a84c; font-style: italic; font-weight: 400; }
-/* Style WP comment form to match theme */
 .mbc-comments .comment-form label {
   font-family: 'Outfit', sans-serif; font-size: .68rem;
   color: rgba(255,255,255,.35); letter-spacing: .06em;
@@ -512,7 +511,6 @@ body.admin-bar .mbc-sidebar-left {
   text-transform: uppercase; cursor: pointer; transition: background .2s;
 }
 .mbc-comments .comment-form input[type=submit]:hover { background: #b8943d; }
-/* Existing comments */
 .mbc-comments .comment-list { list-style: none; padding: 0; margin: 0 0 32px; }
 .mbc-comments .comment-body {
   background: #1a1a1a; border: 1px solid #222;
@@ -528,9 +526,9 @@ body.admin-bar .mbc-sidebar-left {
 .mbc-footer {
   background: #0a0a0a; border-top: 1px solid #1e1e1e;
   font-family: 'Outfit', sans-serif; color: rgba(255,255,255,.70);
-  width: 100%; display: block; flex-shrink: 0;
-  margin-left: 220px;
   width: calc(100% - 220px);
+  margin-left: 220px;
+  display: block; flex-shrink: 0;
   box-sizing: border-box;
 }
 .mbc-footer-grid {
@@ -572,7 +570,6 @@ body.admin-bar .mbc-sidebar-left {
   font-size: .74rem; color: rgba(255,255,255,.32);
   line-height: 1.55; margin: 0 0 10px;
 }
-/* mc4wp form in footer */
 .mbc-footer .mc4wp-form-fields { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; }
 .mbc-footer .mc4wp-form-fields p { margin: 0; flex: 1; min-width: 120px; }
 .mbc-footer .mc4wp-form-fields label {
