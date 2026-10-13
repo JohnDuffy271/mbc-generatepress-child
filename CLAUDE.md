@@ -138,7 +138,11 @@ chrooted. Pages, menus and settings are managed via the WordPress REST API.
 
 - [x] Toolchain: WSL, Claude Code, GitHub SSH, push-to-deploy, REST auth
 - [ ] Wireframe detail screenshots from Andy's Canva (in `docs/wireframes/`)
-- [ ] `tokens.css` + base styles
+- [x] E2E smoke test passed (13 Oct 2026): `css/tokens.css` enqueued,
+      `page-templates/e2e-test.php`, test page ID 620 (`mbc-e2e-test`) —
+      remove before launch (ask first)
+- [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
+- [ ] Install `php-cli` in WSL for linting (needs John to run sudo in a terminal)
 - [ ] Header, footer, accordion/dropdown menu with non-linking parents
 - [ ] Four page templates
 - [ ] Idempotent scaffold script: pages, hierarchy, menu
