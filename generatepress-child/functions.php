@@ -33,6 +33,12 @@ function mbc_child_enqueue_styles() {
         array( 'generatepress-parent' ),
         wp_get_theme()->get( 'Version' )
     );
+    wp_enqueue_style(
+        'mbc-tokens',
+        get_stylesheet_directory_uri() . '/css/tokens.css',
+        array( 'generatepress-parent' ),
+        filemtime( get_stylesheet_directory() . '/css/tokens.css' )
+    );
 }
 
 // ── GOOGLE FONTS — loaded on all MBC custom templates ────────────────────

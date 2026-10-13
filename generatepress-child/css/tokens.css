@@ -1,0 +1,4 @@
+/* MBC design tokens — all design values live here. */
+:root {
+	--mbc-e2e-colour: #ff00ff; /* E2E smoke test: obvious magenta */
+}
