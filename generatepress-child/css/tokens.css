@@ -56,9 +56,9 @@
 	--mbc-footer-button-bg: var(--mbc-grey-50);
 	--mbc-footer-button-text: var(--mbc-grey-900);
 	--mbc-footer-button-border: var(--mbc-grey-50);
-	--mbc-footer-button-hover-bg: var(--mbc-accent);
-	--mbc-footer-button-hover-text: var(--mbc-accent-contrast);
-	--mbc-footer-button-hover-border: var(--mbc-accent);
+	--mbc-footer-button-hover-bg: var(--mbc-grey-200);
+	--mbc-footer-button-hover-text: var(--mbc-grey-900);
+	--mbc-footer-button-hover-border: var(--mbc-grey-200);
 	--mbc-input-bg: var(--mbc-surface);
 	--mbc-input-text: var(--mbc-text);
 	--mbc-input-border: var(--mbc-grey-500);

@@ -9,6 +9,10 @@ GeneratePress child theme. The church is running a branding exercise
 (expected to take a couple of months), so **look and feel will change late**.
 Build structure and templates now; keep all styling swappable.
 
+**Goal: no page depends on Elementor.** Elementor and Elementor Pro are
+deactivated on the sandbox before cutover (see "Elementor exit" in the
+Status list).
+
 - Live site: https://moortownbaptistchurch.org.uk (DO NOT TOUCH)
 - Sandbox:   https://new.moortownbaptistchurch.org.uk (all work happens here)
 - Tagline:   "Loving God, living generously, following Christ."
@@ -287,6 +291,21 @@ Pages, menus and settings are managed via the WordPress REST API.
       file exists (About Us/Resources children → info, What's On children
       → activity, Mission children → mission-partner, News/Events/Contact
       → listing).
+- [ ] **Elementor exit** (after the templates exist). Goal: no page
+      depends on Elementor; both plugins deactivated before cutover.
+      1. For each of the 24 Elementor-built pages, compare the sandbox
+         content with the live page and report which is more current.
+         Don't guess.
+      2. Convert the content into the matching block pattern as a *draft
+         revision*. Never destroy the Elementor version until the draft
+         is approved.
+      3. John or John S reviews each page.
+      4. On approval: publish the block version and remove that page's
+         `_elementor_edit_mode` / `_elementor_data` meta.
+      5. When no page uses Elementor: check for remaining dependencies
+         (Theme Builder templates such as footer #208, shortcodes,
+         widgets), then **ask John before deactivating** Elementor and
+         Elementor Pro. Measure page speed before and after.
 - [x] Idempotent scaffold script `bin/scaffold_site.py` (14 Oct 2026):
       dry run by default, `--apply` to change. Pages, hierarchy, slugs and
       the "Primary" menu (location `primary`) match the menu above; old
