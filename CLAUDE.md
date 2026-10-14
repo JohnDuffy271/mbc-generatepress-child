@@ -167,9 +167,19 @@ Pages, menus and settings are managed via the WordPress REST API.
 - Work inside `~/src/`, never under `/mnt/c` or `/mnt/d`.
 - Repo: `~/src/mbc-generatepress-child` (GitHub
   `JohnDuffy271/mbc-generatepress-child`, SSH auth working).
-- Tools present: git, rsync, ssh, lftp, curl. `sudo` needs John's WSL
+- Tools present: git, rsync, ssh, lftp, curl, php, composer. `sudo` needs John's WSL
   password, so ask John to run any `apt install` himself.
 - Server: Rockhost shared Plesk, PHP 8.2, Apache 2.4 + PHP-FPM, WP 7.1.
+- PHP: local php-cli is 8.5.4, server is 8.2. Write 8.2-compatible code
+  only (no typed class constants, `#[\Override]`, `json_validate()` etc.).
+  `php -l` on 8.5 cannot catch this, so **run `bin/lint.sh` before every
+  push** (`php -l` + PHPCompatibilityWP with `testVersion 8.2`).
+- Lint tooling is installed globally (`~/.config/composer`): phpcs 3.13,
+  PHPCompatibility 10.0.0-alpha2 and PHPCompatibilityWP 3.0.0-alpha2 (the
+  alphas are needed to detect 8.3+ features). Never add `vendor/` or
+  `composer.json` to the repo: the repo root deploys to `themes/`.
+- `bin/` deploys too; `bin/lint.sh` is covered by the root `.htaccess`
+  `.sh` deny (verify 403 after pushing changes to `bin/`).
 
 ## Coding conventions
 
@@ -206,8 +216,8 @@ Pages, menus and settings are managed via the WordPress REST API.
       `page-templates/e2e-test.php`, test page ID 620 (`mbc-e2e-test`) —
       remove before launch (ask first)
 - [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
-- [ ] Install `php-cli` in WSL for linting (John to run:
-      `/usr/bin/sudo /usr/bin/apt install -y php-cli`)
+- [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
+      (`bin/lint.sh`)
 - [ ] Header, footer, accordion/dropdown menu with non-linking parents
 - [ ] Four page templates
 - [ ] Idempotent scaffold script: pages, hierarchy, menu
