@@ -399,6 +399,12 @@ contrast check reports it as informational only.
       '__return_false' )`) or keep only the chosen look's file, and remove
       the others.
 - [ ] Remove the `/style-guide` page (ID 668, ask first).
+- [ ] Remove the demo import: delete posts where `mbc_demo_import=1` (10
+      posts selected from live on 15 Oct 2026, all in the pre-existing
+      "News" category, so no categories were created and "News" must stay),
+      delete the media with meta `mbc_live_source_url` that the import
+      uploaded, then delete `inc/demo-import.php` and its `require` in
+      `functions.php`.
 - [ ] Newsletter builder code reviewed and adapted for the new build
       (category IDs and post markup differ from the old site).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
