@@ -16,11 +16,7 @@ from pathlib import Path
 
 SLUG = "style-guide"
 TITLE = "Style guide"
-CONTENT = """<!-- wp:heading {"level":1} -->
-<h1 class="wp-block-heading">Style guide</h1>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
+CONTENT = """<!-- wp:paragraph -->
 <p>Body text with a <a href="#">link</a>, <strong>bold text</strong> and <em>emphasis</em>. Used to check each look against the design tokens.</p>
 <!-- /wp:paragraph -->
 

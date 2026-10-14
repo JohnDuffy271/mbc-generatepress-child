@@ -75,7 +75,7 @@ a:hover {
  */
 .mbc-button,
 button.mbc-button,
-html body .wp-block-button__link,
+html body a.wp-block-button__link:not(.has-background),
 html body input[type="submit"] {
 	display: inline-flex;
 	align-items: center;
@@ -94,7 +94,7 @@ html body input[type="submit"] {
 }
 
 .mbc-button:hover,
-html body .wp-block-button__link:hover,
+html body a.wp-block-button__link:not(.has-background):hover,
 html body input[type="submit"]:hover,
 html body input[type="submit"]:focus {
 	background: var(--mbc-button-hover-bg);
@@ -103,7 +103,7 @@ html body input[type="submit"]:focus {
 }
 
 .mbc-button--outline,
-html body .is-style-outline > .wp-block-button__link {
+html body .is-style-outline > a.wp-block-button__link:not(.has-background) {
 	background: transparent;
 	color: var(--mbc-outline-text);
 }
@@ -120,6 +120,13 @@ html body select {
 	border-radius: var(--mbc-radius-sm);
 	background: var(--mbc-input-bg);
 	color: var(--mbc-input-text);
+}
+
+/* Tables: GeneratePress borders them in the text colour. */
+html body table,
+html body th,
+html body td {
+	border-color: var(--mbc-border);
 }
 
 ::placeholder {
