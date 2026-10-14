@@ -7,18 +7,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$mbc_logo_id = (int) get_theme_mod( 'custom_logo' );
+$mbc_logo = mbc_logo_image( 'mbc-header__logo' );
 ?>
 <header class="mbc-header" id="masthead">
     <div class="mbc-header__bar">
         <a class="mbc-header__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-            <?php if ( $mbc_logo_id ) : ?>
-                <?php
-                echo wp_get_attachment_image( $mbc_logo_id, 'full', false, array(
-                    'class' => 'mbc-header__logo',
-                    'alt'   => get_bloginfo( 'name' ),
-                ) );
-                ?>
+            <?php if ( $mbc_logo ) : ?>
+                <?php echo $mbc_logo; // phpcs:ignore WordPress.Security.EscapeOutput -- core image markup. ?>
+                <span class="screen-reader-text"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span>
             <?php else : ?>
                 <span class="mbc-header__name"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span>
             <?php endif; ?>

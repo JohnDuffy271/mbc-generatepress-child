@@ -3,9 +3,10 @@
  * Layout: takes over GeneratePress's header hooks, registers menus and
  * enqueues the MBC styles and scripts.
  *
- * DELIBERATE: remove_all_actions() on generate_header means anything else
- * hooked there (GeneratePress's own header, Elementor Pro's Theme Builder
- * header) will not render. That is intended: the header is
+ * DELIBERATE: remove_all_actions() on generate_header and generate_footer
+ * means anything else hooked there (GeneratePress's own header and footer,
+ * Elementor Pro's Theme Builder header and footer, any plugin) will not
+ * render. That is intended: the header is
  * template-parts/header.php, in git.
  */
 
@@ -15,21 +16,42 @@ add_action( 'after_setup_theme', 'mbc_register_menus' );
 function mbc_register_menus() {
     register_nav_menus( array(
         'primary' => __( 'Primary Navigation', 'generatepress-child' ),
+        'footer'  => __( 'Footer Links', 'generatepress-child' ),
     ) );
 }
 
 // Late on `wp`, after GeneratePress has added its own hooks.
-add_action( 'wp', 'mbc_take_over_header', 100 );
-function mbc_take_over_header() {
+add_action( 'wp', 'mbc_take_over_layout', 100 );
+function mbc_take_over_layout() {
     remove_all_actions( 'generate_header' );
+    remove_all_actions( 'generate_footer' ); // Also drops Elementor Pro's footer (#208) and GP footer widgets.
     remove_action( 'generate_after_header', 'generate_add_navigation_after_header', 5 );
     remove_action( 'generate_before_header', 'generate_add_navigation_before_header', 5 );
     remove_action( 'generate_before_header', 'generate_top_bar', 5 );
     add_action( 'generate_header', 'mbc_render_header' );
+    add_action( 'generate_footer', 'mbc_render_footer' );
 }
 
 function mbc_render_header() {
     get_template_part( 'template-parts/header' );
+}
+
+function mbc_render_footer() {
+    get_template_part( 'template-parts/footer' );
+}
+
+/**
+ * Site logo <img> (Customizer > Site Identity), or '' if none is set.
+ */
+function mbc_logo_image( $class ) {
+    $logo_id = (int) get_theme_mod( 'custom_logo' );
+    if ( ! $logo_id ) {
+        return '';
+    }
+    return wp_get_attachment_image( $logo_id, 'full', false, array(
+        'class' => $class,
+        'alt'   => '',
+    ) );
 }
 
 // "mbc-js" lets CSS show the burger and hide closed menus only when the
@@ -45,6 +67,7 @@ function mbc_enqueue_layout_assets() {
     $uri = get_stylesheet_directory_uri();
 
     wp_enqueue_style( 'mbc-header', $uri . '/css/header.css', array( 'mbc-base' ), filemtime( $dir . '/css/header.css' ) );
+    wp_enqueue_style( 'mbc-footer', $uri . '/css/footer.css', array( 'mbc-base' ), filemtime( $dir . '/css/footer.css' ) );
     wp_enqueue_script(
         'mbc-navigation',
         $uri . '/js/navigation.js',
