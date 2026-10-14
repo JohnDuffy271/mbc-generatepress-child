@@ -8,12 +8,11 @@ differences are changed. Sandbox only (URL comes from ~/.config/mbc/wp.env).
 import argparse
 import base64
 import html
+import http.client
 import json
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -25,6 +24,11 @@ REPORT = DOCS / "url-changes.md"
 # Services on YouTube = the channel's Live tab (past Sunday service streams).
 # Keep in step with youtube_services_url in inc/site-info.php.
 YOUTUBE_SERVICES_URL = "https://www.youtube.com/@MoortownBaptistChurch/streams"
+USER_AGENT = "MBC-scaffold/1.0 (John, Moortown Baptist Church)"
+CONNECT_TIMEOUT = 8          # seconds per TCP connect attempt
+CONNECT_ATTEMPTS = 4
+CONNECT_BACKOFF = (1, 2, 4)  # seconds between connect attempts
+READ_TIMEOUT = 240           # sandbox writes can be slow
 MENU_NAME = "Primary"
 MENU_LOCATION = "primary"
 TOGGLE_CLASS = "mbc-menu-toggle"
@@ -109,50 +113,108 @@ def load_env():
     return env
 
 
+class _QuickConnect(http.client.HTTPSConnection):
+    """HTTPS connection with a short connect timeout and quick retries.
+
+    From John's IP, TCP connects to the server intermittently stall for
+    20-68 s (about 1 in 10). A fresh attempt almost always succeeds at once,
+    so connect with a short timeout and retry instead of waiting it out.
+    """
+
+    read_timeout = READ_TIMEOUT
+
+    def connect(self):
+        last = None
+        for attempt in range(CONNECT_ATTEMPTS):
+            self.timeout = CONNECT_TIMEOUT
+            try:
+                super().connect()
+                self.sock.settimeout(self.read_timeout)
+                return
+            except OSError as exc:  # includes socket timeouts
+                last = exc
+                self.close()
+                if attempt < CONNECT_ATTEMPTS - 1:
+                    time.sleep(CONNECT_BACKOFF[attempt])
+        raise last
+
+
 class WP:
+    """Sandbox REST client: keep-alive connection, quick connect retries."""
+
     def __init__(self, env):
         self.base = env["WP_URL"]
+        self._netloc = urllib.parse.urlsplit(self.base).netloc
+        self._conn = None
         token = base64.b64encode(f"{env['WP_USER']}:{env['WP_APP_PASSWORD']}".encode()).decode()
         self.auth = f"Basic {token}"
 
+    def _reset(self):
+        if self._conn is not None:
+            self._conn.close()
+        self._conn = None
+
     def call(self, method, route, params=None, body=None):
-        url = f"{self.base}/wp-json/wp/v2/{route}"
+        path = f"/wp-json/wp/v2/{route}"
         if params:
-            url += "?" + urllib.parse.urlencode(params)
+            path += "?" + urllib.parse.urlencode(params)
         data = json.dumps(body).encode() if body is not None else None
-        if method != "GET":  # be gentle: one second between writes
-            time.sleep(1.0)
-        req = urllib.request.Request(url, data=data, method=method)
-        req.add_header("Authorization", self.auth)
-        req.add_header("User-Agent", "MBC-scaffold/1.0 (John, Moortown Baptist Church)")
+        headers = {"Authorization": self.auth, "User-Agent": USER_AGENT}
         if data is not None:
-            req.add_header("Content-Type", "application/json")
-        try:
-            with urllib.request.urlopen(req, timeout=240) as resp:
-                return json.load(resp)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode(errors="replace")[:300]
-            sys.exit(f"HTTP {exc.code} on {method} {route}: {detail}")
-        except urllib.error.URLError as exc:
-            sys.exit(f"Network error on {method} {route}: {exc.reason}")
+            headers["Content-Type"] = "application/json"
+        safe = method == "GET"
+        if not safe:  # be gentle: one second between writes
+            time.sleep(1.0)
+        for attempt in range(3 if safe else 1):
+            try:
+                if self._conn is None:
+                    self._conn = _QuickConnect(self._netloc, timeout=CONNECT_TIMEOUT)
+                try:
+                    self._conn.request(method, path, body=data, headers=headers)
+                    resp = self._conn.getresponse()
+                except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
+                    self._conn.close()
+                    if not safe:  # a write may have reached the server: never resend blindly
+                        raise
+                    self._conn.request(method, path, body=data, headers=headers)
+                    resp = self._conn.getresponse()
+                payload = resp.read()
+                break
+            except (http.client.HTTPException, OSError) as exc:
+                self._reset()
+                if attempt >= (2 if safe else 0):
+                    sys.exit(f"Network error on {method} {route}: {exc or type(exc).__name__}"
+                             + ("" if safe else " (idempotent: re-run to continue)"))
+                time.sleep(2)
+        if resp.status >= 400:
+            sys.exit(f"HTTP {resp.status} on {method} {route}: {payload.decode(errors='replace')[:300]}")
+        return json.loads(payload)
 
 
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args, **kwargs):
-        return None
+_probe_conns = {}
 
 
 def probe(url):
-    """Return (status, redirect target) without following redirects."""
-    opener = urllib.request.build_opener(NoRedirect)
-    req = urllib.request.Request(url, headers={"User-Agent": "MBC-scaffold/1.0 (John, Moortown Baptist Church)"})
-    try:
-        with opener.open(req, timeout=30) as resp:
-            return resp.status, ""
-    except urllib.error.HTTPError as exc:
-        return exc.code, exc.headers.get("Location", "")
-    except urllib.error.URLError as exc:
-        return 0, str(exc.reason)
+    """Return (status, redirect target) for a GET, without following redirects."""
+    parts = urllib.parse.urlsplit(url)
+    target = (parts.path or "/") + (("?" + parts.query) if parts.query else "")
+    for attempt in range(2):
+        try:
+            conn = _probe_conns.get(parts.netloc)
+            if conn is None:
+                conn = _probe_conns[parts.netloc] = _QuickConnect(parts.netloc, timeout=CONNECT_TIMEOUT)
+                conn.read_timeout = 30
+            conn.request("GET", target, headers={"User-Agent": USER_AGENT})
+            resp = conn.getresponse()
+            resp.read()
+            return resp.status, resp.getheader("Location", "") or ""
+        except (http.client.HTTPException, OSError) as exc:
+            conn = _probe_conns.pop(parts.netloc, None)
+            if conn is not None:
+                conn.close()
+            if attempt:
+                return 0, str(exc) or type(exc).__name__
+    return 0, "unreachable"
 
 
 def fetch_pages(wp):

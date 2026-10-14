@@ -26,14 +26,13 @@ import argparse
 import ast
 import base64
 import html
+import http.client
 import json
 import mimetypes
 import re
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -45,7 +44,10 @@ USER_AGENT = "MBC-demo-import/1.0 (John, Moortown Baptist Church; read-only publ
 POST_FIELDS = "id,date,date_gmt,slug,link,title,excerpt,content,categories,featured_media"
 DEFAULT_COUNT = 10
 MAX_PAGES = 5            # never scan more than 5 pages of 10 posts
-LIVE_TIMEOUT = 60        # seconds
+LIVE_TIMEOUT = 60        # seconds to wait for a live response once connected
+CONNECT_TIMEOUT = 8      # seconds per TCP connect attempt (the host sometimes stalls connects 20-68 s)
+CONNECT_ATTEMPTS = 4     # connect attempts before giving up
+CONNECT_BACKOFF = (1, 2, 4)  # seconds between connect attempts
 LIVE_RETRIES = 3         # retries after the first attempt
 LIVE_BACKOFF = (3, 8, 20)  # seconds before retries 1, 2, 3
 LIVE_PAUSE = 2.0         # minimum seconds between live requests
@@ -71,20 +73,39 @@ class LiveError(Exception):
     pass
 
 
-class SameHostOnly(urllib.request.HTTPRedirectHandler):
-    """Follow redirects only within the live host, and only as GET."""
+class _QuickConnect(http.client.HTTPSConnection):
+    """HTTPS connection with a short connect timeout and quick retries.
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        if host_of(newurl) != LIVE_HOST:
-            raise LiveError(f"refusing redirect to another host: {short(newurl)}")
-        return urllib.request.Request(newurl, method="GET", headers={"User-Agent": USER_AGENT})
+    From John's IP, TCP connects to the server intermittently stall for
+    20-68 s (about 1 in 10). A fresh attempt almost always succeeds at once,
+    so connect with a short timeout and retry instead of waiting it out. Once
+    connected, the (longer) read timeout applies. Connections are reused
+    (keep-alive) by the clients below.
+    """
+
+    read_timeout = LIVE_TIMEOUT
+
+    def connect(self):
+        last = None
+        for attempt in range(CONNECT_ATTEMPTS):
+            self.timeout = CONNECT_TIMEOUT
+            try:
+                super().connect()
+                self.sock.settimeout(self.read_timeout)
+                return
+            except OSError as exc:  # includes socket timeouts
+                last = exc
+                self.close()
+                if attempt < CONNECT_ATTEMPTS - 1:
+                    time.sleep(CONNECT_BACKOFF[attempt])
+        raise last
 
 
 class LiveReader:
-    """GET-only reader for the live site. Gentle: paced, retried, cached by callers."""
+    """GET-only reader for the live site. Gentle: paced, retried, keep-alive."""
 
     def __init__(self):
-        self._opener = urllib.request.build_opener(SameHostOnly)
+        self._conns = {}
         self._last = 0.0
         self.request_count = 0
 
@@ -94,6 +115,45 @@ class LiveReader:
             time.sleep(wait)
         self._last = time.monotonic()
 
+    def _conn(self, netloc):
+        if netloc not in self._conns:
+            conn = _QuickConnect(netloc, timeout=CONNECT_TIMEOUT)
+            conn.read_timeout = LIVE_TIMEOUT
+            self._conns[netloc] = conn
+        return self._conns[netloc]
+
+    def _drop(self):
+        for conn in self._conns.values():
+            conn.close()
+        self._conns.clear()
+
+    def _once(self, url, hops=0):
+        """One GET (following same-host redirects). Returns (status, headers, body)."""
+        if host_of(url) != LIVE_HOST:
+            raise LiveError(f"not the live host: {short(url)}")
+        parts = urllib.parse.urlsplit(url)
+        target = (parts.path or "/") + (("?" + parts.query) if parts.query else "")
+        conn = self._conn(parts.netloc)
+        for first_try in (True, False):  # one immediate retry if a kept-alive connection went stale
+            try:
+                conn.request("GET", target, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
+                resp = conn.getresponse()
+                body = resp.read()
+                break
+            except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
+                conn.close()
+                if not first_try:
+                    raise
+        headers = {k.lower(): v for k, v in resp.getheaders()}
+        if resp.status in (301, 302, 303, 307, 308) and headers.get("location"):
+            if hops >= 3:
+                raise LiveError(f"too many redirects for {short(url)}")
+            nxt = urllib.parse.urljoin(url, headers["location"])
+            if host_of(nxt) != LIVE_HOST:
+                raise LiveError(f"refusing redirect to another host: {short(nxt)}")
+            return self._once(nxt, hops + 1)
+        return resp.status, headers, body
+
     def _fetch(self, url):
         if host_of(url) != LIVE_HOST:
             raise LiveError(f"not the live host: {short(url)}")
@@ -101,17 +161,16 @@ class LiveReader:
         for attempt in range(LIVE_RETRIES + 1):
             self._pace()
             self.request_count += 1
-            req = urllib.request.Request(url, method="GET", headers={"User-Agent": USER_AGENT})
             try:
-                with self._opener.open(req, timeout=LIVE_TIMEOUT) as resp:
-                    headers = {k.lower(): v for k, v in resp.headers.items()}
-                    return resp.read(), headers
-            except urllib.error.HTTPError as exc:
-                if exc.code < 500 and exc.code != 429:
-                    raise LiveError(f"HTTP {exc.code} for {short(url)}") from None
-                reason = f"HTTP {exc.code}"
-            except (urllib.error.URLError, TimeoutError, OSError) as exc:
-                reason = str(getattr(exc, "reason", exc))  # timeouts are transient
+                status, headers, body = self._once(url)
+                if status < 400:
+                    return body, headers
+                if status < 500 and status != 429:
+                    raise LiveError(f"HTTP {status} for {short(url)}")
+                reason = f"HTTP {status}"
+            except (http.client.HTTPException, OSError) as exc:  # timeouts are transient
+                reason = str(exc) or type(exc).__name__
+                self._drop()
             if attempt < LIVE_RETRIES:
                 delay = LIVE_BACKOFF[attempt]
                 print(f"  live request failed ({reason}); retry {attempt + 1}/{LIVE_RETRIES} in {delay}s", file=sys.stderr)
@@ -140,39 +199,61 @@ class SandboxWriter:
         if host_of(base) != SANDBOX_HOST:
             sys.exit(f"Refusing to write: WP_URL host is not {SANDBOX_HOST}")
         self.base = base
+        self._netloc = urllib.parse.urlsplit(base).netloc
+        self._conn = None
         token = base64.b64encode(f"{env['WP_USER']}:{env['WP_APP_PASSWORD']}".encode()).decode()
         self._auth = f"Basic {token}"
         self._last_write = 0.0
 
+    def _connection(self):
+        if self._conn is None:
+            self._conn = _QuickConnect(self._netloc, timeout=CONNECT_TIMEOUT)
+            self._conn.read_timeout = SANDBOX_TIMEOUT
+        return self._conn
+
+    def _reset(self):
+        if self._conn is not None:
+            self._conn.close()
+        self._conn = None
+
     def call(self, method, route, params=None, body=None, raw=None, headers=None, retries=0):
-        url = f"{self.base}/wp-json/wp/v2/{route}"
+        path = f"/wp-json/wp/v2/{route}"
         if params:
-            url += "?" + urllib.parse.urlencode(params)
-        if host_of(url) != SANDBOX_HOST:
-            sys.exit("Refusing request: not the sandbox host")
+            path += "?" + urllib.parse.urlencode(params)
         data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
-        if method not in ("GET", "OPTIONS"):
+        hdrs = {"Authorization": self._auth, "User-Agent": USER_AGENT}
+        if raw is None and body is not None:
+            hdrs["Content-Type"] = "application/json"
+        hdrs.update(headers or {})
+        safe = method in ("GET", "OPTIONS")
+        if not safe:
             wait = SANDBOX_WRITE_PAUSE - (time.monotonic() - self._last_write)
             if wait > 0:
                 time.sleep(wait)
             self._last_write = time.monotonic()
-        for attempt in range(retries + 1):
-            req = urllib.request.Request(url, data=data, method=method)
-            req.add_header("Authorization", self._auth)
-            req.add_header("User-Agent", USER_AGENT)
-            if raw is None and body is not None:
-                req.add_header("Content-Type", "application/json")
-            for k, v in (headers or {}).items():
-                req.add_header(k, v)
+        for attempt in range((retries if safe else 0) + 1):
             try:
-                with urllib.request.urlopen(req, timeout=SANDBOX_TIMEOUT) as resp:
-                    return json.load(resp), {k.lower(): v for k, v in resp.headers.items()}
-            except urllib.error.HTTPError as exc:
-                sys.exit(f"Sandbox HTTP {exc.code} on {method} {route}: {exc.read().decode(errors='replace')[:300]}")
-            except (urllib.error.URLError, TimeoutError, OSError) as exc:
-                if attempt >= retries:
-                    sys.exit(f"Sandbox network error on {method} {route}: {getattr(exc, 'reason', exc)}")
-                time.sleep(5)
+                conn = self._connection()
+                try:
+                    conn.request(method, path, body=data, headers=hdrs)
+                    resp = conn.getresponse()
+                except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
+                    conn.close()
+                    if not safe:  # a write may have reached the server: never resend blindly
+                        raise
+                    conn.request(method, path, body=data, headers=hdrs)
+                    resp = conn.getresponse()
+                payload = resp.read()
+                break
+            except (http.client.HTTPException, OSError) as exc:
+                self._reset()
+                if attempt >= (retries if safe else 0):
+                    sys.exit(f"Sandbox network error on {method} {route}: {exc or type(exc).__name__}"
+                             + ("" if safe else " (the script is idempotent: re-run to continue)"))
+                time.sleep(2)
+        if resp.status >= 400:
+            sys.exit(f"Sandbox HTTP {resp.status} on {method} {route}: {payload.decode(errors='replace')[:300]}")
+        return json.loads(payload), {k.lower(): v for k, v in resp.getheaders()}
 
 
 # ---------------------------------------------------------------- helpers
@@ -344,14 +425,8 @@ def self_test():
                 return node.name
         return None
 
-    def dotted(node):
-        parts = []
-        while isinstance(node, ast.Attribute):
-            parts.append(node.attr)
-            node = node.value
-        if isinstance(node, ast.Name):
-            parts.append(node.id)
-        return ".".join(reversed(parts))
+    def classdef(name):
+        return next(n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == name)
 
     results = []
 
@@ -359,48 +434,41 @@ def self_test():
         results.append(ok)
         print(("PASS " if ok else "FAIL ") + text)
 
-    # 1. Network calls happen only inside the two clients.
-    net = [(cls_of(n), dotted(n.func)) for n in ast.walk(tree) if isinstance(n, ast.Call)
-           and dotted(n.func) in ("urllib.request.urlopen", "self._opener.open")]
-    check(bool(net) and all(c in ("LiveReader", "SandboxWriter") for c, _ in net),
-          f"urlopen/open only inside LiveReader or SandboxWriter ({len(net)} call sites)")
-    check(all(d == "self._opener.open" for c, d in net if c == "LiveReader"),
-          "LiveReader only uses its GET-only opener")
-    # 2. Every Request built for live is a literal GET; Requests elsewhere only in SandboxWriter.
-    reqs = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and dotted(n.func) == "urllib.request.Request"]
-    live_ok = True
-    for n in reqs:
-        owner = cls_of(n)
-        method = next((k.value for k in n.keywords if k.arg == "method"), None)
-        if owner in ("LiveReader", "SameHostOnly"):
-            live_ok &= isinstance(method, ast.Constant) and method.value == "GET"
-        else:
-            live_ok &= owner == "SandboxWriter"
-    check(live_ok, f"every live Request is method='GET' (literal); others confined to SandboxWriter ({len(reqs)} Request calls)")
-    # 3. No credentials anywhere near the live client.
+    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
+    # 1. Anything that sends data over a connection lives in the two clients.
+    sends = [n for n in calls if n.func.attr in ("request", "putrequest", "urlopen", "build_opener", "create_connection", "send", "sendall")]
+    check(len(sends) >= 2 and all(cls_of(n) in ("LiveReader", "SandboxWriter") for n in sends),
+          f"requests are only sent from LiveReader or SandboxWriter ({len(sends)} call sites)")
+    # 2. Every request the live reader sends is a literal GET.
+    live_sends = [n for n in sends if cls_of(n) == "LiveReader"]
+    check(bool(live_sends) and all(n.func.attr == "request" and n.args and isinstance(n.args[0], ast.Constant)
+                                   and n.args[0].value == "GET" for n in live_sends),
+          f"every LiveReader request is method 'GET' as a literal ({len(live_sends)} call site)")
+    # 3. connect() is only ever called by the shared connection class.
+    connects = [n for n in calls if n.func.attr == "connect"]
+    check(all(cls_of(n) == "_QuickConnect" for n in connects), "connect() is only called inside _QuickConnect")
+    # 4. No credentials near the live client or the shared connection class.
     bad = []
-    for cname in ("LiveReader", "SameHostOnly"):
-        cdef = next(n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == cname)
-        for n in ast.walk(cdef):
+    for cname in ("LiveReader", "_QuickConnect"):
+        for n in ast.walk(classdef(cname)):
             text = n.value if isinstance(n, ast.Constant) and isinstance(n.value, str) else \
                 (n.id if isinstance(n, ast.Name) else (n.attr if isinstance(n, ast.Attribute) else ""))
             if re.search(r"authorization|password|token|wp_user|cookie|_auth", text, re.I):
                 bad.append((cname, text))
     check(not bad, f"no credential or cookie references in the live client{(' ' + str(bad)) if bad else ''}")
-    # 4. LiveReader exposes only get_json and get_bytes.
-    lr = next(n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == "LiveReader")
-    public = {f.name for f in lr.body if isinstance(f, ast.FunctionDef) and not f.name.startswith("_")}
+    # 5. LiveReader exposes only get_json and get_bytes.
+    public = {f.name for f in classdef("LiveReader").body if isinstance(f, ast.FunctionDef) and not f.name.startswith("_")}
     check(public == {"get_json", "get_bytes"}, f"LiveReader public methods are {sorted(public)}")
-    # 5. The sandbox client never mentions the live host.
-    sw = next(n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == "SandboxWriter")
-    names = {n.id for n in ast.walk(sw) if isinstance(n, ast.Name)}
+    # 6. The sandbox client never mentions the live host.
+    names = {n.id for n in ast.walk(classdef("SandboxWriter")) if isinstance(n, ast.Name)}
     check(not names & {"LIVE_BASE", "LIVE_HOST", "LiveReader"}, "SandboxWriter does not reference the live host or reader")
-    # 6. Only whitelisted imports.
-    allowed = {"argparse", "ast", "base64", "html", "json", "mimetypes", "re", "sys", "time", "urllib", "pathlib"}
-    imported = {a.name.split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
-    imported |= {n.module.split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
-    check(imported <= allowed, f"imports limited to the standard library whitelist (extra: {sorted(imported - allowed) or 'none'})")
-    # 7. Runtime guards refuse before any network use.
+    # 7. Only whitelisted imports (no urllib.request, no sockets, no subprocess).
+    allowed = {"argparse", "ast", "base64", "html", "html.parser", "http.client", "json", "mimetypes", "pathlib",
+               "re", "sys", "time", "urllib.parse"}
+    imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
+    imported |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
+    check(imported <= allowed, f"imports limited to the whitelist (extra: {sorted(imported - allowed) or 'none'})")
+    # 8. Runtime guards refuse before any network use.
     refused = []
     for fn, arg in ((LiveReader()._fetch, "https://" + SANDBOX_HOST + "/"), (LiveReader().get_bytes, LIVE_BASE + "/wp-admin/x.php")):
         try:
