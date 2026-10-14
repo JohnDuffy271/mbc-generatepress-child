@@ -345,8 +345,37 @@ Pages, menus and settings are managed via the WordPress REST API.
   `https://www.youtube.com/@MoortownBaptistChurch`; keep
   `YOUTUBE_URL` in `bin/scaffold_site.py` in step.
 
+## Looks (alternate token sets)
+
+A look is a CSS file in `generatepress-child/css/looks/` that overrides
+`:root` token values only. `?look=<name>` on any URL sets the `mbc_look`
+cookie and applies that look site-wide; `?look=default` (or an unknown
+value) clears it. The name is checked against the `.css` files that exist
+(`inc/looks.php`). Logged-in users also get a small floating picker.
+
+To add a look:
+1. Copy `css/looks/dark.css` to `css/looks/<name>.css` (lowercase letters,
+   digits and hyphens only). Override token values only; never add
+   component rules, and never use a hard-coded value outside a look file.
+   The role tokens (`--mbc-button-*`, `--mbc-footer-*`, `--mbc-input-*`,
+   `--mbc-focus*`, ...) are listed in `css/tokens.css`.
+2. Run the contrast check:
+   `~/.venvs/mbc-test/bin/python ~/src/mbc-tests/contrast_check.py <dir> <name>`
+   (WCAG AA: text 4.5:1, large text, button boundaries, input borders and
+   focus rings 3:1; it also checks hover states). The style guide page
+   (`/style-guide`, seeded by `bin/seed_style_guide.py`) is the test page.
+3. Look at the screenshots it writes, then commit. There is no registry:
+   the file appears in the picker automatically.
+
+Legacy Elementor content sets its own colours and ignores looks; the
+contrast check reports it as informational only.
+
 ## Cutover checklist (before launch)
 
+- [ ] Disable the look switcher (`add_filter( 'mbc_looks_enabled',
+      '__return_false' )`) or keep only the chosen look's file, and remove
+      the others.
+- [ ] Remove the `/style-guide` page (ID 668, ask first).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
 - [ ] Privacy Notice and Cookies pages published and linked in the footer
