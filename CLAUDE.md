@@ -267,7 +267,20 @@ Pages, menus and settings are managed via the WordPress REST API.
       menu already links externally to the channel, so page 350 is no
       longer in the menu; when it is retired, remove the page, include,
       CSS and the `functions.php` lines together.
-- [ ] Home (182) is blank (no template) until the new front page exists.
+- [x] Front page (15 Oct 2026): `page-templates/front-page.php` +
+      `patterns/front-page.php` (hero, four zigzag Media & Text bands).
+      Page 182 uses the template and its content was seeded from the
+      pattern (`bin/seed_patterns.py`, idempotent; seeds only *empty*
+      pages). Edit the content in the block editor. Playwright
+      (`~/src/mbc-tests/front_page_check.py`) passes at 360/768/1280px in
+      default and dark (also warm and high-contrast); contrast check passes
+      for all four looks. Notes: pattern links are relative
+      (`/whats-on/...`) and the placeholder image path is relative, so no
+      domain is baked into page content; the tagline is CLAUDE.md's
+      ("...following Christ."), whereas Andy's wireframe says "Loving God.
+      Living Generously. Following Jesus." (John to confirm); band text is
+      left-aligned throughout (the wireframe right-aligns headings beside a
+      left-hand image); band images are neutral placeholders.
 - [x] `tokens.css` neutral placeholder tokens + `css/base.css` (tokens
       only). Real brand tokens follow the branding exercise.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
@@ -302,7 +315,7 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [ ] Open question (Home menu item): the logo is Home per Andy's spec;
       John to check with Andy whether an explicit "Home" item is wanted.
 - [ ] Rockhost SSH ticket (raised 14 Oct 2026): no reply yet; not blocking.
-- [ ] Four page templates: `page-templates/info.php`, `activity.php`,
+- [ ] Remaining page templates (front page is done): `page-templates/info.php`, `activity.php`,
       `mission-partner.php`, `listing.php`. Then re-run
       `bin/scaffold_site.py --apply`: it assigns templates only when the
       file exists (About Us/Resources children → info, What's On children
