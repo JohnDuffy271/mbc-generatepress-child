@@ -1,0 +1,3 @@
+# bin/ deploys to wp-content/themes/ with the rest of the repo.
+# Nothing in here is for the web.
+Require all denied

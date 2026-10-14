@@ -238,14 +238,37 @@ Pages, menus and settings are managed via the WordPress REST API.
       post-thumbnails and html5, so the child does not.
 - [ ] YouTube feed (`includes/mbc-youtube-feed.php`,
       `assets/css/mbc-youtube-feed.css`, shortcode `[mbc_youtube_feed]`)
-      stays until page 350 becomes an external menu link; then remove the
-      page, include, CSS and the `functions.php` lines together.
+      stays while page 350 (`/resources/services-on-youtube`) exists. The
+      menu already links externally to the channel, so page 350 is no
+      longer in the menu; when it is retired, remove the page, include,
+      CSS and the `functions.php` lines together.
 - [ ] Home (182) is blank (no template) until the new front page exists.
 - [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
-- [ ] Header, footer, accordion/dropdown menu with non-linking parents
-- [ ] Four page templates
-- [ ] Idempotent scaffold script: pages, hierarchy, menu
+- [ ] Header, footer, accordion/dropdown menu with non-linking parents.
+      Menu items with class `mbc-menu-toggle` (the four parents, URL `#`)
+      must render as `<button aria-expanded>` elements, not links.
+- [ ] Four page templates: `page-templates/info.php`, `activity.php`,
+      `mission-partner.php`, `listing.php`. Then re-run
+      `bin/scaffold_site.py --apply`: it assigns templates only when the
+      file exists (About Us/Resources children → info, What's On children
+      → activity, Mission children → mission-partner, News/Events/Contact
+      → listing).
+- [x] Idempotent scaffold script `bin/scaffold_site.py` (14 Oct 2026):
+      dry run by default, `--apply` to change. Pages, hierarchy, slugs and
+      the "Primary" menu (location `primary`) match the menu above; old
+      Church Life (237) and Administration (270) trashed; old "Menu 1"
+      (id 9) left unassigned, delete once happy. `bin/` has its own
+      `.htaccess` (`Require all denied`). New pages are empty and
+      published. Sandbox URL changes: `docs/url-changes.md`.
+- [ ] Redirect map before launch: sandbox map is in `docs/url-changes.md`
+      (WP keeps no old-slug redirects for pages, so some old URLs 404).
+      A live-old → new map is still needed, built read-only from the live
+      site's public REST API; this needs a narrow exception to the
+      protect-live hook at that point.
+- [ ] Search indexing: the sandbox is currently indexable (`blog_public`
+      = 1: no `noindex`, permissive robots.txt). Decide whether to
+      discourage search engines while it is a sandbox (John's call).
 - [ ] Content migration from live site (via its public REST API, read-only)
 - [ ] Contact form plugin decision
