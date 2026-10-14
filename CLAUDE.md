@@ -17,6 +17,7 @@ Build structure and templates now; keep all styling swappable.
 
 The page menu and wireframes come from Andy Berry (deacon). Build to his
 design, not the old three-column homepage layout, which is abandoned.
+The old layout is preserved at git tag `split-layout-final` (commit 1007816).
 
 ### Menu (parents are NOT links — toggles only, for touch devices)
 
@@ -77,6 +78,10 @@ Same header and footer on every page.
 
 ```
 mbc-generatepress-child/        <- repo root (this file lives here)
+├── .htaccess                   <- denies web access to *.md, *.zip, *.sql etc.
+├── CLAUDE.md
+├── docs/                       <- project docs and wireframes
+│   └── .htaccess               <- Require all denied
 └── generatepress-child/        <- the actual theme folder
 ```
 
@@ -84,17 +89,63 @@ The theme folder is `generatepress-child`, not `mbc-generatepress-child`.
 
 ## Deployment
 
-`git push` to `main` → GitHub webhook → Plesk pulls and auto-deploys to
-`wp-content/themes/generatepress-child/` on the sandbox within seconds.
+`git push` to `main` → GitHub webhook → Plesk Git pulls and auto-deploys
+the **whole repo root** to `wp-content/themes/` on the sandbox (~30 s).
+Verified end to end on 14 Oct 2026.
+
+Consequences of deploying the repo root into `themes/`:
+
+- Everything in the repo becomes reachable under
+  `https://new.moortownbaptistchurch.org.uk/wp-content/themes/` unless
+  an `.htaccess` blocks it. The repo-root `.htaccess` and `docs/.htaccess`
+  exist for this reason — never remove or weaken them.
+- Never commit archives, dumps, logs or secrets to the repo. (A stray
+  `mbc_git.zip` was publicly downloadable from `themes/` and was deleted
+  on 14 Oct 2026.)
+- Any new top-level folder that is not a theme needs its own
+  `.htaccess` with `Require all denied`.
+- After adding anything sensitive-adjacent, verify it returns 403:
+  ```bash
+  /usr/bin/curl -s -o /dev/null -w '%{http_code}\n' "https://new.moortownbaptistchurch.org.uk/wp-content/themes/<path>"
+  ```
+
+Other rules:
 
 - Commit small, with meaningful messages (not "Aligning Headers" ×4).
 - Never commit credentials, `.env` files or anything from `~/.config/`.
 - There is no staging between push and sandbox; the sandbox IS staging.
+- If a push does not appear on the sandbox, John can click "Deploy now"
+  in Plesk → Websites & Domains → new.moortownbaptistchurch.org.uk → Git.
+
+## Server layout and file access
+
+Sandbox and live share ONE Plesk subscription on Rockhost
+(`server14.rockhost14.co.uk`, system user `moortownnew_ftp`):
+
+```
+/                                     <- subscription root (FTP root)
+├── httpdocs/                         <- LIVE SITE — NEVER TOUCH
+└── new.moortownbaptistchurch.org.uk/ <- SANDBOX docroot
+    └── wp-content/themes/            <- Plesk Git deploy target
+        └── generatepress-child/
+```
+
+- **SSH:** blocked. Port 22 times out from John's IP; ticket raised with
+  Rockhost 14 Oct 2026, no reply yet. Even when fixed, the shell is
+  chrooted. Do not plan work that depends on SSH or remote WP-CLI.
+- **FTPS (lftp):** works on port 21. Credentials in `~/.netrc` (never print
+  them). Use for read-only inspection; deploy via git, not FTP.
+  ```bash
+  /usr/bin/lftp -e 'set ftp:ssl-force true; set ftp:ssl-protect-data true; cls -l /new.moortownbaptistchurch.org.uk/wp-content/themes/; bye' server14.rockhost14.co.uk
+  ```
+  Any FTP write or delete: ask John first. Any path under `/httpdocs/`:
+  never, not even read-only.
+- **Backups:** Plesk subscription backup taken 14 Oct 2026 (covers live and
+  sandbox). Its `.pki/nssdb` permission warning is harmless.
 
 ## Content and site config: REST API
 
-No SSH to the server yet (Rockhost firewall), and the Plesk SSH shell is
-chrooted. Pages, menus and settings are managed via the WordPress REST API.
+Pages, menus and settings are managed via the WordPress REST API.
 
 - Credentials: `~/.config/mbc/wp.env` (WP_URL, WP_USER=claude-code,
   WP_APP_PASSWORD). Never print, echo or log the password.
@@ -114,7 +165,11 @@ chrooted. Pages, menus and settings are managed via the WordPress REST API.
 
 - WSL2 Ubuntu on Windows 10 (PLUTO). Windows PATH is NOT imported.
 - Work inside `~/src/`, never under `/mnt/c` or `/mnt/d`.
-- Server: Rockhost shared Plesk, PHP 8.2, Apache + PHP-FPM, WP 7.1.
+- Repo: `~/src/mbc-generatepress-child` (GitHub
+  `JohnDuffy271/mbc-generatepress-child`, SSH auth working).
+- Tools present: git, rsync, ssh, lftp, curl. `sudo` needs John's WSL
+  password, so ask John to run any `apt install` himself.
+- Server: Rockhost shared Plesk, PHP 8.2, Apache 2.4 + PHP-FPM, WP 7.1.
 
 ## Coding conventions
 
@@ -128,24 +183,33 @@ chrooted. Pages, menus and settings are managed via the WordPress REST API.
 
 ## Safety
 
-- Sandbox only. Never call the live site's API or touch its files.
+- Sandbox only. Never call the live site's API or touch its files
+  (`/httpdocs/` on the server).
 - Ask before: installing or removing plugins, changing permalinks,
-  deleting pages or media, editing `.htaccess` or `wp-config.php`.
-- `.htaccess` on the sandbox has a deliberate `SetEnvIf Authorization`
-  line above `# BEGIN WordPress`. Leave it.
+  deleting pages or media, editing any `.htaccess` (site root or repo)
+  or `wp-config.php`, any FTP write or delete.
+- `.htaccess` in the sandbox docroot has a deliberate `SetEnvIf
+  Authorization` line above `# BEGIN WordPress`. Leave it.
 
 ## Status (Oct 2026)
 
 - [x] Toolchain: WSL, Claude Code, GitHub SSH, push-to-deploy, REST auth
-- [ ] Wireframe detail screenshots from Andy's Canva (in `docs/wireframes/`)
+- [x] Push-to-deploy verified end to end (14 Oct 2026)
+- [x] Web exposure audit: repo artefacts and `docs/` return 403;
+      `mbc_git.zip` removed (14 Oct 2026)
+- [x] Old layout tagged `split-layout-final` (1007816)
+- [x] FTPS read access via lftp
+- [ ] SSH access — awaiting Rockhost (not blocking)
+- [ ] Wireframe detail screenshots from Andy's Canva (7 overview PNGs
+      already in `docs/wireframes/`)
 - [x] E2E smoke test passed (13 Oct 2026): `css/tokens.css` enqueued,
       `page-templates/e2e-test.php`, test page ID 620 (`mbc-e2e-test`) —
       remove before launch (ask first)
 - [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
-- [ ] Install `php-cli` in WSL for linting (needs John to run sudo in a terminal)
+- [ ] Install `php-cli` in WSL for linting (John to run:
+      `/usr/bin/sudo /usr/bin/apt install -y php-cli`)
 - [ ] Header, footer, accordion/dropdown menu with non-linking parents
 - [ ] Four page templates
 - [ ] Idempotent scaffold script: pages, hierarchy, menu
 - [ ] Content migration from live site (via its public REST API, read-only)
 - [ ] Contact form plugin decision
-- [ ] SSH whitelist ticket with Rockhost (non-blocking)
