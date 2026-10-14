@@ -1,0 +1,79 @@
+/*
+ * MBC block pattern styles (front page hero and zigzag bands, and the
+ * patterns that follow). Tokens only (css/tokens.css). Also loaded in the
+ * block editor.
+ */
+
+/* ---- Hero ---- */
+.mbc-hero {
+	max-width: var(--mbc-content-width);
+	margin: 0 auto;
+	padding: var(--mbc-space-3xl) var(--mbc-gutter);
+	background: var(--mbc-surface);
+	text-align: center;
+}
+
+.mbc-hero h1 {
+	margin-bottom: var(--mbc-space-s);
+}
+
+.mbc-hero__tagline {
+	font-size: var(--mbc-step-2);
+	line-height: var(--mbc-leading-heading);
+}
+
+.mbc-hero__buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--mbc-space-s);
+	margin: var(--mbc-space-xl) 0;
+}
+
+.mbc-hero__small {
+	margin: 0;
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step--1);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+/* ---- Zigzag bands (core Media & Text) ---- */
+.mbc-band {
+	max-width: var(--mbc-content-width);
+	margin: 0 auto;
+	background: var(--mbc-surface);
+	border-top: var(--mbc-border-width) solid var(--mbc-border);
+	align-items: center;
+}
+
+.mbc-band .wp-block-media-text__content {
+	padding: var(--mbc-space-xl) var(--mbc-gutter);
+}
+
+.mbc-band .wp-block-media-text__media {
+	padding: var(--mbc-space-m);
+}
+
+.mbc-band .wp-block-media-text__media img {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-band h2 {
+	font-size: var(--mbc-step-4);
+}
+
+/* Social icons take the text colour, not the brand colours core gives them. */
+html body .mbc-band__social .wp-social-link,
+html body .mbc-band__social .wp-social-link a {
+	background: none;
+	color: var(--mbc-text);
+}
+
+.mbc-band__social {
+	margin-bottom: var(--mbc-space-m);
+}

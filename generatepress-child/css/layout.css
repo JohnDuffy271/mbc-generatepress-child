@@ -1,0 +1,7 @@
+/* MBC page layout wrappers. Tokens only (css/tokens.css). */
+
+/* GeneratePress opens a flex .site-content in header.php; our templates sit in it. */
+.mbc-front {
+	flex: 1 1 100%;
+	min-width: 0;
+}

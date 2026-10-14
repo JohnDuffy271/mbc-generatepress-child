@@ -74,6 +74,8 @@ function mbc_enqueue_layout_assets() {
     $uri = get_stylesheet_directory_uri();
 
     wp_enqueue_style( 'mbc-header', $uri . '/css/header.css', array( 'mbc-base' ), filemtime( $dir . '/css/header.css' ) );
+    wp_enqueue_style( 'mbc-layout', $uri . '/css/layout.css', array( 'mbc-base' ), filemtime( $dir . '/css/layout.css' ) );
+    wp_enqueue_style( 'mbc-patterns', $uri . '/css/patterns.css', array( 'mbc-base' ), filemtime( $dir . '/css/patterns.css' ) );
     wp_enqueue_style( 'mbc-footer', $uri . '/css/footer.css', array( 'mbc-base' ), filemtime( $dir . '/css/footer.css' ) );
     wp_enqueue_script(
         'mbc-navigation',
@@ -84,4 +86,18 @@ function mbc_enqueue_layout_assets() {
     );
     // GeneratePress's own menu script is not used.
     wp_dequeue_script( 'generate-menu' );
+}
+
+// Block patterns live in patterns/*.php (registered by WordPress from their
+// file headers); this adds their "MBC" category.
+add_action( 'init', 'mbc_register_pattern_category' );
+function mbc_register_pattern_category() {
+    register_block_pattern_category( 'mbc', array( 'label' => __( 'MBC', 'generatepress-child' ) ) );
+}
+
+// The block editor uses the same tokens and styles as the front end.
+add_action( 'after_setup_theme', 'mbc_editor_styles' );
+function mbc_editor_styles() {
+    add_theme_support( 'editor-styles' );
+    add_editor_style( array( 'css/tokens.css', 'css/base.css', 'css/patterns.css' ) );
 }
