@@ -37,8 +37,12 @@ Same header and footer on every page.
 
 ### Wireframe layout (homepage)
 
-- Header: logo left, nav right. Burger menu at tablet and below; menu opens
-  as a full-width accordion list with chevrons on parent items.
+- Header: logo left, nav right. Burger below 1024px (tablet and mobile);
+  inline nav with dropdowns from 1024px. Per Andy's notes (wireframe
+  `07-Notes.png`) the menu covers the whole screen on tablet and mobile;
+  items with submenus get a chevron; tapping one *replaces* the menu with
+  its children (drill-down, not an accordion) and a Back button replaces
+  the logo to go up a level.
 - Hero: church name, tagline, three buttons, a line of small text.
 - Four alternating image/text bands (zigzag): About Us, Sunday Mornings,
   More at Moortown, Get in touch (with social icons). Each band has a button.
@@ -243,12 +247,16 @@ Pages, menus and settings are managed via the WordPress REST API.
       longer in the menu; when it is retired, remove the page, include,
       CSS and the `functions.php` lines together.
 - [ ] Home (182) is blank (no template) until the new front page exists.
-- [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
+- [x] `tokens.css` neutral placeholder tokens + `css/base.css` (tokens
+      only). Real brand tokens follow the branding exercise.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
-- [ ] Header, footer, accordion/dropdown menu with non-linking parents.
-      Menu items with class `mbc-menu-toggle` (the four parents, URL `#`)
-      must render as `<button aria-expanded>` elements, not links.
+- [ ] Header and footer (built 15 Oct 2026; tick once checked on a phone
+      and with the Playwright suite): drill-down mobile menu, dropdowns,
+      MC4WP footer form 206, `footer` menu location. Menu items with class
+      `mbc-menu-toggle` (the four parents, URL `#`) render as
+      `<button aria-expanded aria-controls>`, never links. See "Header and
+      footer architecture" below.
 - [ ] Four page templates: `page-templates/info.php`, `activity.php`,
       `mission-partner.php`, `listing.php`. Then re-run
       `bin/scaffold_site.py --apply`: it assigns templates only when the
@@ -267,8 +275,39 @@ Pages, menus and settings are managed via the WordPress REST API.
       A live-old → new map is still needed, built read-only from the live
       site's public REST API; this needs a narrow exception to the
       protect-live hook at that point.
-- [ ] Search indexing: the sandbox is currently indexable (`blog_public`
-      = 1: no `noindex`, permissive robots.txt). Decide whether to
-      discourage search engines while it is a sandbox (John's call).
 - [ ] Content migration from live site (via its public REST API, read-only)
 - [ ] Contact form plugin decision
+
+## Header and footer architecture
+
+- `template-parts/header.php` and `template-parts/footer.php` are rendered
+  by `inc/layout.php`, which on `wp` (priority 100) calls
+  `remove_all_actions()` on `generate_header` and `generate_footer` and
+  adds its own renderers. **Deliberate:** anything else hooked to those
+  two actions (GeneratePress's header/footer/footer widgets, Elementor Pro
+  Theme Builder header/footer, any plugin) will not render. GP still owns
+  `<head>`, `wp_body_open`, the skip link and body classes.
+- Elementor footer template #208 ("Entire site") is bypassed, not deleted
+  or edited. Never delete Elementor templates without asking.
+- Menu locations: `primary` (header) and `footer` (small links, depth 1;
+  assign a menu in wp-admin, nothing renders until one is assigned).
+- Menu items with class `mbc-menu-toggle` must render as
+  `<button aria-expanded aria-controls>` (`inc/class-mbc-nav-walker.php`).
+- The 1024px nav breakpoint is the single `@media` in `css/header.css`
+  (documented in `tokens.css`); `js/navigation.js` detects "mobile" by
+  whether the burger is displayed. Transitions sit inside
+  `prefers-reduced-motion: no-preference`.
+- Site facts (address, charity number, social URLs, MC4WP form ID 206) are
+  in `inc/site-info.php`. The canonical YouTube URL is
+  `https://www.youtube.com/@MoortownBaptistChurch`; keep
+  `YOUTUBE_URL` in `bin/scaffold_site.py` in step.
+
+## Cutover checklist (before launch)
+
+- [ ] Untick "Discourage search engines" (Settings → Reading). Currently
+      set on the sandbox (`noindex, nofollow`).
+- [ ] Privacy Notice and Cookies pages published and linked in the footer
+      menu. The newsletter signup collects email addresses, so a privacy
+      notice is required before launch (page 3 `privacy-policy` is a draft).
+- [ ] Live-old → new redirect map (see Status).
+- [ ] Remove the E2E test page 620 (ask first).

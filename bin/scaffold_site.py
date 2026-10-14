@@ -21,7 +21,7 @@ DOCS = REPO / "docs"
 SNAPSHOT = DOCS / "url-snapshot.json"
 REPORT = DOCS / "url-changes.md"
 
-YOUTUBE_URL = "https://www.youtube.com/channel/UCoWpfG51baXnRz0Szh_VRRg"
+YOUTUBE_URL = "https://www.youtube.com/@MoortownBaptistChurch"  # keep in step with inc/site-info.php
 MENU_NAME = "Primary"
 MENU_LOCATION = "primary"
 TOGGLE_CLASS = "mbc-menu-toggle"
