@@ -1,0 +1,340 @@
+/*
+ * MBC header. Tokens only (css/tokens.css).
+ *
+ * Mobile-first. Below the desktop breakpoint the nav is a full-screen panel
+ * opened by the burger; a parent item drills down to its children and Back
+ * replaces the logo. The desktop breakpoint (1024px) appears ONCE, in the
+ * single @media query at the bottom of this file.
+ */
+
+.mbc-header {
+	position: sticky;
+	top: var(--wp-admin--admin-bar--height, 0px);
+	z-index: var(--mbc-z-header);
+	background: var(--mbc-surface);
+	border-bottom: 1px solid var(--mbc-border);
+}
+
+.mbc-header__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--mbc-space-m);
+	height: var(--mbc-header-height);
+	max-width: var(--mbc-content-width);
+	margin: 0 auto;
+	padding: 0 var(--mbc-gutter);
+}
+
+.mbc-header__brand {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+	color: var(--mbc-text);
+	text-decoration: none;
+}
+
+.mbc-header__logo {
+	display: block;
+	width: auto;
+	max-height: calc(var(--mbc-header-height) - 2 * var(--mbc-space-xs));
+}
+
+.mbc-header__name {
+	font-family: var(--mbc-font-heading);
+	font-size: var(--mbc-step-1);
+	font-weight: var(--mbc-weight-strong);
+	line-height: var(--mbc-leading-heading);
+}
+
+/* Back replaces the logo while a submenu is open (mobile only). */
+.mbc-header__back {
+	display: none;
+	align-items: center;
+	gap: var(--mbc-space-2xs);
+	min-height: var(--mbc-tap-target);
+	padding: 0 var(--mbc-space-s);
+	border: 0;
+	background: none;
+	color: var(--mbc-text);
+	font: inherit;
+	font-weight: var(--mbc-weight-strong);
+	cursor: pointer;
+}
+
+.mbc-header.is-drilled .mbc-header__brand {
+	display: none;
+}
+
+.mbc-header.is-drilled .mbc-header__back {
+	display: inline-flex;
+}
+
+/* Burger: hidden without JS (the nav is then a plain list). */
+.mbc-header__burger {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--mbc-tap-target);
+	height: var(--mbc-tap-target);
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--mbc-text);
+	cursor: pointer;
+}
+
+.mbc-js .mbc-header__burger {
+	display: inline-flex;
+}
+
+.mbc-burger-icon,
+.mbc-burger-icon::before,
+.mbc-burger-icon::after {
+	display: block;
+	width: 1.5rem;
+	height: 2px;
+	background: currentColor;
+}
+
+.mbc-burger-icon {
+	position: relative;
+}
+
+.mbc-burger-icon::before,
+.mbc-burger-icon::after {
+	content: "";
+	position: absolute;
+	left: 0;
+}
+
+.mbc-burger-icon::before { top: -0.45rem; }
+.mbc-burger-icon::after { top: 0.45rem; }
+
+.mbc-header__burger[aria-expanded="true"] .mbc-burger-icon {
+	background: transparent;
+}
+
+.mbc-header__burger[aria-expanded="true"] .mbc-burger-icon::before {
+	top: 0;
+	transform: rotate(45deg);
+}
+
+.mbc-header__burger[aria-expanded="true"] .mbc-burger-icon::after {
+	top: 0;
+	transform: rotate(-45deg);
+}
+
+/* Navigation: full-screen panel below the bar (mobile and tablet). */
+.mbc-nav {
+	position: fixed;
+	inset: calc(var(--wp-admin--admin-bar--height, 0px) + var(--mbc-header-height)) 0 0 0;
+	overflow-y: auto;
+	background: var(--mbc-surface);
+}
+
+.mbc-js .mbc-nav {
+	display: none;
+}
+
+.mbc-js .mbc-nav.is-open {
+	display: block;
+}
+
+html.mbc-menu-open {
+	overflow: hidden;
+}
+
+.mbc-menu,
+.mbc-menu .sub-menu {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mbc-menu a,
+.mbc-menu .mbc-toggle {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: calc(var(--mbc-tap-target) + var(--mbc-space-s));
+	padding: var(--mbc-space-xs) var(--mbc-space-2xl);
+	border: 0;
+	border-bottom: 1px solid var(--mbc-border);
+	background: none;
+	color: var(--mbc-text);
+	font: inherit;
+	font-weight: var(--mbc-weight-strong);
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.mbc-menu a:hover,
+.mbc-menu .mbc-toggle:hover {
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-menu .mbc-chevron {
+	position: absolute;
+	right: var(--mbc-gutter);
+	top: 50%;
+	translate: 0 -50%;
+}
+
+/* Submenus: closed until opened (no JS: always listed). */
+.mbc-js .mbc-menu .sub-menu {
+	display: none;
+}
+
+.mbc-js .mbc-menu .is-open > .sub-menu {
+	display: block;
+}
+
+/* Drill-down: only the open parent's children are shown. */
+.mbc-nav.is-drilled .mbc-menu > li:not(.is-open) {
+	display: none;
+}
+
+.mbc-nav.is-drilled .mbc-menu > li.is-open > .mbc-toggle {
+	display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes mbc-slide-in {
+		from {
+			opacity: 0;
+			transform: translateX(var(--mbc-space-l));
+		}
+
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@keyframes mbc-drop-in {
+		from {
+			opacity: 0;
+			transform: translateY(calc(-1 * var(--mbc-space-xs)));
+		}
+
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	.mbc-js .mbc-menu .is-open > .sub-menu {
+		animation: mbc-slide-in var(--mbc-duration) var(--mbc-ease);
+	}
+
+	.mbc-menu .mbc-chevron {
+		transition: rotate var(--mbc-duration) var(--mbc-ease);
+	}
+}
+
+/* ---- Desktop: inline nav with dropdowns (the ONE breakpoint, 1024px) ---- */
+@media (min-width: 1024px) {
+	.mbc-js .mbc-header__burger,
+	.mbc-header__back,
+	.mbc-header.is-drilled .mbc-header__back {
+		display: none;
+	}
+
+	.mbc-header.is-drilled .mbc-header__brand {
+		display: inline-flex;
+	}
+
+	html.mbc-menu-open {
+		overflow: visible;
+	}
+
+	.mbc-nav,
+	.mbc-js .mbc-nav,
+	.mbc-js .mbc-nav.is-open {
+		position: static;
+		display: block;
+		overflow: visible;
+		background: none;
+	}
+
+	.mbc-menu {
+		display: flex;
+		align-items: center;
+		gap: var(--mbc-space-2xs);
+	}
+
+	.mbc-nav.is-drilled .mbc-menu > li:not(.is-open),
+	.mbc-nav.is-drilled .mbc-menu > li.is-open > .mbc-toggle {
+		display: block;
+	}
+
+	.mbc-menu > li {
+		position: relative;
+	}
+
+	.mbc-menu a,
+	.mbc-menu .mbc-toggle {
+		width: auto;
+		min-height: var(--mbc-tap-target);
+		padding: var(--mbc-space-2xs) var(--mbc-space-m);
+		border: 0;
+		border-radius: var(--mbc-radius-md);
+		white-space: nowrap;
+	}
+
+	.mbc-menu .mbc-toggle {
+		gap: var(--mbc-space-2xs);
+	}
+
+	.mbc-menu .mbc-chevron {
+		position: static;
+		translate: none;
+		rotate: 90deg;
+	}
+
+	.mbc-menu .mbc-toggle[aria-expanded="true"] .mbc-chevron {
+		rotate: -90deg;
+	}
+
+	.mbc-menu .sub-menu,
+	.mbc-js .mbc-menu .sub-menu {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		z-index: var(--mbc-z-menu);
+		display: none;
+		min-width: 16rem;
+		padding: var(--mbc-space-xs);
+		border: 1px solid var(--mbc-border);
+		border-radius: var(--mbc-radius-md);
+		background: var(--mbc-surface);
+	}
+
+	.mbc-js .mbc-menu .is-open > .sub-menu {
+		display: block;
+		animation: none;
+	}
+
+	.mbc-menu .sub-menu a {
+		justify-content: flex-start;
+		text-align: left;
+		white-space: normal;
+	}
+
+	/* Without JS: reveal on hover or keyboard focus. */
+	html:not(.mbc-js) .mbc-menu li:hover > .sub-menu,
+	html:not(.mbc-js) .mbc-menu li:focus-within > .sub-menu {
+		display: block;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.mbc-js .mbc-menu .is-open > .sub-menu {
+			animation: mbc-drop-in var(--mbc-duration) var(--mbc-ease);
+		}
+	}
+}

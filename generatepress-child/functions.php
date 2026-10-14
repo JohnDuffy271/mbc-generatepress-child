@@ -4,12 +4,17 @@
  * Moortown Baptist Church
  *
  * All design values live in css/tokens.css. Nothing in here sets colours,
- * fonts or spacing.
+ * fonts or spacing. Layout (header, menus, assets) is in inc/layout.php.
  */
 
+defined( 'ABSPATH' ) || exit;
+
+require_once get_stylesheet_directory() . '/inc/site-info.php';
+require_once get_stylesheet_directory() . '/inc/class-mbc-nav-walker.php';
+require_once get_stylesheet_directory() . '/inc/layout.php';
+
 // YouTube feed shortcode [mbc_youtube_feed]. Still used by the legacy
-// "Services on YouTube" page (ID 350); remove once that page becomes an
-// external link.
+// "Services on YouTube" page (ID 350); remove once that page is retired.
 require_once get_stylesheet_directory() . '/includes/mbc-youtube-feed.php';
 
 add_action( 'wp_enqueue_scripts', 'mbc_child_enqueue_styles' );
@@ -43,11 +48,4 @@ function mbc_child_enqueue_styles() {
         array( 'mbc-tokens' ),
         filemtime( get_stylesheet_directory() . '/assets/css/mbc-youtube-feed.css' )
     );
-}
-
-add_action( 'after_setup_theme', 'mbc_register_menus' );
-function mbc_register_menus() {
-    register_nav_menus( array(
-        'primary' => __( 'Primary Navigation', 'generatepress-child' ),
-    ) );
 }
