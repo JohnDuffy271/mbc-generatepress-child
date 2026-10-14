@@ -109,6 +109,12 @@ Consequences of deploying the repo root into `themes/`:
   /usr/bin/curl -s -o /dev/null -w '%{http_code}\n' "https://new.moortownbaptistchurch.org.uk/wp-content/themes/<path>"
   ```
 
+Deploy semantics (verified 14 Oct 2026): Plesk Git **deletes tracked files
+that are removed from git**, leaving no orphans. It never touches
+**untracked** files on the server, so anything uploaded manually (FTP,
+file manager) must be removed manually. Check with a read-only lftp
+listing after removals.
+
 Other rules:
 
 - Commit small, with meaningful messages (not "Aligning Headers" ×4).
@@ -225,6 +231,16 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [x] E2E smoke test passed (13 Oct 2026): `css/tokens.css` enqueued,
       `page-templates/e2e-test.php`, test page ID 620 (`mbc-e2e-test`) —
       remove before launch (ask first)
+- [x] Old-build clean-out (14 Oct 2026): old templates, includes, assets
+      removed; `functions.php` trimmed; three stray server files deleted;
+      pages 62, 326, 574 trashed and 8, 54, 556 drafted
+      (`bin/cleanup-pages.sh`). Parent theme declares title-tag,
+      post-thumbnails and html5, so the child does not.
+- [ ] YouTube feed (`includes/mbc-youtube-feed.php`,
+      `assets/css/mbc-youtube-feed.css`, shortcode `[mbc_youtube_feed]`)
+      stays until page 350 becomes an external menu link; then remove the
+      page, include, CSS and the `functions.php` lines together.
+- [ ] Home (182) is blank (no template) until the new front page exists.
 - [ ] `tokens.css` real tokens + base styles (currently only a placeholder)
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
