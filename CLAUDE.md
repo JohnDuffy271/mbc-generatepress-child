@@ -120,26 +120,36 @@ Other rules:
 ## Server layout and file access
 
 Sandbox and live share ONE Plesk subscription on Rockhost
-(`server14.rockhost14.co.uk`, system user `moortownnew_ftp`):
+(`server14.rockhost14.co.uk`). The subscription root holds the live
+docroot (`httpdocs/` — NEVER TOUCH) and the sandbox docroot. Claude Code
+only has the sandbox:
+
+- **FTP account `mbcsandbox`** is chrooted to the sandbox docroot, so the
+  live site is not reachable with it. Paths start at the docroot:
 
 ```
-/                                     <- subscription root (FTP root)
-├── httpdocs/                         <- LIVE SITE — NEVER TOUCH
-└── new.moortownbaptistchurch.org.uk/ <- SANDBOX docroot
-    └── wp-content/themes/            <- Plesk Git deploy target
+/                          <- sandbox docroot (FTP root for mbcsandbox)
+└── wp-content/
+    └── themes/            <- Plesk Git deploy target
         └── generatepress-child/
 ```
+
+- **Guard hook:** a PreToolUse hook (`~/.claude/hooks/protect-live.py`)
+  blocks any shell command, file path or URL that references `httpdocs`
+  or the bare live domain. It checks commands and paths, not file content,
+  so documentation may name them. Shell commands must never reference
+  them. If the hook blocks something, do not work around it; tell John.
 
 - **SSH:** blocked. Port 22 times out from John's IP; ticket raised with
   Rockhost 14 Oct 2026, no reply yet. Even when fixed, the shell is
   chrooted. Do not plan work that depends on SSH or remote WP-CLI.
-- **FTPS (lftp):** works on port 21. Credentials in `~/.netrc` (never print
-  them). Use for read-only inspection; deploy via git, not FTP.
+- **FTPS (lftp):** works on port 21 as `mbcsandbox`. Credentials in
+  `~/.netrc` (never print them). Use for read-only inspection; deploy via
+  git, not FTP.
   ```bash
-  /usr/bin/lftp -e 'set ftp:ssl-force true; set ftp:ssl-protect-data true; cls -l /new.moortownbaptistchurch.org.uk/wp-content/themes/; bye' server14.rockhost14.co.uk
+  /usr/bin/lftp -e 'set ftp:ssl-force true; set ftp:ssl-protect-data true; cls -l /wp-content/themes/; bye' server14.rockhost14.co.uk
   ```
-  Any FTP write or delete: ask John first. Any path under `/httpdocs/`:
-  never, not even read-only.
+  Any FTP write or delete: ask John first.
 - **Backups:** Plesk subscription backup taken 14 Oct 2026 (covers live and
   sandbox). Its `.pki/nssdb` permission warning is harmless.
 
