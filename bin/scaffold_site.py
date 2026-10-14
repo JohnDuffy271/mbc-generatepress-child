@@ -10,6 +10,7 @@ import base64
 import html
 import json
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -119,9 +120,11 @@ class WP:
         if params:
             url += "?" + urllib.parse.urlencode(params)
         data = json.dumps(body).encode() if body is not None else None
+        if method != "GET":  # be gentle: one second between writes
+            time.sleep(1.0)
         req = urllib.request.Request(url, data=data, method=method)
         req.add_header("Authorization", self.auth)
-        req.add_header("User-Agent", "mbc-scaffold/1.0")
+        req.add_header("User-Agent", "MBC-scaffold/1.0 (John, Moortown Baptist Church)")
         if data is not None:
             req.add_header("Content-Type", "application/json")
         try:
@@ -142,7 +145,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 def probe(url):
     """Return (status, redirect target) without following redirects."""
     opener = urllib.request.build_opener(NoRedirect)
-    req = urllib.request.Request(url, headers={"User-Agent": "mbc-scaffold/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "MBC-scaffold/1.0 (John, Moortown Baptist Church)"})
     try:
         with opener.open(req, timeout=30) as resp:
             return resp.status, ""

@@ -328,6 +328,17 @@ Pages, menus and settings are managed via the WordPress REST API.
       protect-live hook at that point.
 - [ ] Content migration from live site (via its public REST API, read-only)
 - [ ] Contact form plugin decision
+- [ ] Newsletter builder (open item, no action yet): John has custom
+      PHP/HTML code that builds a Mailchimp newsletter from posts. It must
+      be reviewed and adapted for the new build before cutover (category
+      IDs and post markup will differ). John will share the code in a later
+      session.
+      Known design flaw to fix in the rebuild: the current newsletter links
+      to a *live* post list, so posts added after sending change what
+      readers see. Each issue should be a fixed snapshot. Options to
+      discuss: freeze by send time (a cut-off date stored per issue), a
+      per-issue tag or category, content baked into the email itself, or a
+      per-issue archive page.
 
 ## Header and footer architecture
 
@@ -388,6 +399,8 @@ contrast check reports it as informational only.
       '__return_false' )`) or keep only the chosen look's file, and remove
       the others.
 - [ ] Remove the `/style-guide` page (ID 668, ask first).
+- [ ] Newsletter builder code reviewed and adapted for the new build
+      (category IDs and post markup differ from the old site).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
 - [ ] Privacy Notice and Cookies pages published and linked in the footer
