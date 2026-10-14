@@ -13,6 +13,7 @@ require_once get_stylesheet_directory() . '/inc/site-info.php';
 require_once get_stylesheet_directory() . '/inc/class-mbc-nav-walker.php';
 require_once get_stylesheet_directory() . '/inc/layout.php';
 require_once get_stylesheet_directory() . '/inc/looks.php';
+require_once get_stylesheet_directory() . '/inc/demo-import.php'; // TEMPORARY: remove before launch.
 
 // YouTube feed shortcode [mbc_youtube_feed]. Still used by the legacy
 // "Services on YouTube" page (ID 350); remove once that page is retired.

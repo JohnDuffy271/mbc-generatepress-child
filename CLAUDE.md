@@ -219,6 +219,14 @@ Pages, menus and settings are managed via the WordPress REST API.
 
 - Sandbox only. Never call the live site's API or touch its files
   (`/httpdocs/` on the server).
+  **One exception, read-only:** `bin/import_live_posts.py` may make
+  unauthenticated GET requests to the live site's public REST API
+  (`posts`, `categories`, `media`) and to `/wp-content/uploads/` files, to
+  import demo posts into the sandbox. It has no code path that can POST,
+  PUT, PATCH or DELETE to live, sends no credentials, and `--self-test`
+  checks this statically. The exception covers that one script only: any
+  other live access (including ad-hoc probes) needs John's explicit say-so
+  first. Run it as a script file, never with direct curl against live.
 - Ask before: installing or removing plugins, changing permalinks,
   deleting pages or media, editing any `.htaccess` (site root or repo)
   or `wp-config.php`, any FTP write or delete.
