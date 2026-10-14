@@ -20,6 +20,12 @@
 	--mbc-footer-text: #fbf6ee;
 	--mbc-footer-border: #6b5a49;
 	--mbc-footer-focus: #fbf6ee;
+	--mbc-footer-button-bg: #fbf6ee;
+	--mbc-footer-button-text: #3b2f26;
+	--mbc-footer-button-border: #fbf6ee;
+	--mbc-footer-button-hover-bg: #fbf6ee;
+	--mbc-footer-button-hover-text: #3b2f26;
+	--mbc-footer-button-hover-border: #fbf6ee;
 	--mbc-input-bg: #ffffff;
 	--mbc-input-text: #3b2f26;
 	--mbc-input-border: #8c7a66;

@@ -87,6 +87,20 @@
 	letter-spacing: 0.05em;
 }
 
+/* Buttons on the footer's inverse surface */
+html body .mbc-footer input[type="submit"] {
+	border-color: var(--mbc-footer-button-border);
+	background: var(--mbc-footer-button-bg);
+	color: var(--mbc-footer-button-text);
+}
+
+html body .mbc-footer input[type="submit"]:hover,
+html body .mbc-footer input[type="submit"]:focus {
+	border-color: var(--mbc-footer-button-hover-border);
+	background: var(--mbc-footer-button-hover-bg);
+	color: var(--mbc-footer-button-hover-text);
+}
+
 /* MC4WP form */
 .mbc-footer .mc4wp-form input[type="email"],
 .mbc-footer .mc4wp-form input[type="text"] {

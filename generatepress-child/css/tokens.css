@@ -53,6 +53,12 @@
 	--mbc-footer-text: var(--mbc-text-inverse);
 	--mbc-footer-border: var(--mbc-grey-700);
 	--mbc-footer-focus: var(--mbc-grey-50);
+	--mbc-footer-button-bg: var(--mbc-grey-50);
+	--mbc-footer-button-text: var(--mbc-grey-900);
+	--mbc-footer-button-border: var(--mbc-grey-50);
+	--mbc-footer-button-hover-bg: var(--mbc-accent);
+	--mbc-footer-button-hover-text: var(--mbc-accent-contrast);
+	--mbc-footer-button-hover-border: var(--mbc-accent);
 	--mbc-input-bg: var(--mbc-surface);
 	--mbc-input-text: var(--mbc-text);
 	--mbc-input-border: var(--mbc-grey-500);

@@ -23,6 +23,12 @@
 	--mbc-footer-text: #ffffff;
 	--mbc-footer-border: #ffffff;
 	--mbc-footer-focus: #ffffff;
+	--mbc-footer-button-bg: #ffffff;
+	--mbc-footer-button-text: #000000;
+	--mbc-footer-button-border: #ffffff;
+	--mbc-footer-button-hover-bg: #ffff99;
+	--mbc-footer-button-hover-text: #000000;
+	--mbc-footer-button-hover-border: #ffff99;
 	--mbc-input-bg: #ffffff;
 	--mbc-input-text: #000000;
 	--mbc-input-border: #000000;
