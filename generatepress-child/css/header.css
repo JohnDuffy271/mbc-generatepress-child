@@ -62,6 +62,17 @@
 	cursor: pointer;
 }
 
+/* GeneratePress styles bare button:hover/:focus (a dark fill); keep ours. */
+.mbc-header__back:hover,
+.mbc-header__back:focus,
+.mbc-header__back:active,
+.mbc-header__burger:hover,
+.mbc-header__burger:focus,
+.mbc-header__burger:active {
+	background: none;
+	color: var(--mbc-text);
+}
+
 .mbc-header.is-drilled .mbc-header__brand {
 	display: none;
 }

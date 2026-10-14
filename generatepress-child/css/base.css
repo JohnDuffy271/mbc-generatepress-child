@@ -69,10 +69,13 @@ a:hover {
 	border: 0;
 }
 
-/* Buttons: <a> or <button> with .mbc-button */
+/*
+ * Buttons: <a> or <button> with .mbc-button, and form submits (MC4WP etc).
+ * "html body" lifts specificity above GeneratePress's own button rules.
+ */
 .mbc-button,
 button.mbc-button,
-input[type="submit"] {
+html body input[type="submit"] {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -90,7 +93,8 @@ input[type="submit"] {
 }
 
 .mbc-button:hover,
-input[type="submit"]:hover {
+html body input[type="submit"]:hover,
+html body input[type="submit"]:focus {
 	background: var(--mbc-grey-900);
 	border-color: var(--mbc-grey-900);
 	color: var(--mbc-text-inverse);
