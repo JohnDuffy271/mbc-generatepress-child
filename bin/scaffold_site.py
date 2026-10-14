@@ -447,7 +447,7 @@ def main():
             new = path_of(page["link"], base) if page else "(trashed)"
             if page and "?page_id=" in page["link"]:
                 new = "(draft)"
-            if old != new:
+            if old.rstrip("/") != new.rstrip("/"):  # trailing slash alone is not a change
                 status, loc = probe(base + old)
                 rows.append((old, new, status, path_of(loc, base) if loc else ""))
         bad = [(p["id"], p["link"]) for p in pages.values()

@@ -385,6 +385,24 @@ Pages, menus and settings are managed via the WordPress REST API.
   `bin/scaffold_site.py` in step with `youtube_services_url`. If a services
   playlist is created later, point `youtube_services_url` at it.
 
+## Permalinks
+
+Decision (15 Oct 2026, approved by John): the sandbox uses the live site's
+structure, `/%postname%/` (checked from the live posts' `link` fields:
+e.g. `/harvest-festival-sunday-october-4th/`, trailing slash). It was
+`/archives/%post_id%` (numeric). It was set from git with a one-shot
+(REST cannot change `permalink_structure`; there is no SSH or WP-CLI), with
+a soft rewrite flush that leaves `.htaccess` alone; that file has since been
+removed. All 42 published pages and posts returned 200 afterwards;
+slash-less URLs and `?p=ID` 301 to the new form; only the retired
+`/archives/ID` form 404s (nothing links to it). Imported demo posts now sit
+at exactly their live URLs. Do not change the structure again without
+asking.
+
+Pages are hierarchical (`/about-us/who-we-are/`), whereas live pages are
+mostly flat at the root, so the live-old → new redirect map is still needed
+(see Status).
+
 ## Looks (alternate token sets)
 
 A look is a CSS file in `generatepress-child/css/looks/` that overrides
