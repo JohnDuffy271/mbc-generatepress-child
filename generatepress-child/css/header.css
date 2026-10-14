@@ -264,6 +264,15 @@ html.mbc-menu-open {
 		overflow: visible;
 	}
 
+	/* Brand name stays on one line once the inline nav is showing. */
+	.mbc-header__brand {
+		flex-shrink: 0;
+	}
+
+	.mbc-header__name {
+		white-space: nowrap;
+	}
+
 	.mbc-nav,
 	.mbc-js .mbc-nav,
 	.mbc-js .mbc-nav.is-open {

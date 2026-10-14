@@ -32,6 +32,13 @@ function mbc_take_over_layout() {
     add_action( 'generate_footer', 'mbc_render_footer' );
 }
 
+// No sidebar anywhere: the old pages' GP widgets (Search, Recent Posts...)
+// are not part of the design.
+add_filter( 'generate_sidebar_layout', 'mbc_no_sidebar' );
+function mbc_no_sidebar() {
+    return 'no-sidebar';
+}
+
 function mbc_render_header() {
     get_template_part( 'template-parts/header' );
 }
