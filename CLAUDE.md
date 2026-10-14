@@ -341,9 +341,13 @@ Pages, menus and settings are managed via the WordPress REST API.
   whether the burger is displayed. Transitions sit inside
   `prefers-reduced-motion: no-preference`.
 - Site facts (address, charity number, social URLs, MC4WP form ID 206) are
-  in `inc/site-info.php`. The canonical YouTube URL is
-  `https://www.youtube.com/@MoortownBaptistChurch`; keep
-  `YOUTUBE_URL` in `bin/scaffold_site.py` in step.
+  in `inc/site-info.php`. Two YouTube URLs: the channel
+  (`https://www.youtube.com/@MoortownBaptistChurch`, footer icon) and the
+  services link (`.../@MoortownBaptistChurch/streams`, the channel's Live
+  tab, used for the "Services on YouTube" menu item; the channel has no
+  public playlists, checked 16 Oct 2026). Keep `YOUTUBE_SERVICES_URL` in
+  `bin/scaffold_site.py` in step with `youtube_services_url`. If a services
+  playlist is created later, point `youtube_services_url` at it.
 
 ## Looks (alternate token sets)
 

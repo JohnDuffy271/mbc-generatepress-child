@@ -18,7 +18,7 @@ $mbc_logo = mbc_logo_image( 'mbc-footer__logo' );
             </a>
             <ul class="mbc-footer__social">
                 <li><a class="mbc-footer__social-link" href="<?php echo esc_url( $mbc_info['facebook_url'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Facebook', 'generatepress-child' ); ?></a></li>
-                <li><a class="mbc-footer__social-link" href="<?php echo esc_url( $mbc_info['youtube_url'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'YouTube', 'generatepress-child' ); ?></a></li>
+                <li><a class="mbc-footer__social-link" href="<?php echo esc_url( $mbc_info['youtube_channel_url'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'YouTube', 'generatepress-child' ); ?></a></li>
             </ul>
             <address class="mbc-footer__address"><?php echo esc_html( $mbc_info['address'] ); ?></address>
             <p class="mbc-footer__charity">

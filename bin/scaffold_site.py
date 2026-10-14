@@ -21,7 +21,9 @@ DOCS = REPO / "docs"
 SNAPSHOT = DOCS / "url-snapshot.json"
 REPORT = DOCS / "url-changes.md"
 
-YOUTUBE_URL = "https://www.youtube.com/@MoortownBaptistChurch"  # keep in step with inc/site-info.php
+# Services on YouTube = the channel's Live tab (past Sunday service streams).
+# Keep in step with youtube_services_url in inc/site-info.php.
+YOUTUBE_SERVICES_URL = "https://www.youtube.com/@MoortownBaptistChurch/streams"
 MENU_NAME = "Primary"
 MENU_LOCATION = "primary"
 TOGGLE_CLASS = "mbc-menu-toggle"
@@ -123,7 +125,7 @@ class WP:
         if data is not None:
             req.add_header("Content-Type", "application/json")
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=240) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode(errors="replace")[:300]
@@ -346,7 +348,7 @@ def main():
             kslug, _kid, ktitle, _kg = kid[:4]
             if len(kid) > 4:
                 want_item(ktitle, top_item or -1, corder, "external", type="custom",
-                          url=YOUTUBE_URL, classes=[], target="_blank")
+                          url=YOUTUBE_SERVICES_URL, classes=[], target="_blank")
             else:
                 want_item(ktitle, top_item or -1, corder, "page", type="post_type",
                           object="page", object_id=ids[kslug] or 0, classes=[], target="")
