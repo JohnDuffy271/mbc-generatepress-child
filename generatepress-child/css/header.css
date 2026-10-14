@@ -11,8 +11,8 @@
 	position: sticky;
 	top: var(--wp-admin--admin-bar--height, 0px);
 	z-index: var(--mbc-z-header);
-	background: var(--mbc-surface);
-	border-bottom: 1px solid var(--mbc-border);
+	background: var(--mbc-header-bg);
+	border-bottom: var(--mbc-border-width) solid var(--mbc-border);
 }
 
 .mbc-header__bar {
@@ -142,7 +142,7 @@
 	position: fixed;
 	inset: calc(var(--wp-admin--admin-bar--height, 0px) + var(--mbc-header-height)) 0 0 0;
 	overflow-y: auto;
-	background: var(--mbc-surface);
+	background: var(--mbc-header-bg);
 }
 
 .mbc-js .mbc-nav {
@@ -174,7 +174,7 @@ html.mbc-menu-open {
 	min-height: calc(var(--mbc-tap-target) + var(--mbc-space-s));
 	padding: var(--mbc-space-xs) var(--mbc-space-2xl);
 	border: 0;
-	border-bottom: 1px solid var(--mbc-border);
+	border-bottom: var(--mbc-border-width) solid var(--mbc-border);
 	background: none;
 	color: var(--mbc-text);
 	font: inherit;
@@ -186,7 +186,7 @@ html.mbc-menu-open {
 
 .mbc-menu a:hover,
 .mbc-menu .mbc-toggle:hover {
-	background: var(--mbc-surface-alt);
+	background: var(--mbc-hover-bg);
 }
 
 .mbc-menu .mbc-chevron {
@@ -332,9 +332,9 @@ html.mbc-menu-open {
 		display: none;
 		min-width: 16rem;
 		padding: var(--mbc-space-xs);
-		border: 1px solid var(--mbc-border);
+		border: var(--mbc-border-width) solid var(--mbc-border);
 		border-radius: var(--mbc-radius-md);
-		background: var(--mbc-surface);
+		background: var(--mbc-header-bg);
 	}
 
 	.mbc-js .mbc-menu .is-open > .sub-menu {

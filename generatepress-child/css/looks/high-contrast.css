@@ -1,0 +1,30 @@
+/*
+ * Look: high contrast. Overrides token values only: black on white, heavy
+ * borders and focus ring. A placeholder look, not a brand proposal.
+ */
+:root {
+	--mbc-surface: #ffffff;
+	--mbc-surface-alt: #ffffff;
+	--mbc-text: #000000;
+	--mbc-text-muted: #1a1a1a;
+	--mbc-border: #000000;
+	--mbc-border-width: 2px;
+	--mbc-focus-width: 4px;
+	--mbc-link: #0033cc;
+	--mbc-focus: #b00020;
+	--mbc-accent: #000000;
+	--mbc-accent-contrast: #ffffff;
+	--mbc-hover-bg: #ffff99;
+
+	--mbc-button-hover-bg: #ffffff;
+	--mbc-button-hover-text: #000000;
+	--mbc-button-hover-border: #000000;
+	--mbc-footer-bg: #000000;
+	--mbc-footer-text: #ffffff;
+	--mbc-footer-border: #ffffff;
+	--mbc-footer-focus: #ffffff;
+	--mbc-input-bg: #ffffff;
+	--mbc-input-text: #000000;
+	--mbc-input-border: #000000;
+	--mbc-placeholder: #404040;
+}

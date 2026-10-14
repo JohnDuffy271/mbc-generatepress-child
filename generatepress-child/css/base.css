@@ -8,7 +8,7 @@
 
 body {
 	margin: 0;
-	background: var(--mbc-surface);
+	background: var(--mbc-surface-alt);
 	color: var(--mbc-text);
 	font-family: var(--mbc-font-body);
 	font-size: var(--mbc-step-0);
@@ -53,7 +53,7 @@ a:hover {
 }
 
 :focus-visible {
-	outline: 3px solid var(--mbc-focus);
+	outline: var(--mbc-focus-width) solid var(--mbc-focus);
 	outline-offset: 2px;
 }
 
@@ -75,16 +75,17 @@ a:hover {
  */
 .mbc-button,
 button.mbc-button,
+html body .wp-block-button__link,
 html body input[type="submit"] {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	min-height: var(--mbc-tap-target);
 	padding: var(--mbc-space-xs) var(--mbc-space-l);
-	border: 2px solid var(--mbc-accent);
+	border: 2px solid var(--mbc-button-border);
 	border-radius: var(--mbc-radius-pill);
-	background: var(--mbc-accent);
-	color: var(--mbc-accent-contrast);
+	background: var(--mbc-button-bg);
+	color: var(--mbc-button-text);
 	font: inherit;
 	font-weight: var(--mbc-weight-strong);
 	line-height: 1.2;
@@ -93,14 +94,51 @@ html body input[type="submit"] {
 }
 
 .mbc-button:hover,
+html body .wp-block-button__link:hover,
 html body input[type="submit"]:hover,
 html body input[type="submit"]:focus {
-	background: var(--mbc-grey-900);
-	border-color: var(--mbc-grey-900);
-	color: var(--mbc-text-inverse);
+	background: var(--mbc-button-hover-bg);
+	border-color: var(--mbc-button-hover-border);
+	color: var(--mbc-button-hover-text);
 }
 
-.mbc-button--outline {
+.mbc-button--outline,
+html body .is-style-outline > .wp-block-button__link {
 	background: transparent;
-	color: var(--mbc-accent);
+	color: var(--mbc-outline-text);
+}
+
+/* Form fields (GeneratePress styles these too; roles win via html body). */
+html body input[type="text"],
+html body input[type="email"],
+html body input[type="search"],
+html body input[type="url"],
+html body input[type="tel"],
+html body textarea,
+html body select {
+	border: var(--mbc-border-width) solid var(--mbc-input-border);
+	border-radius: var(--mbc-radius-sm);
+	background: var(--mbc-input-bg);
+	color: var(--mbc-input-text);
+}
+
+::placeholder {
+	color: var(--mbc-placeholder);
+	opacity: 1;
+}
+
+/*
+ * GeneratePress bridge: GP's own CSS reads these variables (content cards,
+ * page background, text, links). Defined on body so they beat GP's :root
+ * values whatever the stylesheet order. This is what lets a look restyle
+ * legacy GP output.
+ */
+body {
+	--base: var(--mbc-surface-alt);
+	--base-2: var(--mbc-surface-alt);
+	--base-3: var(--mbc-surface);
+	--contrast: var(--mbc-text);
+	--contrast-2: var(--mbc-text-muted);
+	--contrast-3: var(--mbc-text-muted);
+	--accent: var(--mbc-link);
 }

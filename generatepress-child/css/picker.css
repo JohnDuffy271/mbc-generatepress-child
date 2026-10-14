@@ -1,0 +1,37 @@
+/* Look picker (logged-in users only). Tokens only. */
+.mbc-picker {
+	position: fixed;
+	left: var(--mbc-space-s);
+	bottom: var(--mbc-space-s);
+	z-index: var(--mbc-z-menu);
+	display: flex;
+	align-items: center;
+	gap: var(--mbc-space-xs);
+	padding: var(--mbc-space-xs) var(--mbc-space-s);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-surface);
+	color: var(--mbc-text);
+	font-size: var(--mbc-step--1);
+}
+
+.mbc-picker__label {
+	font-weight: var(--mbc-weight-strong);
+}
+
+html body .mbc-picker__select {
+	min-height: var(--mbc-tap-target);
+	padding: 0 var(--mbc-space-xs);
+}
+
+html body .mbc-picker__button {
+	min-height: var(--mbc-tap-target);
+	padding: 0 var(--mbc-space-m);
+	border: 2px solid var(--mbc-button-border);
+	border-radius: var(--mbc-radius-pill);
+	background: var(--mbc-button-bg);
+	color: var(--mbc-button-text);
+	font: inherit;
+	font-weight: var(--mbc-weight-strong);
+	cursor: pointer;
+}

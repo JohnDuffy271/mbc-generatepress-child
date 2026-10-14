@@ -1,13 +1,17 @@
 /* MBC footer. Tokens only (css/tokens.css). */
 
 .mbc-footer {
-	background: var(--mbc-surface-inverse);
-	color: var(--mbc-text-inverse);
+	background: var(--mbc-footer-bg);
+	color: var(--mbc-footer-text);
 	font-size: var(--mbc-step--1);
 }
 
 .mbc-footer a {
 	color: inherit;
+}
+
+.mbc-footer :focus-visible {
+	outline-color: var(--mbc-footer-focus);
 }
 
 .mbc-footer__inner,
@@ -56,7 +60,7 @@
 	align-items: center;
 	min-height: var(--mbc-tap-target);
 	padding: 0 var(--mbc-space-m);
-	border: 1px solid currentColor;
+	border: var(--mbc-border-width) solid currentColor;
 	border-radius: var(--mbc-radius-sm);
 	text-decoration: none;
 	text-transform: uppercase;
@@ -91,10 +95,10 @@
 	min-height: var(--mbc-tap-target);
 	margin-bottom: var(--mbc-space-xs);
 	padding: var(--mbc-space-xs) var(--mbc-space-s);
-	border: 1px solid var(--mbc-grey-500);
+	border: var(--mbc-border-width) solid var(--mbc-input-border);
 	border-radius: var(--mbc-radius-sm);
-	background: var(--mbc-surface);
-	color: var(--mbc-text);
+	background: var(--mbc-input-bg);
+	color: var(--mbc-input-text);
 	font: inherit;
 }
 
@@ -111,7 +115,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--mbc-space-xs);
-	border-top: 1px solid var(--mbc-grey-700);
+	border-top: var(--mbc-border-width) solid var(--mbc-footer-border);
 	padding-top: var(--mbc-space-m);
 	padding-bottom: var(--mbc-space-m);
 	text-align: center;

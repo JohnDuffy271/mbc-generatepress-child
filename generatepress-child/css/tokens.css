@@ -35,6 +35,28 @@
 	--mbc-border: var(--mbc-grey-200);
 	--mbc-link: var(--mbc-accent);
 	--mbc-focus: var(--mbc-accent);
+	--mbc-focus-width: 3px;
+	--mbc-border-width: 1px;
+	--mbc-hover-bg: var(--mbc-surface-alt);
+
+	/* Colour: component roles. Looks (css/looks/) override roles, never
+	   component CSS. */
+	--mbc-header-bg: var(--mbc-surface);
+	--mbc-button-bg: var(--mbc-accent);
+	--mbc-button-text: var(--mbc-accent-contrast);
+	--mbc-button-border: var(--mbc-accent);
+	--mbc-button-hover-bg: var(--mbc-grey-900);
+	--mbc-button-hover-text: var(--mbc-text-inverse);
+	--mbc-button-hover-border: var(--mbc-grey-900);
+	--mbc-outline-text: var(--mbc-accent);
+	--mbc-footer-bg: var(--mbc-surface-inverse);
+	--mbc-footer-text: var(--mbc-text-inverse);
+	--mbc-footer-border: var(--mbc-grey-700);
+	--mbc-footer-focus: var(--mbc-grey-50);
+	--mbc-input-bg: var(--mbc-surface);
+	--mbc-input-text: var(--mbc-text);
+	--mbc-input-border: var(--mbc-grey-500);
+	--mbc-placeholder: #5b5b63;
 
 	/* Type: system stack, 1.25 modular scale */
 	--mbc-font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
