@@ -251,8 +251,11 @@ Pages, menus and settings are managed via the WordPress REST API.
       only). Real brand tokens follow the branding exercise.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
-- [ ] Header and footer (built 15 Oct 2026; tick once checked on a phone
-      and with the Playwright suite): drill-down mobile menu, dropdowns,
+- [ ] Header and footer (built 15 Oct 2026; Playwright suite passes at
+      360/768/1024/1280px; tick once John has checked it on his phone). The
+      suite is `~/src/mbc-tests/header_check.py`, run with
+      `~/.venvs/mbc-test/bin/python header_check.py <screenshot-dir>`
+      (outside the repo; sandbox only). Drill-down mobile menu, dropdowns,
       MC4WP footer form 206, `footer` menu location. Menu items with class
       `mbc-menu-toggle` (the four parents, URL `#`) render as
       `<button aria-expanded aria-controls>`, never links. See "Header and
