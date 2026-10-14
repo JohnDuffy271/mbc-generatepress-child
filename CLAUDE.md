@@ -252,7 +252,9 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
 - [ ] Header and footer (built 15 Oct 2026; Playwright suite passes at
-      360/768/1024/1280px; tick once John has checked it on his phone). The
+      360/768/1024/1280px; John's phone checks 1, 2 and 4 pass, check 3
+      (links work, Services on YouTube opens in a new tab) not yet
+      confirmed, so leave unticked until it is). The
       suite is `~/src/mbc-tests/header_check.py`, run with
       `~/.venvs/mbc-test/bin/python header_check.py <screenshot-dir>`
       (outside the repo; sandbox only). Drill-down mobile menu, dropdowns,
@@ -260,6 +262,25 @@ Pages, menus and settings are managed via the WordPress REST API.
       `mbc-menu-toggle` (the four parents, URL `#`) render as
       `<button aria-expanded aria-controls>`, never links. See "Header and
       footer architecture" below.
+- [ ] Header/footer pending fixes (16 Oct 2026):
+      - Keep the brand name on one line at 1024px and above (it wraps at
+        1280px).
+      - Remove the sidebar site-wide via the `generate_sidebar_layout`
+        filter (old pages still show GP's Search/Recent Posts/Recent
+        Comments widgets).
+      - The `footer` menu location has no menu assigned until the Privacy
+        Notice and Cookies pages exist (cutover checklist).
+- [ ] Open question (mobile menu back-out): John finds it odd. Current
+      behaviour: on-screen Back goes up one level; the X closes the whole
+      menu; Android system Back is not handled (no history entries), so it
+      leaves the page; following a link loads a fresh page with the menu
+      closed. Option under consideration: `history.pushState` for "menu
+      open" and "submenu open" so system Back steps up one level at a time
+      (submenu → top list → closed → leave), with Back/X/Esc calling
+      `history.back()` to keep the stack consistent. No change made yet.
+- [ ] Open question (Home menu item): the logo is Home per Andy's spec;
+      John to check with Andy whether an explicit "Home" item is wanted.
+- [ ] Rockhost SSH ticket (raised 14 Oct 2026): no reply yet; not blocking.
 - [ ] Four page templates: `page-templates/info.php`, `activity.php`,
       `mission-partner.php`, `listing.php`. Then re-run
       `bin/scaffold_site.py --apply`: it assigns templates only when the
