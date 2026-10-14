@@ -301,7 +301,9 @@ html.mbc-menu-open {
 	.mbc-menu .mbc-toggle {
 		width: auto;
 		min-height: var(--mbc-tap-target);
-		padding: var(--mbc-space-2xs) var(--mbc-space-m);
+		/* Tighter at 1024px so the one-line brand name and six items fit,
+		   easing to the full token by 1280px. */
+		padding: var(--mbc-space-2xs) clamp(var(--mbc-space-xs), 3.125vw - 1.5rem, var(--mbc-space-m));
 		border: 0;
 		border-radius: var(--mbc-radius-md);
 		white-space: nowrap;
