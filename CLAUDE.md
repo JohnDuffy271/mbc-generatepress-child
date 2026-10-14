@@ -204,6 +204,15 @@ Pages, menus and settings are managed via the WordPress REST API.
   `composer.json` to the repo: the repo root deploys to `themes/`.
 - `bin/` deploys too; `bin/lint.sh` is covered by the root `.htaccess`
   `.sh` deny (verify 403 after pushing changes to `bin/`).
+- **Intermittent TCP connect stalls** (measured 15 Oct 2026): from John's
+  IP, about 1 connection in 10 to the server stalls in the TCP connect for
+  20-68 s (the server then answers in ~0.5 s). Not the user agent, no
+  throttling headers or challenge pages seen; suspected host-side rate
+  limiting. Raised with Rockhost. Mitigation: scripts in `bin/` use an
+  8 s connect timeout with quick backoff retries and keep-alive
+  connections, plus a 1 s pause between sandbox writes. Any new script that
+  talks to the server must do the same (copy `_QuickConnect`); do not rely
+  on a plain `urlopen` with a long timeout.
 
 ## Coding conventions
 
@@ -328,6 +337,14 @@ Pages, menus and settings are managed via the WordPress REST API.
       protect-live hook at that point.
 - [ ] Content migration from live site (via its public REST API, read-only)
 - [ ] Contact form plugin decision
+- [x] Demo post import (15 Oct 2026, `bin/import_live_posts.py
+      --unwrap-elementor`): 10 live posts (23 Sep to 12 Oct), all in
+      "News", with 19 images, as sandbox posts 674-698 tagged
+      `mbc_demo_import=1`. All were Elementor-built on live, so they were
+      reduced to plain text and images (galleries flattened). Idempotent:
+      a second dry run reports 10 unchanged. Open for the single-post
+      template: each post has a featured image *and* often the same photo
+      inline, so it may show twice. Cleanup is in the cutover checklist.
 - [ ] Newsletter builder (open item, no action yet): John has custom
       PHP/HTML code that builds a Mailchimp newsletter from posts. It must
       be reviewed and adapted for the new build before cutover (category

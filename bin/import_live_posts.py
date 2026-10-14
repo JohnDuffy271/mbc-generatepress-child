@@ -523,6 +523,48 @@ def sandbox_pages(sb, route, params):
         page += 1
 
 
+def build_body(p, live_cats, cat_map, feat, media):
+    """The sandbox post body for live post p, or None if it needs a category or image
+    that is not on the sandbox yet. media maps live URL -> {"id", "url"}."""
+    content = p["content"]["rendered"]
+    mapping = {}
+    for url in inline_images(content):
+        if url not in media:
+            return None
+        mapping[url] = media[url]["url"]
+    categories = []
+    for cid in p["categories"]:
+        name = live_cats.get(cid)
+        if name is not None:
+            if name.lower() not in cat_map:
+                return None
+            categories.append(cat_map[name.lower()])
+    body = {
+        "title": plain(p["title"]["rendered"]),
+        "slug": p["slug"],
+        "status": "publish",
+        "date": p["date"],
+        "date_gmt": p["date_gmt"],
+        "content": rewrite_images(content, mapping),
+        "excerpt": plain(p["excerpt"]["rendered"]),
+        "categories": categories,
+        "meta": {"mbc_demo_import": 1, "mbc_live_post_id": p["id"]},
+    }
+    f = feat.get(p["featured_media"])
+    if f and f.get("source_url"):
+        if f["source_url"] not in media:
+            return None
+        body["featured_media"] = media[f["source_url"]]["id"]
+    return body
+
+
+def matches_existing(existing, body):
+    return (existing["title"]["raw"] == body["title"] and existing["content"]["raw"] == body["content"]
+            and existing["excerpt"]["raw"] == body["excerpt"] and existing["date_gmt"] == body["date_gmt"]
+            and sorted(existing["categories"]) == sorted(body["categories"])
+            and existing["featured_media"] == body.get("featured_media", 0))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--apply", action="store_true", help="write to the sandbox (default: dry run)")
@@ -580,7 +622,9 @@ def main():
     sb_cats = {html.unescape(c["name"]).lower(): c["id"] for c in sandbox_pages(sb, "categories", {})}
 
     # Plan.
+    media = {u: {"id": m["id"], "url": m["source_url"]} for u, m in sb_media.items()}
     new_cats, new_images, report = set(), set(), []
+    counts = {"create": 0, "update": 0, "unchanged": 0}
     for n, p in enumerate(selected, 1):
         title = plain(p["title"]["rendered"])
         names = [live_cats.get(c, f"#{c}") for c in p["categories"]]
@@ -590,14 +634,23 @@ def main():
         new_cats |= {c for c in names if c.lower() not in sb_cats}
         new_images |= set(unseen)
         links = live_links(p["content"]["rendered"])
-        action = "update" if p["id"] in sb_posts else "create"
+        existing = sb_posts.get(p["id"])
+        body = build_body(p, live_cats, sb_cats, feat, media)
+        if not existing:
+            action = "create"
+        elif body is not None and matches_existing(existing, body):
+            action = "unchanged"
+        else:
+            action = "update"
+        counts[action] += 1
         print(f"[{n}] live #{p['id']}  {p['date'][:10]}  {title[:60]!r}  -> {action}{'  [Elementor, unwrapped]' if p.get('_unwrapped') else ''}")
         print(f"     categories: " + ", ".join(f"{c}{'' if c.lower() in sb_cats else ' (new)'}" for c in names or ["(none)"]))
         print(f"     featured: {'yes' if fsrc else 'no'}{' (to upload)' if fsrc and fsrc not in sb_media else ''}; "
               f"inline images: {len(imgs)} ({len([u for u in imgs if u not in sb_media])} to upload); live-domain links: {len(links)}")
         if links:
             report.append((p["id"], title, links))
-    print(f"\nSelected {len(selected)} post(s); categories to create: {sorted(new_cats) or 'none'}; images to upload: {len(new_images)}")
+    print(f"\nPlan: {counts['create']} to create, {counts['update']} to update, {counts['unchanged']} unchanged")
+    print(f"Selected {len(selected)} post(s); categories to create: {sorted(new_cats) or 'none'}; images to upload: {len(new_images)}")
     if widget_counts:
         odd = sorted(set(widget_counts) - KNOWN_WIDGETS)
         print(f"\nElementor widgets unwrapped: {widget_counts}" + (f"  UNREVIEWED TYPES: {odd}" if odd else ""))
@@ -644,29 +697,15 @@ def main():
         return media_cache[url]
 
     for p in selected:
-        content = p["content"]["rendered"]
-        mapping = {u: ensure_image(u)["url"] for u in inline_images(content)}
-        body = {
-            "title": plain(p["title"]["rendered"]),
-            "slug": p["slug"],
-            "status": "publish",
-            "date": p["date"],
-            "date_gmt": p["date_gmt"],
-            "content": rewrite_images(content, mapping),
-            "excerpt": plain(p["excerpt"]["rendered"]),
-            "categories": [cat_map[live_cats[c].lower()] for c in p["categories"] if c in live_cats],
-            "meta": {"mbc_demo_import": 1, "mbc_live_post_id": p["id"]},
-        }
+        for url in inline_images(p["content"]["rendered"]):
+            ensure_image(url)
         f = feat.get(p["featured_media"])
         if f and f.get("source_url"):
-            body["featured_media"] = ensure_image(f["source_url"], f.get("alt_text", ""))["id"]
+            ensure_image(f["source_url"], f.get("alt_text", ""))
+        body = build_body(p, live_cats, cat_map, feat, media_cache)
         existing = sb_posts.get(p["id"])
         if existing:
-            same = (existing["title"]["raw"] == body["title"] and existing["content"]["raw"] == body["content"]
-                    and existing["excerpt"]["raw"] == body["excerpt"] and existing["date_gmt"] == body["date_gmt"]
-                    and sorted(existing["categories"]) == sorted(body["categories"])
-                    and existing["featured_media"] == body.get("featured_media", 0))
-            if same:
+            if matches_existing(existing, body):
                 print(f"live #{p['id']}: unchanged (sandbox post {existing['id']})")
                 continue
             sb.call("POST", f"posts/{existing['id']}", body=body)
