@@ -1,4 +1,84 @@
-/* MBC design tokens — all design values live here. */
+/*
+ * MBC design tokens — all design values live here.
+ *
+ * Neutral placeholders only: the branding exercise (colours, fonts) is
+ * still to come, so rebranding must be a change to this file alone.
+ * Components reference these variables and never hard-code values.
+ *
+ * Breakpoints (media queries cannot use custom properties, so these are
+ * documentation; each appears once in the component that needs it):
+ *   768px   tablet
+ *   1024px  desktop navigation (burger below, inline nav + dropdowns from
+ *           here). The only place it is used: @media in css/header.css.
+ *   1280px  wide
+ */
 :root {
-	--mbc-e2e-colour: #ff00ff; /* E2E smoke test: obvious magenta */
+	/* Colour: neutral grey scale plus one accent */
+	--mbc-grey-50: #f7f7f8;
+	--mbc-grey-100: #ececee;
+	--mbc-grey-200: #d9d9dd;
+	--mbc-grey-300: #bcbcc2;
+	--mbc-grey-500: #77777f;
+	--mbc-grey-700: #3f3f46;
+	--mbc-grey-800: #2a2a2f;
+	--mbc-grey-900: #18181b;
+	--mbc-accent: #2f5fb3;
+	--mbc-accent-contrast: #ffffff;
+
+	/* Colour: roles */
+	--mbc-surface: #ffffff;
+	--mbc-surface-alt: var(--mbc-grey-50);
+	--mbc-surface-inverse: var(--mbc-grey-900);
+	--mbc-text: var(--mbc-grey-900);
+	--mbc-text-muted: var(--mbc-grey-700);
+	--mbc-text-inverse: #ffffff;
+	--mbc-border: var(--mbc-grey-200);
+	--mbc-link: var(--mbc-accent);
+	--mbc-focus: var(--mbc-accent);
+
+	/* Type: system stack, 1.25 modular scale */
+	--mbc-font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--mbc-font-heading: var(--mbc-font-body);
+	--mbc-step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+	--mbc-step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+	--mbc-step-1: clamp(1.25rem, 1.18rem + 0.35vw, 1.4rem);
+	--mbc-step-2: clamp(1.5rem, 1.38rem + 0.6vw, 1.75rem);
+	--mbc-step-3: clamp(1.85rem, 1.6rem + 1.2vw, 2.2rem);
+	--mbc-step-4: clamp(2.2rem, 1.8rem + 2vw, 2.75rem);
+	--mbc-step-5: clamp(2.6rem, 2rem + 3vw, 3.5rem);
+	--mbc-leading-body: 1.6;
+	--mbc-leading-heading: 1.2;
+	--mbc-weight-body: 400;
+	--mbc-weight-strong: 600;
+
+	/* Spacing */
+	--mbc-space-3xs: 0.125rem;
+	--mbc-space-2xs: 0.25rem;
+	--mbc-space-xs: 0.5rem;
+	--mbc-space-s: 0.75rem;
+	--mbc-space-m: 1rem;
+	--mbc-space-l: 1.5rem;
+	--mbc-space-xl: 2rem;
+	--mbc-space-2xl: 3rem;
+	--mbc-space-3xl: 4.5rem;
+
+	/* Layout */
+	--mbc-content-width: 72rem;
+	--mbc-gutter: var(--mbc-space-m);
+	--mbc-header-height: 4.5rem;
+	--mbc-tap-target: 2.75rem;
+
+	/* Radii */
+	--mbc-radius-sm: 0.25rem;
+	--mbc-radius-md: 0.5rem;
+	--mbc-radius-pill: 999px;
+
+	/* Layers and motion */
+	--mbc-z-header: 100;
+	--mbc-z-menu: 110;
+	--mbc-duration: 200ms;
+	--mbc-ease: ease-out;
+
+	/* E2E smoke test: obvious magenta. Remove with page 620. */
+	--mbc-e2e-colour: #ff00ff;
 }

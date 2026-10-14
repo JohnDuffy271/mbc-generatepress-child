@@ -1,0 +1,102 @@
+/* MBC base styles. Tokens only: see tokens.css. */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--mbc-surface);
+	color: var(--mbc-text);
+	font-family: var(--mbc-font-body);
+	font-size: var(--mbc-step-0);
+	font-weight: var(--mbc-weight-body);
+	line-height: var(--mbc-leading-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0 0 var(--mbc-space-m);
+	font-family: var(--mbc-font-heading);
+	line-height: var(--mbc-leading-heading);
+}
+
+h1 { font-size: var(--mbc-step-5); }
+h2 { font-size: var(--mbc-step-4); }
+h3 { font-size: var(--mbc-step-3); }
+h4 { font-size: var(--mbc-step-2); }
+h5 { font-size: var(--mbc-step-1); }
+h6 { font-size: var(--mbc-step-0); }
+
+p {
+	margin: 0 0 var(--mbc-space-m);
+}
+
+img,
+svg {
+	max-width: 100%;
+	height: auto;
+}
+
+a {
+	color: var(--mbc-link);
+}
+
+a:hover {
+	text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+	outline: 3px solid var(--mbc-focus);
+	outline-offset: 2px;
+}
+
+.screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Buttons: <a> or <button> with .mbc-button */
+.mbc-button,
+button.mbc-button,
+input[type="submit"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: var(--mbc-tap-target);
+	padding: var(--mbc-space-xs) var(--mbc-space-l);
+	border: 2px solid var(--mbc-accent);
+	border-radius: var(--mbc-radius-pill);
+	background: var(--mbc-accent);
+	color: var(--mbc-accent-contrast);
+	font: inherit;
+	font-weight: var(--mbc-weight-strong);
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.mbc-button:hover,
+input[type="submit"]:hover {
+	background: var(--mbc-grey-900);
+	border-color: var(--mbc-grey-900);
+	color: var(--mbc-text-inverse);
+}
+
+.mbc-button--outline {
+	background: transparent;
+	color: var(--mbc-accent);
+}

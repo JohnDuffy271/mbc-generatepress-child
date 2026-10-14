@@ -30,6 +30,12 @@ function mbc_child_enqueue_styles() {
         array( 'generatepress-parent' ),
         filemtime( get_stylesheet_directory() . '/css/tokens.css' )
     );
+    wp_enqueue_style(
+        'mbc-base',
+        get_stylesheet_directory_uri() . '/css/base.css',
+        array( 'mbc-tokens' ),
+        filemtime( get_stylesheet_directory() . '/css/base.css' )
+    );
     // Legacy: styles the YouTube feed shortcode (see above).
     wp_enqueue_style(
         'mbc-youtube-feed',
