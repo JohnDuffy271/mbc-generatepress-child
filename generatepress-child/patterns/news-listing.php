@@ -37,3 +37,7 @@ defined( 'ABSPATH' ) || exit;
 <!-- /wp:paragraph -->
 <!-- /wp:query-no-results --></div>
 <!-- /wp:query -->
+
+<!-- wp:paragraph {"className":"mbc-news__archive"} -->
+<p class="mbc-news__archive"><a href="/newsletter/">Newsletter archive</a></p>
+<!-- /wp:paragraph -->

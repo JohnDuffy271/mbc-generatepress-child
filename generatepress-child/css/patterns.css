@@ -181,7 +181,8 @@ html body .mbc-band__social .wp-social-link a {
 }
 
 /* ---- News listing (Query Loop cards) ---- */
-.mbc-news .wp-block-post-template {
+.mbc-news .wp-block-post-template,
+.mbc-nl__list {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
 	gap: var(--mbc-space-l);
@@ -318,4 +319,32 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-person__name {
 	margin: 0;
 	font-weight: var(--mbc-weight-strong);
+}
+
+/* ---- Newsletter issues: web version and archive ---- */
+.mbc-nl__subtitle {
+	margin: 0 0 var(--mbc-space-xs);
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step-1);
+}
+
+.mbc-nl__intro {
+	margin-bottom: var(--mbc-space-xl);
+}
+
+.mbc-nl__list {
+	margin-top: var(--mbc-space-l);
+}
+
+.mbc-nl__list > .mbc-card > a.mbc-card__image {
+	display: block;
+}
+
+.mbc-nl__list .mbc-card__image img {
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+.mbc-nl__list .mbc-card__title:last-child {
+	padding-bottom: var(--mbc-space-m);
 }

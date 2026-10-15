@@ -34,7 +34,7 @@ function mbc_take_over_layout() {
     // RULE: the new templates place their own image. Never output
     // GeneratePress's featured-image banner on them. (Legacy Elementor pages
     // keep it until they are converted.)
-    if ( is_page_template( mbc_page_templates() ) || is_singular( 'post' ) ) {
+    if ( is_page_template( mbc_page_templates() ) || is_singular( array( 'post', 'mbc_newsletter' ) ) || is_post_type_archive( 'mbc_newsletter' ) ) {
         remove_action( 'generate_after_header', 'generate_featured_page_header', 10 );
     }
 }
