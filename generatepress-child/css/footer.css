@@ -101,13 +101,22 @@ html body .mbc-footer input[type="submit"]:focus {
 	color: var(--mbc-footer-button-hover-text);
 }
 
-/* MC4WP form */
+/* MC4WP form (form 206: email, first name, last name, submit; see CLAUDE.md).
+   Fields are stacked; from tablet width the two name fields share a row. */
+.mbc-footer .mc4wp-form-fields {
+	display: grid;
+	gap: var(--mbc-space-s) var(--mbc-space-m);
+}
+
+.mbc-footer .mc4wp-form-fields > p {
+	margin: 0;
+}
+
 .mbc-footer .mc4wp-form input[type="email"],
 .mbc-footer .mc4wp-form input[type="text"] {
 	display: block;
 	width: 100%;
 	min-height: var(--mbc-tap-target);
-	margin-bottom: var(--mbc-space-xs);
 	padding: var(--mbc-space-xs) var(--mbc-space-s);
 	border: var(--mbc-border-width) solid var(--mbc-input-border);
 	border-radius: var(--mbc-radius-sm);
@@ -154,5 +163,15 @@ html body .mbc-footer input[type="submit"]:focus {
 	.mbc-footer__inner {
 		grid-template-columns: 1fr 1fr;
 		gap: var(--mbc-space-3xl);
+	}
+
+	/* Email and Sign up span the row; first and last name sit side by side. */
+	.mbc-footer .mc4wp-form-fields {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.mbc-footer .mc4wp-form-fields > p:first-child,
+	.mbc-footer .mc4wp-form-fields > p:last-child {
+		grid-column: 1 / -1;
 	}
 }
