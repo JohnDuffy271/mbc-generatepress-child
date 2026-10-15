@@ -184,23 +184,32 @@ html body .mbc-band__social .wp-social-link a {
 	list-style: none;
 }
 
-.mbc-card {
+.mbc-card,
+.mbc-card > .wp-block-group__inner-container {
 	display: flex;
 	flex-direction: column;
 	gap: var(--mbc-space-xs);
 	height: 100%;
+}
+
+.mbc-card {
 	overflow: hidden;
 	border: var(--mbc-border-width) solid var(--mbc-border);
 	border-radius: var(--mbc-radius-md);
 	background: var(--mbc-surface-alt);
 }
 
-.mbc-card > * {
+/* Text sits inset; the featured image runs edge to edge. Group blocks may
+   wrap their children in .wp-block-group__inner-container, so style by class. */
+.mbc-card__date,
+.mbc-card__title,
+.mbc-card__excerpt {
 	margin: 0;
 	padding-inline: var(--mbc-space-m);
 }
 
-.mbc-card > .mbc-card__image {
+.mbc-card__image {
+	margin: 0;
 	padding: 0;
 }
 
