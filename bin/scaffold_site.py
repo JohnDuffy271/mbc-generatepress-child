@@ -92,7 +92,7 @@ HOLD = [(54, "whats-on"), (556, "whats-on")]
 TRASH_PARENTS = [237, 270]
 
 STATUSES = "publish,draft,pending,private,future"
-PAGE_FIELDS = "id,slug,title,parent,menu_order,template,status,link"
+PAGE_FIELDS = "id,slug,title,parent,menu_order,template,status,link,meta._elementor_edit_mode"
 
 
 def load_env():
@@ -307,6 +307,11 @@ def main():
         have = {"title": page["title"]["raw"], "slug": page["slug"], "parent": page["parent"],
                 "menu_order": page["menu_order"], "template": page["template"]}
         diff = {k: v for k, v in want.items() if have.get(k) != v}
+        meta = page.get("meta")
+        if "template" in diff and isinstance(meta, dict) and meta.get("_elementor_edit_mode") == "builder":
+            # Legacy Elementor content: leave the page on its current template
+            # until it is converted (CLAUDE.md, "Elementor exit").
+            print(f"  LEGACY {s['id']} {have['slug']!r}: built with Elementor, template {diff.pop('template')!r} not assigned")
         # In a dry run a not-yet-created parent has no id: always a change.
         if parent_id is None:
             diff["parent"] = "(new parent)"
