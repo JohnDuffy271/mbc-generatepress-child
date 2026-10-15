@@ -10,6 +10,19 @@ body {
 	margin: 0;
 	background: var(--mbc-surface-alt);
 	color: var(--mbc-text);
+}
+
+/*
+ * Type. GeneratePress's own stylesheet sets font-family, size, weight and
+ * line height on body, form controls and headings with the same specificity
+ * and loads later, so "html body" lifts ours above it (as for buttons below).
+ * Without this a look cannot change fonts, sizes or weights.
+ */
+html body,
+html body button,
+html body input,
+html body select,
+html body textarea {
 	font-family: var(--mbc-font-body);
 	font-size: var(--mbc-step-0);
 	font-weight: var(--mbc-weight-body);
@@ -23,8 +36,16 @@ h4,
 h5,
 h6 {
 	margin: 0 0 var(--mbc-space-m);
-	font-family: var(--mbc-font-heading);
 	line-height: var(--mbc-leading-heading);
+}
+
+html body h1,
+html body h2,
+html body h3,
+html body h4,
+html body h5,
+html body h6 {
+	font-family: var(--mbc-font-heading);
 }
 
 h1 { font-size: var(--mbc-step-5); }
