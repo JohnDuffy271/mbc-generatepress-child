@@ -244,6 +244,8 @@ Pages, menus and settings are managed via the WordPress REST API.
   or `wp-config.php`, any FTP write or delete.
 - `.htaccess` in the sandbox docroot has a deliberate `SetEnvIf
   Authorization` line above `# BEGIN WordPress`. Leave it.
+- Photo consent is managed by John S; flag any new photos of identifiable
+  people to John, but don't remove them without being told.
 
 ## Status (Oct 2026)
 
@@ -413,20 +415,29 @@ Pages, menus and settings are managed via the WordPress REST API.
          and describe it in the alt text. Very wide banner-shaped images
          (Sunday Mornings 8:3, Beacon Café about 4:1) crop heavily in the
          4:3 slot: flag them for John.
-         **Batch 1 (Activity pages), 15 Oct 2026, awaiting John's review,
-         nothing published:** drafts 725 Sunday Mornings (page 44), 726
-         Beacon Café (251), 727 Rock Solid (60), 728 Stepping Stones (48),
-         729 Lunch Club (56); all five backed up. Review list and image crop
-         sheet: `~/src/mbc-tests/review/` (outside the repo). Open points:
-         "Contact" is "Needs confirming" on all five; Sunday Mornings and
-         Beacon Café images are unusable in the 4:3 slot (text graphic /
-         panorama); photos of identifiable people (children) need consent;
-         Lunch Club's text names an individual. Compare-with-live finding:
-         the sandbox texts are independent rewrites (no shared sentences
-         with live), so "which is more current" cannot be answered by
-         comparison; facts were taken from the sandbox text and from live
-         pages and weekly news (with dates), and recorded with sources in
-         the review list.
+         **Batch 1 (Activity pages), 15 Oct 2026, decisions applied,
+         awaiting John's final look, nothing published:** drafts 725 Sunday
+         Mornings (page 44), 726 Beacon Café (251), 727 Rock Solid (60), 728
+         Stepping Stones (48), 729 Lunch Club (56); all five backed up.
+         Review list and image crop sheet: `~/src/mbc-tests/review/`
+         (outside the repo). Applied: Contact is the church office on all
+         five; Lunch Club no longer names its seniors' worker (Where is
+         "Needs confirming"); Sunday Mornings gains Café Church (first
+         Sunday) and Communion (third Sunday) from live and is split into
+         paragraphs; "Beacon Café" (accent) everywhere, including the page
+         title, menu item and scaffold spec (slug stays `beacon-cafe`); Rock
+         Solid keeps the Youth for Christ text with a visible "Needs local
+         copy" note at the top of the description (**remove it before
+         publishing**) and age range "Needs confirming"; Stepping Stones
+         rooms are marked "need confirming"; curly apostrophes and quotes,
+         stray line breaks removed; Sunday Mornings and Beacon Café show
+         their wide images uncropped (`mbc-image-contain`, set with
+         `image_fit` in the facts file) as a stopgap until better photos
+         arrive. Compare-with-live finding: the sandbox texts are
+         independent rewrites (no shared sentences with live), so "which is
+         more current" cannot be answered by comparison; facts were taken
+         from the sandbox text and from live pages and weekly news (with
+         dates).
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -533,6 +544,28 @@ Open design questions to put to Andy Berry (John to ask):
    toggles (not links) but are reachable by URL and currently blank. Decide
    between short overview content (a list of the child pages) or a redirect
    to the first child page. (Decision later; no action yet.)
+
+## Content questions for John S
+
+1. **Rock Solid:** local copy (what happens, who comes, who to ask) to
+   replace the Youth for Christ text, and the **age range** (school years).
+2. **Lunch Club:** the **venue** (which room).
+3. **Stepping Stones:** confirm the **rooms** used (main room, Corner Room,
+   Sports Hall, taken from the old text).
+(The contact for all the Activity pages is the church office, Lesley,
+0113 2693750.)
+
+## Image wishlist for John S
+
+The Activity template's image slot is **4:3 landscape** (about 560 x 420 on
+a desktop, full width on a phone, cropped to fit). For each photo: 4:3, at
+least 1200 x 900 (1600 x 1200 is ideal), subject near the centre, **no text
+in the image**.
+- **Sunday Mornings:** a photo of a Sunday service (the current image is a
+  designed graphic with text in it, shown uncropped as a stopgap).
+- **Beacon Café:** a photo of people at the café (the current image is a
+  4:1 panorama of two mugs, shown uncropped as a stopgap).
+Photo consent is managed by John S (see Safety).
 
 ## Header and footer architecture
 
