@@ -229,3 +229,4 @@ function mbc_nl_email_url( $issue_id, $with_key = false ) {
 
 require_once __DIR__ . '/admin.php';
 require_once __DIR__ . '/post-list.php';
+require_once __DIR__ . '/email.php';

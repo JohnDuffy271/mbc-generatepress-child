@@ -64,6 +64,18 @@
 	--mbc-input-border: var(--mbc-grey-500);
 	--mbc-placeholder: #5b5b63;
 
+	/* Newsletter email (inc/newsletter/email-style.php reads these: email clients need
+	   fixed pixel sizes and a web-safe font stack, not rem, clamp() or the site font) */
+	--mbc-email-width: 600px;
+	--mbc-email-gutter: 24px;
+	--mbc-email-font: Arial, Helvetica, sans-serif;
+	--mbc-email-size-body: 16px;
+	--mbc-email-size-small: 13px;
+	--mbc-email-size-card-title: 20px;
+	--mbc-email-size-title: 28px;
+	--mbc-email-size-subtitle: 18px;
+	--mbc-email-radius: 4px;
+
 	/* Type: system stack, 1.25 modular scale */
 	--mbc-font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	--mbc-font-heading: var(--mbc-font-body);
