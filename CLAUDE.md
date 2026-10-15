@@ -393,9 +393,10 @@ Pages, menus and settings are managed via the WordPress REST API.
          the old page ("Where", "Contact") come from John; never name
          individual group leaders unless John says so (use the church
          office). Alt text is added to the image and to the media item.
-         Text containing the live domain (for example the office email) must
-         not be typed into a shell command (the protect-live hook blocks it);
-         put it in a `--facts-file` JSON written with the Write tool.
+         Email addresses at the church domain (for example the office
+         email) now pass the protect-live hook (fixed by John and retested
+         15 Oct 2026 with a command containing one); `--facts-file` (JSON)
+         remains available for long text.
          **Pilot done:** Craft Group (page 565) was converted on 15 Oct 2026
          via draft page 720 (reviewed and approved by John); backup in
          `~/src/mbc-elementor-backups/565-craft-group.json`; the draft is in
@@ -404,12 +405,14 @@ Pages, menus and settings are managed via the WordPress REST API.
          compare content, not dates. Live has no standalone Craft Group page
          (it is a paragraph in a combined live page), so for some pages
          "compare with live" will find nothing to compare.
-         **Open (John):** page 565 has a page-level *featured image* (a
-         crochet photo) that GeneratePress shows as a full-width banner above
-         the title, in addition to the tiger picture in the Activity layout.
-         The draft preview had no banner. Decide: hide the banner on the new
-         templates (matches the approved draft), or use the photo as the
-         activity image. Check every converted page for a featured image.
+         **Banner decision (John, 15 Oct 2026):** Craft Group now uses its
+         crochet photo (the page's featured image, media 566, with alt text)
+         as the activity image; the tiger picture (media 568) stays in the
+         media library, unused. When converting a page, use its featured
+         image as the activity image if the page has no image of its own,
+         and describe it in the alt text. Very wide banner-shaped images
+         (Sunday Mornings 8:3, Beacon Cafe about 4:1) crop heavily in the
+         4:3 slot: flag them for John.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -570,9 +573,17 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.1). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.2). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
-(`bin/seed_patterns.py`) must contain no PHP after its header.
+(`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
+file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
+direct request to the file returns nothing).
+
+**Images rule:** the new templates place their own image; GeneratePress's
+featured-image banner is **never** output on them (`mbc_take_over_layout()`
+in `inc/layout.php` removes it for the MBC page templates and single posts;
+legacy Elementor pages keep it until converted). The tests assert there is
+no `.page-header-image` on new-template pages.
 
 ## Looks (alternate token sets)
 
