@@ -839,11 +839,69 @@ To add a look:
 Legacy Elementor content sets its own colours and ignores looks; the
 contrast check reports it as informational only.
 
+### The "original" look (15 Oct 2026)
+
+`css/looks/original.css` recreates, as far as tokens allow, the first sandbox
+build (tag `split-layout-final`, `assets/mbc-shared.css` and
+`split-layout.css`): near-black surfaces (`#111`, `#0d0d0d`, `#0a0a0a`), gold
+accent `#c9a84c` (hover `#b8943d`, `#111` text on gold), Playfair Display
+headlines, Lato 300 body, square corners (2px on small boxes), a modest type
+scale. Every value is traced to the original in the file's comments. Layout
+(fixed sidebar, split homepage) is out of scope.
+
+- **Fonts are self-hosted** in `generatepress-child/fonts/` (woff2, latin
+  subset, SIL OFL; licences and source in that folder): Playfair Display 700,
+  900, italic 400, italic 700; Lato 300, 400, 700; Outfit 300, 400, 600, 700.
+  The `@font-face` rules sit **inside `original.css`** (the one exception to
+  "look files override token values only"), so fonts load only while that look
+  is active, with `font-display: swap` and fallback stacks (Georgia, system-ui).
+  No request goes to Google. `look_shots.py` proves it: under `original` only
+  the faces the text uses are fetched, under the other looks none.
+- **Contrast:** passes AA in all five looks. One change from the original:
+  the field border `#2a2a2a` (1.24:1 on the field, below the 3:1 for field
+  borders) is `#666666` (3.09:1). Everything else passes as the original had it.
+- **Bug fixed on the way:** GeneratePress's stylesheet set font family, size,
+  weight and line height on body, form controls and headings with the same
+  specificity and loaded later, so no look could change type. `base.css` now
+  lifts those rules (`html body ...`). The default look is unchanged in
+  practice (its stack matches GP's).
+- **Not reproducible with today's tokens (a role token each would fix it, if
+  it is worth it):**
+  1. **Outfit**, the original's UI face (nav, buttons, labels, footer
+     labels): no UI-font role (`--mbc-font-ui`). The faces are declared and
+     ready; nothing uses them yet.
+  2. **Uppercase, letter-spaced labels** (nav, buttons, h3, eyebrows): no
+     text-transform or letter-spacing tokens.
+  3. **Heading colour:** one `--mbc-text` serves body and headings, so
+     headings are `#cbcbcb`, not the original's pure white.
+  4. **Heading weight 900** for page titles (Playfair 900 is shipped, unused).
+  5. **Gold italic `<em>` accent inside headings.**
+  6. **Link style:** gold text with a faint gold underline instead of the
+     browser underline (no link-decoration token).
+  7. **Gold 2px top borders on cards**, the gold gradient line under banners,
+     card hover lift.
+  8. **Translucent blurred header** (rgba .95 with blur): `--mbc-header-bg`
+     is solid `#0a0a0a`.
+  9. **Status colours** (the green newsletter confirmation `#4ade80`, blue and
+     red social hovers): no tokens.
+  10. **Button radius:** no dedicated token, so the look sets
+      `--mbc-radius-pill: 0` to square the buttons.
+  11. **Type scale:** the original's sizes (body 1rem, title 1.8-2.8rem,
+      h2 1.5rem) are squeezed onto our modular steps, so h3-h5 are smaller
+      and closer together than before.
+- Screenshots (360 and 1280px: front page, Activity page, news post) are
+  made by `~/src/mbc-tests/look_shots.py <dir> <look>`. The tagged build
+  cannot be rendered locally (it is a WordPress theme needing the sandbox's
+  data), so there are no side-by-side shots of the old site.
+
+
 ## Cutover checklist (before launch)
 
 - [ ] Disable the look switcher (`add_filter( 'mbc_looks_enabled',
       '__return_false' )`) or keep only the chosen look's file, and remove
-      the others.
+      the others. If the
+      chosen look is not `original`, also delete `generatepress-child/fonts/`;
+      if it is, keep only the weights its type uses.
 - [ ] **Zero placeholder markers:** `python3 bin/scan_placeholders.py`
       exits 0. It scans the rendered content of every published page and
       post (`--drafts` adds drafts) for "Needs confirming" / "need
