@@ -642,7 +642,8 @@ Pages, menus and settings are managed via the WordPress REST API.
         the actual latest issue and asserts on its own fixture posts only; the
         legacy section checks the real state, then both branches with a
         fixture issue and the threshold (restored in `finally`). Only ids a run
-        created are ever deleted.
+        created are ever deleted, and every post or issue a test creates has a
+        title starting "[TEST] " (`TEST_PREFIX`), so strays are obvious.
       - **Checks** (outside the repo, sandbox only, all pass):
         `~/src/mbc-tests/newsletter_check.py [caps|prefill|adminjs|web|legacy]`,
         `newsletter_email_check.py <shots-dir>` (access rules, key, static
