@@ -1,0 +1,10 @@
+/* Newsletter issue edit screen (wp-admin only). Admin chrome, not the site design: it uses
+   WordPress admin colours so the screen looks like the rest of wp-admin. */
+.mbc-nl-list { margin: 0 0 8px; padding: 0; list-style: none; }
+.mbc-nl-item { display: flex; align-items: center; gap: 12px; padding: 8px; margin: 0 0 6px; background: #fff; border: 1px solid #c3c4c7; border-radius: 3px; }
+.mbc-nl-item--missing { background: #fcf0f1; border-color: #d63638; }
+.mbc-nl-thumb { flex: 0 0 48px; width: 48px; height: 48px; background: #f0f0f1; }
+.mbc-nl-thumb img { display: block; width: 48px; height: 48px; object-fit: cover; }
+.mbc-nl-text { flex: 1 1 auto; min-width: 0; }
+.mbc-nl-meta { display: block; color: #50575e; font-size: 12px; }
+.mbc-nl-actions { flex: 0 0 auto; display: flex; gap: 4px; }

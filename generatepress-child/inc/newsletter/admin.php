@@ -160,9 +160,15 @@ function mbc_nl_admin_assets( $hook ) {
     }
     $file = get_stylesheet_directory() . '/js/newsletter-admin.js';
     wp_enqueue_script( 'mbc-nl-admin', get_stylesheet_directory_uri() . '/js/newsletter-admin.js', array(), filemtime( $file ), true );
+    $css = get_stylesheet_directory() . '/css/newsletter-admin.css';
+    wp_enqueue_style( 'mbc-nl-admin', get_stylesheet_directory_uri() . '/css/newsletter-admin.css', array(), filemtime( $css ) );
     wp_localize_script( 'mbc-nl-admin', 'mbcNl', array(
         'copied'  => __( 'Copied.', 'generatepress-child' ),
         'failed'  => __( 'Could not copy: select the link and copy it by hand.', 'generatepress-child' ),
         'confirm' => __( 'Make a new key? The old email link will stop working.', 'generatepress-child' ),
+        'refill'  => __( 'Replace the list with the posts since the last issue? Changes you have not saved on this screen will be lost.', 'generatepress-child' ),
+        /* translators: %d: number of posts in the list */
+        'count'   => __( '%d posts in this issue.', 'generatepress-child' ),
+        'one'     => __( '1 post in this issue.', 'generatepress-child' ),
     ) );
 }
