@@ -108,6 +108,7 @@ function mbc_nl_save_issue( $post_id, $post ) {
 // The email link panel (side).
 add_action( 'add_meta_boxes_' . MBC_NL_TYPE, 'mbc_nl_add_meta_boxes' );
 function mbc_nl_add_meta_boxes() {
+    remove_meta_box( 'postcustom', MBC_NL_TYPE, 'normal' ); // Subtitle and post list have their own fields.
     add_meta_box( 'mbc_nl_links', __( 'Email link', 'generatepress-child' ), 'mbc_nl_render_links_box', MBC_NL_TYPE, 'side', 'high' );
 }
 

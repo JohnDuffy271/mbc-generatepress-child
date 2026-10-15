@@ -45,7 +45,9 @@ function mbc_nl_register_type() {
         'menu_icon'           => 'dashicons-email-alt',
         'has_archive'         => MBC_NL_SLUG,
         'rewrite'             => array( 'slug' => MBC_NL_SLUG, 'with_front' => false ),
-        'supports'            => array( 'title', 'editor', 'thumbnail' ),
+        // custom-fields: REST only exposes registered meta for types that support it (the raw
+        // Custom Fields box is removed from the edit screen; see admin.php).
+        'supports'            => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
         'show_in_rest'        => true,
         'rest_base'           => 'newsletters',
         // Only holders of the capability can manage issues. "read" is deliberately
