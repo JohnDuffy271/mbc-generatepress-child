@@ -606,6 +606,15 @@ Pages, menus and settings are managed via the WordPress REST API.
         Editor + `mbc_manage_newsletter` + `edit_theme_options` (menus);
         created once, re-synced when `MBC_NL_VERSION` changes (also flushes
         rewrite rules). Elementor needs nothing beyond Editor.
+      - **Web version layout** (`single-mbc_newsletter.php`): the whole issue
+        sits in one centred column, `--mbc-newsletter-measure` (40rem = 640px)
+        plus the usual side padding; the header image is shown at its natural
+        size, never enlarged; the posts are a single-column list (thumbnail
+        `--mbc-newsletter-thumb`, 180px, on the left, date, title and excerpt
+        on the right; the thumbnail goes on top when the column is under
+        30rem, by container query) built on `.mbc-card`; "View as email" ends
+        the column on published issues. The archive keeps the card grid
+        (`.mbc-nl__list`); the issue page uses `.mbc-nl-issue__list`.
       - **Email** `/newsletter/<slug>/email/`: standalone 600px table document,
         inline styles, absolute https links, Mailchimp merge tags
         (`*|UNSUB|*`, `*|UPDATE_PROFILE|*`, `*|LIST:ADDRESSLINE|*`,
