@@ -285,7 +285,13 @@ Pages, menus and settings are managed via the WordPress REST API.
       stays while page 350 (`/resources/services-on-youtube`) exists. The
       menu already links externally to the channel, so page 350 is no
       longer in the menu; when it is retired, remove the page, include,
-      CSS and the `functions.php` lines together.
+      CSS and the `functions.php` lines together. **Retirement approved
+      (John, 15 Oct 2026), to be done once the Mission partner batch is
+      reviewed:** back up page 350 first (`elementor_exit.py backup 350`),
+      trash it (never delete), and remove `[mbc_youtube_feed]`,
+      `includes/mbc-youtube-feed.php`, `assets/css/mbc-youtube-feed.css` and
+      their `functions.php` lines in one commit; then check the footer and
+      menu still link to the YouTube channel and streams page.
 - [x] Front page (15 Oct 2026): `page-templates/front-page.php` +
       `patterns/front-page.php` (hero, four zigzag Media & Text bands).
       Page 182 uses the template and its content was seeded from the
@@ -497,6 +503,29 @@ Pages, menus and settings are managed via the WordPress REST API.
          `[mbc_youtube_feed]` shortcode); the parent pages Mission (374,
          section index template) and What's On (327); and the unlinked
          drafts Welcome (8), Baptism (54) and Sunday School (556).
+         **Batch 3 (Mission partner pages), 15 Oct 2026, drafts awaiting
+         John's review, nothing published:** 780 BMS (page 467), 781
+         Mission Aviation Fellowship (455), 782 Leeds Furniture Mission
+         (452), 783 Romania (525); all four backed up; hand-built blocks on
+         the Mission partner template (`template` key in the facts file);
+         text kept as it was, with typographic fixes only (one: "mid 70's"
+         became "mid-1970s"); "How you can support" is drawn only from
+         what the old text says, anything else is "Needs confirming".
+         BMS and MAF use their official sites (checked: 200). Live
+         comparison (`elementor_exit.py live-read`, approved for the whole
+         exit): live has no BMS or MAF pages; its Romania (2011) and
+         Furniture Store (2013, 2023) pages are older than the sandbox
+         text, so the sandbox text is the more current. Review notes:
+         `~/src/mbc-tests/review/elementor-batch-3-review.md`.
+         **Verification now fails loudly:** `elementor_exit.py publish`
+         runs its post-publish checks itself and exits non-zero on any
+         failure; `publish-batch PAGE:DRAFT ...` stops at the first
+         failure; `verify PAGE DRAFT` runs the checks alone.
+         **Legacy pages remaining after batch 3:** Rock Solid (60, held),
+         Services on YouTube (350, retirement approved, see the YouTube
+         feed item), the parents Mission (374) and What's On (327), and the
+         drafts Welcome (8), Baptism (54) and Sunday School (556) (see
+         Questions for Andy).
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -603,6 +632,12 @@ Open design questions to put to Andy Berry (John to ask):
    toggles (not links) but are reachable by URL and currently blank. Decide
    between short overview content (a list of the child pages) or a redirect
    to the first child page. (Decision later; no action yet.)
+6. **The Welcome, Baptism and Sunday School drafts:** three old unlinked
+   drafts (Welcome 8 under About Us; Baptism 54 and Sunday School 556 under
+   What's On, all Elementor, none in the menu). What should become of
+   them? Baptism in particular may deserve a real page (an Activity or
+   Info page); the other two may simply be dropped or folded into existing
+   pages.
 
 ## Content questions for John S
 
@@ -617,6 +652,15 @@ Open design questions to put to Andy Berry (John to ask):
    rewritten in the draft as "We’re led by our full-time minister, and
    you’ll find us by the big roundabout where King Lane and Stonegate Road
    cross." John S to approve or reword.
+5. **Mission partners (BMS, MAF, Leeds Furniture Mission, Romania):** the
+   Leeds Furniture Mission and Romania pages need their "How you can
+   support" lines (pray, give, get involved) and a website each; both say
+   "Needs confirming" on the draft. Candidate for the Furniture Mission:
+   leedsfurnituremission.org.uk (printed on the charity's van, and it
+   redirects to the charity's own site, www.leedsandmoortown.org.uk).
+   Also: should the Furniture Mission page name its 1986 founder (Hilary
+   Willmer), and is "the Leeds and Moortown Furniture Store" or "Leeds
+   Furniture Mission" the name to use in the text?
 (The contact for all the Activity pages is the church office, Lesley,
 0113 2693750.)
 
@@ -636,6 +680,15 @@ in the image**.
 - **Contact Us map image (low priority, not now):** John may later add a
   map image on Contact Us that links to Google Maps. The old banner
   (media 607, a screenshot of Google Maps) is still in the media library.
+- **Mission partner logos:** the official logos of BMS World Mission, MAF,
+  Leeds Furniture Mission and (if it has one) MrsG, ideally from each
+  partner's own brand or press page and with their permission. The partner
+  template's image slot is designed for a logo (shown whole, never
+  cropped). Until then BMS and MAF use designed illustrations (media
+  480 and 487, wide banners shown whole), Furniture Mission uses a photo
+  of its van (which carries the logo), and Romania a Google Maps
+  screenshot (media 531; check Google's terms or replace it with a
+  properly licensed map).
 Photo consent is managed by John S (see Safety).
 
 ## Header and footer architecture
