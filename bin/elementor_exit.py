@@ -377,7 +377,7 @@ def cmd_draft(wp, args):
             if getattr(args, key, None) is None and key in given:
                 setattr(args, key, given[key])
         extra = {k: given[k] for k in ("description", "description_prefix", "image_fit", "kind", "lead", "unbold", "headings",
-                                       "cta", "cta_heading", "image", "content_file") if k in given}
+                                       "cta", "cta_heading", "image", "content_file", "template") if k in given}
         args.fix = list(args.fix or []) + list(given.get("fix", []))
     facts = {"when": args.when or NEEDS, "where": args.where or NEEDS, "who": args.who or NEEDS, "contact": args.contact or NEEDS}
     fixes = []
@@ -386,7 +386,9 @@ def cmd_draft(wp, args):
             sys.exit(f"--fix needs OLD=>NEW, got {f!r}")
         fixes.append(tuple(f.split("=>", 1)))
     kind = extra.get("kind", "activity")
-    template = INFO_TEMPLATE if kind == "info" else ACTIVITY_TEMPLATE
+    template = extra.get("template") or (INFO_TEMPLATE if kind == "info" else ACTIVITY_TEMPLATE)
+    if template not in (INFO_TEMPLATE, ACTIVITY_TEMPLATE, "page-templates/listing.php", "page-templates/mission-partner.php"):
+        sys.exit(f"unknown template {template!r}")
     image_override = None
     widget_images = elementor_parts(page)[1]
     media_id = getattr(args, "image_id", None) or (None if widget_images else page.get("featured_media"))

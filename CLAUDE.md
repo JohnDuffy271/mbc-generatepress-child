@@ -466,13 +466,24 @@ Pages, menus and settings are managed via the WordPress REST API.
          Info pages (`"kind": "info"` in the facts file): headings, lists,
          links and tidy inline markup in document order, pasted classes and
          styles dropped, same-site URLs made relative, optional
-         `content_file` for a hand-built page (Meet the team). Open points:
-         Meet the team names people (kept; the page is the roster); eight
-         deacon photos and all nine policy PDFs are not on the sandbox (they
-         are only on live; downloading them needs John's explicit OK as the
-         live-access exception covers only `import_live_posts.py`); the
-         Room Hire graphic is text-in-image; the Privacy Notice PDF in the
-         Policies list may serve the cutover Privacy Notice.
+         `content_file` for a hand-built page (Meet the team). **John's
+         decisions (15 Oct 2026):** Meet the team keeps the names ("Current
+         as of October 2026"); the eight deacon photos and nine policy PDFs
+         were downloaded with `elementor_exit.py assets` (media 752-759 and
+         760-768, plus Claire Taylor's existing 502) and the drafts relinked
+         to the sandbox copies (Meet the team now shows a photo grid,
+         alphabetical by first name); Room Hire graphic kept as a stopgap;
+         Policies has no image; dated document titles left as they are; Who
+         we are's dangling sentence rewritten in draft 741 (John S to
+         approve). **Still open before publishing batch 2:** the Privacy
+         Notice footer decision (the PDF is in the Policies list; does it
+         cover the newsletter?) and John's block-editor check of drafts
+         741-745 (both were blank in his message). **Contact Us (211):**
+         backed up and drafted as 771 on the Listing template (details,
+         office-hours note, "View on Google Maps" link instead of the
+         embedded iframe, social links, no form); the
+         `contact-placeholder` pattern now holds the same content (version
+         1.0.3). Nothing published.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -664,7 +675,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.2). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.3). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
