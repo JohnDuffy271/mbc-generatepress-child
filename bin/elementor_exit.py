@@ -181,7 +181,7 @@ def clean_inline(fragment, unbold=False):
 
 def para_block(text, unbold=False, headings=()):
     """A paragraph block (or an h2 if the whole text is one of the given heading words)."""
-    text = typography(re.sub(r"\s*<br\s*/?>\s*", " ", clean_inline(text, unbold)).strip())
+    text = typography(re.sub(r"[ \u00a0]{2,}", " ", re.sub(r"\s*<br\s*/?>\s*", " ", clean_inline(text, unbold))).strip())
     plain = re.sub(r"<[^>]+>", "", text).strip()
     if not plain:
         return []
@@ -204,11 +204,18 @@ def list_block(tag, inner, unbold=False):
     return [f'<!-- wp:list{attrs} -->\n<{tag} class="wp-block-list">{lis}</{tag}>\n<!-- /wp:list -->']
 
 
+def strip_wrappers(text):
+    """Drop pasted <div> wrappers; each closing </div> is a paragraph boundary."""
+    text = re.sub(r"</div>", "<br><br>", text, flags=re.I)
+    text = re.sub(r"<div\b[^>]*>", "", text, flags=re.I)
+    return text.strip()
+
+
 def html_to_blocks(fragment, unbold=False, headings=()):
     """Block markup for a text-editor fragment: p, h1-h6, ul/ol and loose text."""
     out, pos = [], 0
     for m in re.finditer(r"<(p|h[1-6]|ul|ol|blockquote)\b[^>]*>(.*?)</\1>", fragment, re.S | re.I):
-        out += split_paragraphs(re.sub(r"</?div[^>]*>", "", fragment[pos:m.start()]).strip(), unbold, headings)
+        out += split_paragraphs(strip_wrappers(fragment[pos:m.start()]), unbold, headings)
         tag, inner = m.group(1).lower(), m.group(2)
         if tag == "p":
             out += split_paragraphs(inner, unbold, headings)
@@ -224,7 +231,7 @@ def html_to_blocks(fragment, unbold=False, headings=()):
                 f"<!-- wp:paragraph -->\n<p>{typography(clean_inline(x, unbold).strip())}</p>\n<!-- /wp:paragraph -->"
                 for x in re.findall(r"<p\b[^>]*>(.*?)</p>", inner, re.S)) + "</blockquote>\n<!-- /wp:quote -->")
         pos = m.end()
-    out += split_paragraphs(re.sub(r"</?div[^>]*>", "", fragment[pos:]).strip(), unbold, headings)
+    out += split_paragraphs(strip_wrappers(fragment[pos:]), unbold, headings)
     return out
 
 
@@ -382,7 +389,7 @@ def cmd_draft(wp, args):
             if re.search(bad, body):
                 sys.exit(f"content file contains {why}: not allowed (tokens and relative URLs only)")
     elif kind == "info":
-        body, notes = build_info(page, facts, extra, fixes, image_override)
+        body, notes = build_info(page, facts, dict(extra, alt=args.alt), fixes, image_override)
     else:
         body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override, extra)
     title = f"{page['title']['raw']} (block draft)"

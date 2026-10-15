@@ -293,6 +293,7 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-people-list {
 	columns: 3 12rem;
 	column-gap: var(--mbc-space-xl);
+	margin: 0 0 var(--mbc-space-m);
 	padding: 0;
 	list-style: none;
 }
