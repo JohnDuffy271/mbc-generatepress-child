@@ -7,14 +7,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * A comparable identity for an image URL: the file name without extension
- * and without WordPress's "-scaled" and "-WIDTHxHEIGHT" suffixes, so a
- * resized copy and its original count as the same picture.
+ * and without WordPress's "-scaled" and "-WIDTHxHEIGHT" suffixes (and the
+ * "-N" it adds when a file name clashes), so a resized copy and its original
+ * count as the same picture.
  */
 function mbc_image_identity( $url ) {
     $name = strtolower( pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_FILENAME ) );
     do {
         $before = $name;
-        $name   = preg_replace( '/-(?:scaled|\d+x\d+)$/', '', $name );
+        $name   = preg_replace( '/-(?:scaled|\d+x\d+)(?:-\d+)?$/', '', $name ); // Optional -N: WordPress's rename on a file name clash.
     } while ( $name !== $before );
     return $name;
 }
