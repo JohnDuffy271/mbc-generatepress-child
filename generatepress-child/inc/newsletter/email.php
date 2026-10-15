@@ -85,6 +85,21 @@ function mbc_nl_email_intro_html( $content, array $s ) {
 }
 
 /**
+ * The issue's header image: its own featured image, else the default header image (the media item
+ * whose ID is in the option mbc_nl_default_header_id, filter mbc_newsletter_default_header_id).
+ *
+ * @param int|WP_Post $issue Issue.
+ * @return int Attachment ID, or 0 for none (callers then fall back to the logo).
+ */
+function mbc_nl_header_id( $issue ) {
+    $id = (int) get_post_thumbnail_id( $issue );
+    if ( ! $id ) {
+        $id = (int) apply_filters( 'mbc_newsletter_default_header_id', (int) get_option( MBC_NL_DEFAULT_HEADER_OPTION, 0 ) );
+    }
+    return ( $id && wp_attachment_is_image( $id ) ) ? $id : 0;
+}
+
+/**
  * Image data for an email: absolute https URL, and the width/height to show it at.
  *
  * @return array{src:string,width:int,height:int}|null

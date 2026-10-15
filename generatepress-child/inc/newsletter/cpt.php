@@ -14,6 +14,7 @@ const MBC_NL_TYPE    = 'mbc_newsletter';
 const MBC_NL_SLUG    = 'newsletter';
 const MBC_NL_CAP     = 'mbc_manage_newsletter';
 const MBC_NL_ROLE    = 'mbc_newsletter_editor';
+const MBC_NL_DEFAULT_HEADER_OPTION = 'mbc_nl_default_header_id'; // Attachment ID of the default header image.
 const MBC_NL_VERSION = '1'; // Bump to re-sync the role's capabilities and flush the rewrite rules once.
 
 add_action( 'init', 'mbc_nl_register_type' );
@@ -147,6 +148,13 @@ function mbc_nl_install() {
 
 add_action( 'init', 'mbc_nl_register_meta' );
 function mbc_nl_register_meta() {
+    // The default header image (read/written over REST by administrators via /wp/v2/settings).
+    register_setting( 'mbc_newsletter', MBC_NL_DEFAULT_HEADER_OPTION, array(
+        'type'              => 'integer',
+        'default'           => 0,
+        'show_in_rest'      => true,
+        'sanitize_callback' => 'absint',
+    ) );
     $auth = static function () {
         return current_user_can( MBC_NL_CAP );
     };

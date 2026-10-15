@@ -28,9 +28,10 @@ get_header();
                 </p>
             </header>
 
-            <?php if ( has_post_thumbnail() ) : ?>
+            <?php $mbc_header_id = mbc_nl_header_id( get_the_ID() ); ?>
+            <?php if ( $mbc_header_id ) : ?>
                 <figure class="mbc-post__figure">
-                    <?php the_post_thumbnail( 'large', array( 'class' => 'mbc-post__image' ) ); ?>
+                    <?php echo wp_get_attachment_image( $mbc_header_id, 'large', false, array( 'class' => 'mbc-post__image' ) ); ?>
                 </figure>
             <?php endif; ?>
 

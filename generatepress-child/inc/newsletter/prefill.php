@@ -4,13 +4,21 @@
  *
  * Categories are referenced by SLUG, never by ID (the live and sandbox IDs differ).
  * Filters: mbc_newsletter_category_slugs (default: news), mbc_newsletter_exclude_category_slugs
- * (default: ministers-message).
+ * (default: ministers-message), mbc_newsletter_max_posts (pre-fill cap, default 6: the value of the
+ * old Shortcoder newsletter-no-of-posts).
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const MBC_NL_MAX_POSTS    = 12; // Pre-fill cap.
+const MBC_NL_MAX_POSTS    = 6;  // Default pre-fill cap (filter: mbc_newsletter_max_posts).
 const MBC_NL_FIRST_WINDOW = 14; // Days, when there is no previous issue.
+
+/**
+ * @return int The pre-fill cap (at least 1).
+ */
+function mbc_nl_max_posts() {
+    return max( 1, (int) apply_filters( 'mbc_newsletter_max_posts', MBC_NL_MAX_POSTS ) );
+}
 
 /**
  * @param string $filter Filter name giving the slugs.
@@ -93,18 +101,19 @@ function mbc_nl_prefill( $issue_id = 0 ) {
         return array( 'ids' => array(), 'since' => $since );
     }
 
+    $max        = mbc_nl_max_posts();
     $sticky_ids = array();
     $sticky     = array_filter( array_map( 'intval', (array) get_option( 'sticky_posts', array() ) ) );
     if ( $sticky ) {
-        $sticky_ids = get_posts( array_merge( $base, array( 'post__in' => $sticky, 'posts_per_page' => MBC_NL_MAX_POSTS ) ) );
+        $sticky_ids = get_posts( array_merge( $base, array( 'post__in' => $sticky, 'posts_per_page' => $max ) ) );
     }
     $recent = get_posts( array_merge( $base, array(
-        'posts_per_page' => MBC_NL_MAX_POSTS,
+        'posts_per_page' => $max,
         'post__not_in'   => $sticky_ids,
         'date_query'     => array( array( 'column' => 'post_date_gmt', 'after' => $since, 'inclusive' => false ) ),
     ) ) );
 
-    $ids = array_slice( array_merge( array_map( 'intval', $sticky_ids ), array_map( 'intval', $recent ) ), 0, MBC_NL_MAX_POSTS );
+    $ids = array_slice( array_merge( array_map( 'intval', $sticky_ids ), array_map( 'intval', $recent ) ), 0, $max );
     return array( 'ids' => $ids, 'since' => $since );
 }
 

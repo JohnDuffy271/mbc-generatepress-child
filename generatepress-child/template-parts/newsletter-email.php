@@ -21,7 +21,7 @@ $name  = get_bloginfo( 'name' );
 $subtitle = trim( (string) get_post_meta( $issue->ID, 'mbc_nl_subtitle', true ) );
 $intro    = mbc_nl_email_intro_html( $issue->post_content, $s );
 $posts    = isset( $args['posts'] ) ? $args['posts'] : mbc_nl_issue_posts( $issue->ID );
-$header   = mbc_nl_email_image( get_post_thumbnail_id( $issue ), $w );
+$header   = mbc_nl_email_image( mbc_nl_header_id( $issue ), $w );
 if ( ! $header ) {
     $header = mbc_nl_email_image( (int) get_theme_mod( 'custom_logo' ), 240 );
 }
