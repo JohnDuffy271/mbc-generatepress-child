@@ -55,6 +55,10 @@ SEEDS = [
     ("mission-group", 631, "mission-partner", "page-templates/mission-partner.php"),
     ("moortown-emergency-relief-fund", 633, "mission-partner", "page-templates/mission-partner.php"),
     ("pathways", 634, "mission-partner", "page-templates/mission-partner.php"),
+    # Listing pages
+    ("news", 624, "news-listing", "page-templates/listing.php"),
+    ("events", 628, "events-placeholder", "page-templates/listing.php"),
+    ("contact-us", 211, "contact-placeholder", "page-templates/listing.php"),
 ]
 
 
