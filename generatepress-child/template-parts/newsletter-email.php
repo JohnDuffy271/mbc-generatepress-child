@@ -5,7 +5,7 @@
  * 600px table layout, inline styles, absolute https links, Mailchimp merge tags in the
  * footer. Colours, fonts and sizes come from css/tokens.css (inc/newsletter/email-style.php).
  *
- * @var array $args { 'issue' => WP_Post }
+ * @var array $args { 'issue' => WP_Post, 'posts' => WP_Post[] (optional: an unsaved issue passes its own list) }
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,7 +20,7 @@ $name  = get_bloginfo( 'name' );
 
 $subtitle = trim( (string) get_post_meta( $issue->ID, 'mbc_nl_subtitle', true ) );
 $intro    = mbc_nl_email_intro_html( $issue->post_content, $s );
-$posts    = mbc_nl_issue_posts( $issue->ID );
+$posts    = isset( $args['posts'] ) ? $args['posts'] : mbc_nl_issue_posts( $issue->ID );
 $header   = mbc_nl_email_image( get_post_thumbnail_id( $issue ), $w );
 if ( ! $header ) {
     $header = mbc_nl_email_image( (int) get_theme_mod( 'custom_logo' ), 240 );
