@@ -37,6 +37,16 @@ SEEDS = [
     ("lunch-club", 56, "activity-details", "page-templates/activity.php"),
     ("craft-group", 565, "activity-details", "page-templates/activity.php"),
     ("house-groups", 46, "activity-details", "page-templates/activity.php"),
+    # Info pages (About Us and Resources children)
+    ("who-we-are", 343, "info-page", "page-templates/info.php"),
+    ("what-we-believe", 345, "info-page", "page-templates/info.php"),
+    ("meet-the-team", 42, "info-page", "page-templates/info.php"),
+    ("faqs", 626, "info-page", "page-templates/info.php"),
+    ("bu-and-yba", 635, "info-page", "page-templates/info.php"),
+    ("services-on-youtube", 350, "info-page", "page-templates/info.php"),
+    ("room-hire", 391, "info-page", "page-templates/info.php"),
+    ("policies-and-documents", 276, "info-page", "page-templates/info.php"),
+    ("giving", 637, "info-page", "page-templates/info.php"),
 ]
 
 

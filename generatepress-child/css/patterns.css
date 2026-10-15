@@ -121,3 +121,24 @@ html body .mbc-band__social .wp-social-link a {
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 }
+
+/* ---- Info page ---- */
+.mbc-lead {
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step-1);
+}
+
+.mbc-page__content .wp-block-image img {
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-cta {
+	padding: var(--mbc-space-l);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-cta > :last-child {
+	margin-bottom: 0;
+}
