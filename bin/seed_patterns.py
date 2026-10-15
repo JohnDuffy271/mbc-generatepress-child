@@ -43,7 +43,6 @@ SEEDS = [
     ("meet-the-team", 42, "info-page", "page-templates/info.php"),
     ("faqs", 626, "info-page", "page-templates/info.php"),
     ("bu-and-yba", 635, "info-page", "page-templates/info.php"),
-    ("services-on-youtube", 350, "info-page", "page-templates/info.php"),
     ("room-hire", 391, "info-page", "page-templates/info.php"),
     ("policies-and-documents", 276, "info-page", "page-templates/info.php"),
     ("giving", 637, "info-page", "page-templates/info.php"),

@@ -50,8 +50,9 @@ TOP = [
     ("news", None, "News", "listing"),
     ("contact-us", 211, "Contact Us", "listing"),
 ]
-# parent slug -> children in menu order. A fifth element "external" marks a
-# menu-only external link (the page itself is kept for the legacy feed).
+# parent slug -> children in menu order. A fifth element "external" marks an
+# external menu link; a sixth, "menu-only", means it has no page of its own
+# (Services on YouTube: the old page 350 was retired on 15 Oct 2026).
 CHILDREN = {
     "about-us": [
         ("who-we-are", 343, "Who we are", "info"),
@@ -80,7 +81,7 @@ CHILDREN = {
     ],
     "resources": [
         ("bu-and-yba", None, "BU & YBA", "info"),
-        ("services-on-youtube", 350, "Services on YouTube", "info", "external"),
+        ("services-on-youtube", None, "Services on YouTube", "info", "external", "menu-only"),
         ("room-hire", 391, "Room Hire", "info"),
         ("policies-and-documents", 276, "Policies & Documents", "info"),
         ("giving", None, "Giving", "info"),
@@ -238,6 +239,8 @@ def build_spec():
                          order=order, group=group, external=False))
     for parent_key, kids in CHILDREN.items():
         for order, kid in enumerate(kids, 1):
+            if kid[5:6] == ("menu-only",):  # a menu link with no page of its own
+                continue
             slug, pid, title, group = kid[:4]
             spec.append(dict(key=slug, id=pid, slug=slug, title=title, parent_key=parent_key,
                              order=order, group=group, external=len(kid) > 4))

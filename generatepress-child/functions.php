@@ -16,10 +16,6 @@ require_once get_stylesheet_directory() . '/inc/looks.php';
 require_once get_stylesheet_directory() . '/inc/post-helpers.php';
 require_once get_stylesheet_directory() . '/inc/demo-import.php'; // TEMPORARY: remove before launch.
 
-// YouTube feed shortcode [mbc_youtube_feed]. Still used by the legacy
-// "Services on YouTube" page (ID 350); remove once that page is retired.
-require_once get_stylesheet_directory() . '/includes/mbc-youtube-feed.php';
-
 add_action( 'wp_enqueue_scripts', 'mbc_child_enqueue_styles' );
 function mbc_child_enqueue_styles() {
     wp_enqueue_style(
@@ -43,12 +39,5 @@ function mbc_child_enqueue_styles() {
         get_stylesheet_directory_uri() . '/css/base.css',
         array( 'mbc-tokens' ),
         filemtime( get_stylesheet_directory() . '/css/base.css' )
-    );
-    // Legacy: styles the YouTube feed shortcode (see above).
-    wp_enqueue_style(
-        'mbc-youtube-feed',
-        get_stylesheet_directory_uri() . '/assets/css/mbc-youtube-feed.css',
-        array( 'mbc-tokens' ),
-        filemtime( get_stylesheet_directory() . '/assets/css/mbc-youtube-feed.css' )
     );
 }
