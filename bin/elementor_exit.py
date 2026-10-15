@@ -7,7 +7,7 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       (outside the repo) and verify the file is written and valid JSON.
 
   elementor_exit.py draft   PAGE_ID [--when ..] [--where ..] [--who ..] [--contact ..]
-                            [--alt TEXT] [--fix 'OLD=>NEW' ...] [--facts-file FILE.json] [--apply]
+                            [--alt TEXT] [--image-id N] [--fix 'OLD=>NEW' ...] [--facts-file FILE.json] [--apply]
       Build an Activity-pattern block version of the page's text and image as a
       NEW DRAFT page ("<title> (block draft)"). The original page is untouched.
 
@@ -44,7 +44,7 @@ NEEDS = "Needs confirming"
 
 def get_page(wp, page_id):
     return wp.call("GET", f"pages/{page_id}", {"context": "edit",
-                   "_fields": "id,slug,title,status,template,parent,menu_order,link,content.raw,meta"})
+                   "_fields": "id,slug,title,status,template,parent,menu_order,link,featured_media,content.raw,meta"})
 
 
 def backup(wp, page_id):
@@ -119,7 +119,7 @@ def paragraphs(texts):
     return "\n\n".join(out), warnings
 
 
-def build_activity(page, facts, alt=None, fixes=()):
+def build_activity(page, facts, alt=None, fixes=(), image_override=None):
     texts, images, other = elementor_parts(page)
     body = sp.pattern_markup("activity-details")
     notes = []
@@ -127,16 +127,19 @@ def build_activity(page, facts, alt=None, fixes=()):
         body, n = re.subn(rf"(<p><strong>{re.escape(label)}</strong> ).*?(</p>)", lambda m: m.group(1) + html.escape(facts[key]) + m.group(2), body)
         if n != 1:
             sys.exit(f"pattern has no '{label}' fact line")
-    if images:
-        img = images[0]
+    if image_override or images:
+        img = image_override or images[0]
+        skipped = len(images) - (0 if image_override else 1)
         rel = re.sub(r"^https?://[^/]+", "", img.get("url", ""))
         attrs = f'"mediaId":{int(img["id"])},' if str(img.get("id", "")).isdigit() else ""
         body = body.replace('{"mediaType":"image","className":"mbc-activity__top"}', "{" + attrs + '"mediaType":"image","className":"mbc-activity__top"}', 1)
         cls = f' class="wp-image-{int(img["id"])}"' if attrs else ""
         body = re.sub(r'<img src="/wp-content/themes/generatepress-child/images/placeholder\.svg" alt=""/>',
                       f'<img src="{rel}" alt="{html.escape(alt if alt is not None else img.get("alt", ""), quote=True)}"{cls}/>', body, count=1)
-        if len(images) > 1:
-            notes.append(f"{len(images) - 1} more image(s) not carried over")
+        if skipped > 0:
+            notes.append(f"{skipped} Elementor image widget(s) not carried over")
+        if image_override:
+            notes.append(f"image: media {img['id']} (the page's featured image unless --image-id)")
         if not (alt or img.get("alt")):
             notes.append("the image has no alt text")
     else:
@@ -166,7 +169,7 @@ def cmd_draft(wp, args):
         sys.exit(f"page {args.page_id} is not Elementor-built")
     if args.facts_file:  # same options as JSON; command-line options win
         given = json.loads(Path(args.facts_file).read_text())
-        for key in ("when", "where", "who", "contact", "alt"):
+        for key in ("when", "where", "who", "contact", "alt", "image_id"):
             if getattr(args, key, None) is None and key in given:
                 setattr(args, key, given[key])
         args.fix = list(args.fix or []) + list(given.get("fix", []))
@@ -176,7 +179,14 @@ def cmd_draft(wp, args):
         if "=>" not in f:
             sys.exit(f"--fix needs OLD=>NEW, got {f!r}")
         fixes.append(tuple(f.split("=>", 1)))
-    body, notes, ok = build_activity(page, facts, args.alt, fixes)
+    image_override = None
+    widget_images = elementor_parts(page)[1]
+    media_id = getattr(args, "image_id", None) or (None if widget_images else page.get("featured_media"))
+    if media_id:
+        m = wp.call("GET", f"media/{int(media_id)}", {"context": "edit", "_fields": "id,source_url,alt_text,media_details"})
+        large = m["media_details"].get("sizes", {}).get("large", {}).get("source_url") or m["source_url"]
+        image_override = {"id": m["id"], "url": large, "alt": m["alt_text"]}
+    body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override)
     title = f"{page['title']['raw']} (block draft)"
     slug = f"{page['slug']}-block-draft"
     existing = wp.call("GET", "pages", {"slug": slug, "status": "draft,publish,private,pending", "_fields": "id"})
@@ -190,10 +200,10 @@ def cmd_draft(wp, args):
         print("dry run: nothing written (use --apply)")
         return
     if args.alt:  # also put the alt text on the media library item
-        _, images, _ = elementor_parts(page)
-        if images and str(images[0].get("id", "")).isdigit():
-            wp.call("POST", f"media/{int(images[0]['id'])}", body={"alt_text": args.alt}, params={"_fields": "id"})
-            print(f"alt text set on media {images[0]['id']}")
+        target = image_override or (widget_images[0] if widget_images else None)
+        if target and str(target.get("id", "")).isdigit():
+            wp.call("POST", f"media/{int(target['id'])}", body={"alt_text": args.alt}, params={"_fields": "id"})
+            print(f"alt text set on media {target['id']}")
     payload = {"title": title, "slug": slug, "status": "draft", "parent": page["parent"], "template": ACTIVITY_TEMPLATE, "content": body}
     if existing:
         made = wp.call("POST", f"pages/{existing[0]['id']}", body=payload, params={"_fields": "id,link"})
@@ -234,6 +244,7 @@ def main():
     for f in ("when", "where", "who", "contact"):
         d.add_argument(f"--{f}")
     d.add_argument("--alt", help="alt text for the image")
+    d.add_argument("--image-id", type=int, help="media ID to use (default: the Elementor image, else the page's featured image)")
     d.add_argument("--fix", action="append", metavar="OLD=>NEW", help="correct a typo in the text (repeatable)")
     d.add_argument("--facts-file", help="JSON file with when/where/who/contact/alt/fix")
     d.add_argument("--apply", action="store_true")

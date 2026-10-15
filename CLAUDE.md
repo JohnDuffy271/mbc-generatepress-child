@@ -413,6 +413,20 @@ Pages, menus and settings are managed via the WordPress REST API.
          and describe it in the alt text. Very wide banner-shaped images
          (Sunday Mornings 8:3, Beacon Cafe about 4:1) crop heavily in the
          4:3 slot: flag them for John.
+         **Batch 1 (Activity pages), 15 Oct 2026, awaiting John's review,
+         nothing published:** drafts 725 Sunday Mornings (page 44), 726
+         Beacon Cafe (251), 727 Rock Solid (60), 728 Stepping Stones (48),
+         729 Lunch Club (56); all five backed up. Review list and image crop
+         sheet: `~/src/mbc-tests/review/` (outside the repo). Open points:
+         "Contact" is "Needs confirming" on all five; Sunday Mornings and
+         Beacon Cafe images are unusable in the 4:3 slot (text graphic /
+         panorama); photos of identifiable people (children) need consent;
+         Lunch Club's text names an individual. Compare-with-live finding:
+         the sandbox texts are independent rewrites (no shared sentences
+         with live), so "which is more current" cannot be answered by
+         comparison; facts were taken from the sandbox text and from live
+         pages and weekly news (with dates), and recorded with sources in
+         the review list.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
