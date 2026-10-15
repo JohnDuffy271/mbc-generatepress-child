@@ -290,7 +290,8 @@ html body .mbc-band__social .wp-social-link a {
 	margin-top: 0;
 }
 
-.mbc-people-grid {
+.mbc-people-grid > .wp-block-group__inner-container,
+.mbc-people-grid:not(:has(> .wp-block-group__inner-container)) {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
 	gap: var(--mbc-space-l) var(--mbc-space-m);
