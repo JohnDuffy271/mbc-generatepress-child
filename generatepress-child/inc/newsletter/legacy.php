@@ -13,6 +13,20 @@ defined( 'ABSPATH' ) || exit;
 
 const MBC_NL_LEGACY_PATH = 'mbc-newsletter-articles';
 const MBC_NL_LEGACY_DAYS = 10;
+const MBC_NL_LEGACY_OPTION = 'mbc_nl_legacy_days'; // Optional override of the 10 days (administrators, via /wp/v2/settings).
+
+// The threshold is a setting so a test (or an administrator) can move it; the default is unchanged.
+add_action( 'init', 'mbc_nl_register_legacy_setting' );
+function mbc_nl_register_legacy_setting() {
+    register_setting( 'mbc_newsletter', MBC_NL_LEGACY_OPTION, array(
+        'type'              => 'integer',
+        'default'           => MBC_NL_LEGACY_DAYS,
+        'show_in_rest'      => true,
+        'sanitize_callback' => static function ( $value ) {
+            return min( 3650, max( 0, (int) $value ) );
+        },
+    ) );
+}
 
 add_action( 'template_redirect', 'mbc_nl_legacy_address', 1 );
 function mbc_nl_legacy_address() {
@@ -33,7 +47,7 @@ function mbc_nl_legacy_address() {
         'order'          => 'DESC',
         'no_found_rows'  => true,
     ) );
-    $days = (int) apply_filters( 'mbc_newsletter_legacy_days', MBC_NL_LEGACY_DAYS );
+    $days = (int) apply_filters( 'mbc_newsletter_legacy_days', (int) get_option( MBC_NL_LEGACY_OPTION, MBC_NL_LEGACY_DAYS ) );
     if ( $latest ) {
         $age = time() - (int) strtotime( $latest[0]->post_date_gmt . ' UTC' );
         $url = mbc_nl_email_url( $latest[0]->ID );
