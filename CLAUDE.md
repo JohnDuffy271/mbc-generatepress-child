@@ -331,8 +331,11 @@ Pages, menus and settings are managed via the WordPress REST API.
       - Remove the sidebar site-wide via the `generate_sidebar_layout`
         filter (old pages still show GP's Search/Recent Posts/Recent
         Comments widgets).
-      - The `footer` menu location has no menu assigned until the Privacy
-        Notice and Cookies pages exist (cutover checklist).
+      - The `footer` menu location now has the "Footer" menu (id 15, made
+        by `bin/setup_footer_menu.py`, idempotent) with one link, Privacy
+        Notice, to the sandbox copy of the PDF (media 766). Cookies is
+        still open: add it to `FOOTER_LINKS` in that script once the page
+        exists (cutover checklist).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -455,35 +458,39 @@ Pages, menus and settings are managed via the WordPress REST API.
          more current" cannot be answered by comparison; facts were taken
          from the sandbox text and from live pages and weekly news (with
          dates).
-         **Batch 2 (Info pages), 15 Oct 2026, drafts awaiting John's
-         review, nothing published:** 741 Who we are (page 343), 742 What
-         we believe (345), 743 Meet the team (42), 744 Room Hire (391),
-         745 Policies & Documents (276); all five backed up. Review list
-         and preview screenshots (the drafts injected into the real Info
-         template; drafts cannot be opened without a login):
-         `~/src/mbc-tests/review/` (`elementor-batch-2-review.md`,
-         `preview_draft.py`). Tool: `elementor_exit.py draft` now converts
-         Info pages (`"kind": "info"` in the facts file): headings, lists,
-         links and tidy inline markup in document order, pasted classes and
-         styles dropped, same-site URLs made relative, optional
-         `content_file` for a hand-built page (Meet the team). **John's
-         decisions (15 Oct 2026):** Meet the team keeps the names ("Current
-         as of October 2026"); the eight deacon photos and nine policy PDFs
-         were downloaded with `elementor_exit.py assets` (media 752-759 and
-         760-768, plus Claire Taylor's existing 502) and the drafts relinked
-         to the sandbox copies (Meet the team now shows a photo grid,
-         alphabetical by first name); Room Hire graphic kept as a stopgap;
-         Policies has no image; dated document titles left as they are; Who
-         we are's dangling sentence rewritten in draft 741 (John S to
-         approve). **Still open before publishing batch 2:** the Privacy
-         Notice footer decision (the PDF is in the Policies list; does it
-         cover the newsletter?) and John's block-editor check of drafts
-         741-745 (both were blank in his message). **Contact Us (211):**
-         backed up and drafted as 771 on the Listing template (details,
-         office-hours note, "View on Google Maps" link instead of the
-         embedded iframe, social links, no form); the
-         `contact-placeholder` pattern now holds the same content (version
-         1.0.3). Nothing published.
+         **Batch 2 (Info pages) and Contact Us, 15 Oct 2026: PUBLISHED**
+         one at a time with the backup-first step and a per-page check
+         (published, Elementor meta gone, no Elementor markup, draft
+         trashed, backup present, public URL 200, no GP banner): Who we are
+         (page 343), What we believe (345), Meet the team (42), Room Hire
+         (391), Policies & Documents (276) and Contact Us (211, Listing
+         template). Drafts 741-745 and 771 are in the trash; all six are
+         backed up in `~/src/mbc-elementor-backups/`. John's block-editor
+         check of all six drafts was clean. Review notes:
+         `~/src/mbc-tests/review/elementor-batch-2-review.md`. Tool:
+         `elementor_exit.py draft` converts Info pages (`"kind": "info"` in
+         the facts file; headings, lists, links and tidy inline markup in
+         document order, pasted classes and styles dropped, same-site URLs
+         made relative), takes `content_file` for a hand-built page and
+         `template` for another template (Contact Us), and
+         `elementor_exit.py assets PAGE_ID` copies the page's live uploads
+         to the sandbox (see Safety). **Decisions applied:** Meet the team
+         keeps the names ("Current as of October 2026") with a photo grid
+         (media 752-759 and Claire Taylor's 502); policy PDFs are media
+         760-768 and the draft links point at them; Room Hire's graphic is
+         kept as a stopgap; Policies has no image; dated document titles
+         left as they are; Who we are's rewritten sentence is awaiting John
+         S's approval. Contact Us has no form (plugin undecided): details,
+         office-hours note, a "View on Google Maps" button instead of the
+         Google iframe, social links; the `contact-placeholder` pattern
+         holds the same content (theme version 1.0.3).
+         **Legacy (Elementor) pages remaining, 11:** Mission partners BMS
+         (467), Leeds Furniture Mission (452), Mission Aviation Fellowship
+         (455), Romania (525); Rock Solid (60, held: draft 727 waits for
+         John S's copy); Services on YouTube (350, holds the
+         `[mbc_youtube_feed]` shortcode); the parent pages Mission (374,
+         section index template) and What's On (327); and the unlinked
+         drafts Welcome (8), Baptism (54) and Sunday School (556).
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -620,6 +627,9 @@ in the image**.
 - **Room Hire:** photos of the rooms available for hire (the current image
   is a designed graphic with text and a black-and-gold look, kept as a
   stopgap). The Info page's image is full width, so a wide photo is fine.
+- **Contact Us map image (low priority, not now):** John may later add a
+  map image on Contact Us that links to Google Maps. The old banner
+  (media 607, a screenshot of Google Maps) is still in the media library.
 Photo consent is managed by John S (see Safety).
 
 ## Header and footer architecture
@@ -787,8 +797,12 @@ contrast check reports it as informational only.
       (category IDs and post markup differ from the old site).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
-- [ ] Privacy Notice and Cookies pages published and linked in the footer
-      menu. The newsletter signup collects email addresses, so a privacy
-      notice is required before launch (page 3 `privacy-policy` is a draft).
+- [ ] Privacy Notice and Cookies linked in the footer menu. The Privacy
+      Notice (the church's PDF, which covers consent for newsletters) is
+      linked from the footer since 15 Oct 2026; **Cookies is still open**
+      (no page yet; page 3 `privacy-policy` is a draft).
+- [ ] **Privacy Notice should name Mailchimp (Intuit) as processor and
+      mention the US data transfer, now that names are collected. Raise
+      with the church's data protection lead.**
 - [ ] Live-old → new redirect map (see Status).
 - [ ] Remove the E2E test page 620 (ask first).
