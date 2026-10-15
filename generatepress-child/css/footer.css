@@ -164,8 +164,11 @@ html body .mbc-footer input[type="submit"]:focus {
 		grid-template-columns: 1fr 1fr;
 		gap: var(--mbc-space-3xl);
 	}
+}
 
-	/* Email and Sign up span the row; first and last name sit side by side. */
+/* From desktop width (the footer's newsletter column is wide enough): email and
+   Sign up span the row; first and last name sit side by side. Stacked below. */
+@media (min-width: 1024px) {
 	.mbc-footer .mc4wp-form-fields {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
