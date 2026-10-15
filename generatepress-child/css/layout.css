@@ -28,3 +28,67 @@
 .mbc-page__content > h2 {
 	margin-top: var(--mbc-space-xl);
 }
+
+/* ---- Single post ---- */
+.mbc-post__cats {
+	margin: 0 0 var(--mbc-space-xs);
+	font-size: var(--mbc-step--1);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.mbc-post__cats:empty {
+	display: none;
+}
+
+.mbc-post__meta {
+	margin: 0 0 var(--mbc-space-l);
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step--1);
+}
+
+.mbc-post__figure {
+	margin: 0 0 var(--mbc-space-l);
+}
+
+.mbc-post__figure img,
+.mbc-post__content img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-post__content {
+	max-width: var(--mbc-measure);
+}
+
+.mbc-post__content > * + * {
+	margin-top: var(--mbc-space-m);
+}
+
+.post-navigation {
+	margin-top: var(--mbc-space-2xl);
+	padding-top: var(--mbc-space-l);
+	border-top: var(--mbc-border-width) solid var(--mbc-border);
+}
+
+.post-navigation .nav-links {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: var(--mbc-space-m);
+}
+
+.post-navigation a {
+	display: inline-block;
+	min-height: var(--mbc-tap-target);
+}
+
+.post-navigation .nav-subtitle {
+	display: block;
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step--1);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
