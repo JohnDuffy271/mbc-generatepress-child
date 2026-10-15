@@ -633,6 +633,16 @@ Pages, menus and settings are managed via the WordPress REST API.
         email version if it is 10 days old or less, otherwise a fresh unsaved
         pre-fill as an email. Whether Mailchimp's import follows a redirect is
         **untested**: check it in the Mailchimp test.
+        The 10 days is the administrator setting `mbc_nl_legacy_days` (default
+        10, 0-3650, REST `/wp/v2/settings`; filter `mbc_newsletter_legacy_days`
+        still applies). It exists so the tests can force both branches.
+        **Real issues exist on the sandbox** (e.g. #895, John's test issue; never
+        delete or edit issues the tests did not create). `newsletter_check.py`
+        is independent of them: the pre-fill section computes the window from
+        the actual latest issue and asserts on its own fixture posts only; the
+        legacy section checks the real state, then both branches with a
+        fixture issue and the threshold (restored in `finally`). Only ids a run
+        created are ever deleted.
       - **Checks** (outside the repo, sandbox only, all pass):
         `~/src/mbc-tests/newsletter_check.py [caps|prefill|adminjs|web|legacy]`,
         `newsletter_email_check.py <shots-dir>` (access rules, key, static
