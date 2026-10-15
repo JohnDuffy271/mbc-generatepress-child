@@ -631,14 +631,29 @@ Pages, menus and settings are managed via the WordPress REST API.
         the audience from the sandbox.
       - **Code Snippets and Shortcoder are NOT on the sandbox** (checked
         15 Oct 2026: only Elementor, Elementor Pro, Insert PHP Code Snippet
-        and MC4WP are installed). They exist on **live** only, where John S
+        and MC4WP were installed). They exist on **live** only, where John S
         still runs the v1.8 workflow, so **live Shortcoder and Code Snippets
-        stay untouched until cutover.** John S is still an Administrator
-        everywhere for that reason. Switching to "Newsletter editor" and the
-        plugin clean-up are cutover items. The capabilities John S would lose
-        (34, approved by John 15 Oct 2026; `manage_options`, plugin, theme and
-        user management, import/export, Elementor Pro notes) were generated
-        with `~/src/mbc-tests/cap_diff.py` plus PHP `array_diff`.
+        stay untouched until cutover.**
+      - **Role switch done on the sandbox (15 Oct 2026, John's instruction):**
+        John S (user 3) is now "Newsletter editor" on the sandbox (was
+        Administrator). The 34 capabilities lost were approved by John
+        (`manage_options`, plugin, theme and user management, import/export,
+        Elementor Pro notes; generated with `~/src/mbc-tests/cap_diff.py` plus
+        PHP `array_diff`). Check: `~/src/mbc-tests/role_access_check.py` (a
+        temporary user with the role reaches the newsletter list and edit
+        screen, Appearance > Menus, a post edit, a page edit and the Elementor
+        editor, and gets 403 on Settings, Plugins, Users, Add plugin, Theme
+        editor, Import and MC4WP settings). **The live switch stays a cutover
+        item.** Roll back, if ever needed, with REST `POST /wp/v2/users/3`
+        `{"roles":["administrator"]}`.
+      - **Insert PHP Code Snippet (sandbox plugin) deactivated 15 Oct 2026**
+        (John's instruction; not deleted). Its only snippet is
+        `GetSalutation()` (a time-of-day greeting with Christmas and New Year
+        variants); nothing on the sandbox calls it (no `xyz-ips` shortcode in
+        any post, page, template, widget or menu, no greeting text on the 43
+        pages rendered). **Delete it after a week with no issues (deactivated
+        2026-10-15).** No greeting replacement is built; at cutover check where
+        live uses it.
       - **Shortcoder (live) -> new fields.** Live holds exactly six shortcodes:
         | Shortcoder | Live value | Now |
         |---|---|---|
@@ -973,14 +988,16 @@ scale. Every value is traced to the original in the file's comments. Layout
       (old-to-new table in `docs/newsletter/category-map.md`, section
       "Renames"). The theme's code already uses the new slugs.
 - [ ] **Newsletter, live cutover:** switch John S (user 3) to "Newsletter
-      editor" on live (user admin and plugin settings stay with John, the
-      Administrator). Before deactivating Code Snippets and Shortcoder on
-      live, **check the live Code Snippets list and Shortcoder list for
-      anything beyond the newsletter** (Shortcoder was reported as exactly
-      six `newsletter-*` shortcodes; the snippets list has not been seen).
-      Deactivate first, **delete after a week with no issues** (record the
-      deactivation date here: ____). Also check what the sandbox's Insert
-      PHP Code Snippet plugin holds before launch (wp-admin only).
+      editor" on live (done on the sandbox 15 Oct 2026; user admin and plugin
+      settings stay with John, the Administrator). Before deactivating Code
+      Snippets and Shortcoder on live, **check the live Code Snippets list
+      and Shortcoder list for anything beyond the newsletter** (Shortcoder was
+      reported as exactly six `newsletter-*` shortcodes; the snippets list has
+      not been seen). Deactivate first, **delete after a week with no
+      issues** (record the deactivation date here: ____). Insert PHP Code
+      Snippet (only `GetSalutation()`, deactivated on the sandbox 15 Oct 2026):
+      **check where live calls it** before deciding on a greeting replacement
+      or removal.
 - [ ] Newsletter cutover: check the migrated data (categories `news` and the two `ministers-*` slugs exist; the sticky
       posts are what you expect); Mailchimp test done; the role switch and the
       Code Snippets / Shortcoder clean-up (previous item); point Mailchimp's
