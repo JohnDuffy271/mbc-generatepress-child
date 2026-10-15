@@ -15,7 +15,10 @@ Status list).
 
 - Live site: https://moortownbaptistchurch.org.uk (DO NOT TOUCH)
 - Sandbox:   https://new.moortownbaptistchurch.org.uk (all work happens here)
-- Tagline:   "Loving God, living generously, following Christ."
+- Tagline:   "Loving God. Living Generously. Following Jesus." (Andy's
+  wording, used on the front page for now; awaiting church confirmation.
+  The earlier wording was "Loving God, living generously, following
+  Christ.")
 
 ## Source of truth for structure
 
@@ -276,11 +279,27 @@ Pages, menus and settings are managed via the WordPress REST API.
       default and dark (also warm and high-contrast); contrast check passes
       for all four looks. Notes: pattern links are relative
       (`/whats-on/...`) and the placeholder image path is relative, so no
-      domain is baked into page content; the tagline is CLAUDE.md's
-      ("...following Christ."), whereas Andy's wireframe says "Loving God.
-      Living Generously. Following Jesus." (John to confirm); band text is
-      left-aligned throughout (the wireframe right-aligns headings beside a
-      left-hand image); band images are neutral placeholders.
+      domain is baked into page content. Tagline: Andy's wording "Loving
+      God. Living Generously. Following Jesus." (awaiting church
+      confirmation). Band text is left-aligned throughout, a **deliberate
+      deviation** from the wireframe (which right-aligns headings beside a
+      left-hand image) to confirm with Andy. Band images are neutral
+      placeholders. John approved the front page; the block editor opens
+      page 182 cleanly (no invalid blocks).
+- [x] Activity template (15 Oct 2026): `page-templates/activity.php`,
+      `patterns/activity-details.php` (image, When, Where, Who it's for,
+      Contact, "About this activity"), shared wrapper
+      `template-parts/page.php` (reused by Info, Mission partner and
+      Listing). Of the What's On children only House Groups (46) was empty,
+      so only it was seeded (with obvious "Add ..." placeholder text, to be
+      filled in); the six others (Sunday Mornings, Beacon Cafe, Rock Solid,
+      Stepping Stones, Lunch Club, Craft Group) carry legacy Elementor
+      content and were left completely alone (content *and* template);
+      Events (628) is a Listing page. `bin/seed_patterns.py` and
+      `bin/scaffold_site.py` both skip legacy pages. Checked with
+      `~/src/mbc-tests/activity_check.py` (360/1280px, default and dark,
+      and that the legacy pages are unchanged) and the contrast check
+      across all four looks.
 - [x] `tokens.css` neutral placeholder tokens + `css/base.css` (tokens
       only). Real brand tokens follow the branding exercise.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
@@ -369,6 +388,22 @@ Pages, menus and settings are managed via the WordPress REST API.
       discuss: freeze by send time (a cut-off date stored per issue), a
       per-issue tag or category, content baked into the email itself, or a
       per-issue archive page.
+
+## Questions for Andy
+
+Open design questions to put to Andy Berry (John to ask):
+1. **Tagline wording:** "Loving God. Living Generously. Following Jesus."
+   (his wireframe, used for now) or "Loving God, living generously,
+   following Christ." Awaiting church confirmation either way.
+2. **Explicit "Home" menu item:** the logo is Home per his spec; does he
+   also want a "Home" item in the menu?
+3. **X behaviour inside a submenu on mobile:** today the X (burger) closes
+   the whole menu from inside a submenu, while Back goes up one level, and
+   Android's system Back leaves the page. Should X go up one level instead,
+   and should system Back step up a level (see the open question in Status)?
+4. **Left-aligned band text:** the front page bands are left-aligned
+   throughout (a deliberate deviation); his wireframe right-aligns headings
+   beside a left-hand image. Is left-aligned acceptable?
 
 ## Header and footer architecture
 
