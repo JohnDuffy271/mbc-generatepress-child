@@ -7,8 +7,8 @@ For the people with the **Newsletter editor** role. You need to be signed in to 
 1. In the left menu choose **Newsletter → Add new issue**.
 2. Give it a **title** (for example "Moortown news, 26 October"). Add a **subtitle** if you want one; leave it empty and none is shown.
 3. Write a short **intro** in the box (paragraphs, bold, italic, links and lists only).
-4. On the right, **Set header image** if you have one for this issue. If you do not, the church logo or name is used.
-5. In **Posts in this issue** the list is filled in for you: the news posts published since the last issue, with any sticky (pinned) posts first.
+4. On the right, **Set header image** if you have one for this issue. If you do not, the standard Moortown banner is used.
+5. In **Posts in this issue** the list is filled in for you: the news posts published since the last issue (up to 6), with any sticky (pinned) posts first.
    - **Up / Down** change the order. **Remove** takes a post out of this issue (the post itself is not deleted).
    - **Add a post** puts another recent post in.
    - **Refill from posts since the last issue** starts the list again (anything you changed on the screen is lost).

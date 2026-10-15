@@ -586,7 +586,8 @@ Pages, menus and settings are managed via the WordPress REST API.
         `/newsletter/<slug>/` (web version).
       - **Pre-fill** ("Refill from posts since the last issue"): sticky posts
         first (whatever their age; remove per issue), then everything published
-        after the previous issue's date, newest first, capped at 12; 14 days
+        after the previous issue's date, newest first, capped at 6 (`mbc_newsletter_max_posts` filter; the old
+        Shortcoder `newsletter-no-of-posts`); 14 days
         when there is no previous issue. Categories are referenced by **slug**:
         `mbc_newsletter_category_slugs` (default `news`) and
         `mbc_newsletter_exclude_category_slugs` (default `ministers-message`).
@@ -628,14 +629,35 @@ Pages, menus and settings are managed via the WordPress REST API.
         phone) and one Outlook client; check the merge tags are replaced and
         that the old-address redirect is followed. Never schedule or send to
         the audience from the sandbox.
-      - **Why John S is an administrator today, and the plan:** only because
-        the v1.8 code lives in Code Snippets. After the Mailchimp test, move
-        John S to "Newsletter editor" (first list every capability they lose
-        and get John's say-so), then remove Code Snippets and Shortcoder (ask
-        before removing any plugin).
-      - **Header image and issue copy:** John will supply the header image
-        file later (the email shows the site logo or name meanwhile). Editor
-        how-to: `docs/newsletter/editor-guide.md`.
+      - **Code Snippets and Shortcoder are NOT on the sandbox** (checked
+        15 Oct 2026: only Elementor, Elementor Pro, Insert PHP Code Snippet
+        and MC4WP are installed). They exist on **live** only, where John S
+        still runs the v1.8 workflow, so **live Shortcoder and Code Snippets
+        stay untouched until cutover.** John S is still an Administrator
+        everywhere for that reason. Switching to "Newsletter editor" and the
+        plugin clean-up are cutover items. The capabilities John S would lose
+        (34, approved by John 15 Oct 2026; `manage_options`, plugin, theme and
+        user management, import/export, Elementor Pro notes) were generated
+        with `~/src/mbc-tests/cap_diff.py` plus PHP `array_diff`.
+      - **Shortcoder (live) -> new fields.** Live holds exactly six shortcodes:
+        | Shortcoder | Live value | Now |
+        |---|---|---|
+        | `newsletter-title` | per issue | the issue's title |
+        | `newsletter-sub-title` | per issue (was hidden) | `mbc_nl_subtitle` |
+        | `newsletter-image-url` | `MailchimpHeader.jpg` (media library; varies) | the issue's featured image, else the **default header image** (option `mbc_nl_default_header_id`, sandbox media 840, copied from live by `bin/newsletter_header_image.py`) |
+        | `newsletter-image-width` | 600 px | not needed: the email is 600 px wide and images are never stretched |
+        | `newsletter-image-height` | 275 px | not needed: height follows the image |
+        | `newsletter-no-of-posts` | 6 (varies; redundant now) | pre-fill cap default 6, filter `mbc_newsletter_max_posts`; the list is editable per issue |
+        The live file is actually **600 x 100 px** (not 275 high): it shows at
+        its natural size, no upscaling. Its alt text is on the media item.
+        Change the default image by uploading another and setting the option
+        over REST `/wp/v2/settings` (or the script); an issue's own featured
+        image always wins. Check at cutover that the image is on live
+        uploads (the sandbox copy carries `mbc_live_source_url`, so it is
+        not removed by the demo-import clean-up, which names its 19 media).
+      - **Header image and issue copy:** the default header image is the live
+        one (above); John may supply a new one later. Editor how-to:
+        `docs/newsletter/editor-guide.md`.
 
 ## Questions for Andy
 
@@ -945,11 +967,20 @@ scale. Every value is traced to the original in the file's comments. Layout
       the new names and slugs, and 301 `/category/<old-slug>/` to the new slug
       (old-to-new table in `docs/newsletter/category-map.md`, section
       "Renames"). The theme's code already uses the new slugs.
+- [ ] **Newsletter, live cutover:** switch John S (user 3) to "Newsletter
+      editor" on live (user admin and plugin settings stay with John, the
+      Administrator). Before deactivating Code Snippets and Shortcoder on
+      live, **check the live Code Snippets list and Shortcoder list for
+      anything beyond the newsletter** (Shortcoder was reported as exactly
+      six `newsletter-*` shortcodes; the snippets list has not been seen).
+      Deactivate first, **delete after a week with no issues** (record the
+      deactivation date here: ____). Also check what the sandbox's Insert
+      PHP Code Snippet plugin holds before launch (wp-admin only).
 - [ ] Newsletter cutover: check the migrated data (categories `news` and the two `ministers-*` slugs exist; the sticky
-      posts are what you expect); Mailchimp test done; John S moved to the
-      Newsletter editor role; Code Snippets and Shortcoder removed (ask);
-      point Mailchimp's import at the keyed email URL (or the old address);
-      header image supplied; the type adds `/newsletter/` and its rewrite
+      posts are what you expect); Mailchimp test done; the role switch and the
+      Code Snippets / Shortcoder clean-up (previous item); point Mailchimp's
+      import at the keyed email URL (or the old address); default header
+      image set on live (option `mbc_nl_default_header_id`); the type adds `/newsletter/` and its rewrite
       rules are flushed once by the version option on first load (confirm
       `/newsletter/` returns 200 after deploy).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
