@@ -24,3 +24,7 @@
 .mbc-page__content > * + * {
 	margin-top: var(--mbc-space-m);
 }
+
+.mbc-page__content > h2 {
+	margin-top: var(--mbc-space-xl);
+}

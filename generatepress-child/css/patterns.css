@@ -84,6 +84,13 @@ html body .mbc-band__social .wp-social-link a {
 	gap: var(--mbc-space-l);
 }
 
+/* Core centres both columns and insets the text column by 8%. */
+.mbc-activity__top .wp-block-media-text__media,
+.mbc-activity__top .wp-block-media-text__content {
+	align-self: start;
+	padding: 0;
+}
+
 .mbc-activity__top .wp-block-media-text__media img {
 	width: 100%;
 	height: auto;
