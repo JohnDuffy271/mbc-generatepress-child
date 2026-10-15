@@ -47,6 +47,14 @@ SEEDS = [
     ("room-hire", 391, "info-page", "page-templates/info.php"),
     ("policies-and-documents", 276, "info-page", "page-templates/info.php"),
     ("giving", 637, "info-page", "page-templates/info.php"),
+    # Mission partner pages
+    ("bms", 467, "mission-partner", "page-templates/mission-partner.php"),
+    ("leeds-furniture-mission", 452, "mission-partner", "page-templates/mission-partner.php"),
+    ("mission-aviation-fellowship", 455, "mission-partner", "page-templates/mission-partner.php"),
+    ("romania", 525, "mission-partner", "page-templates/mission-partner.php"),
+    ("mission-group", 631, "mission-partner", "page-templates/mission-partner.php"),
+    ("moortown-emergency-relief-fund", 633, "mission-partner", "page-templates/mission-partner.php"),
+    ("pathways", 634, "mission-partner", "page-templates/mission-partner.php"),
 ]
 
 
