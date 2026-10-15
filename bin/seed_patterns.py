@@ -23,9 +23,20 @@ import scaffold_site as ss  # noqa: E402
 
 THEME = HERE.parent / "generatepress-child"
 
-# slug, page id, pattern file (patterns/<name>.php), template file
+# slug, page id, pattern file (patterns/<name>.php), template file.
+# Pages that already have their own (legacy) content are left completely
+# alone: neither content nor template is touched, until that page is
+# converted (see "Elementor exit" in CLAUDE.md).
 SEEDS = [
     ("home", 182, "front-page", "page-templates/front-page.php"),
+    # What's On activity pages (Events is a Listing page, handled later)
+    ("sunday-mornings", 44, "activity-details", "page-templates/activity.php"),
+    ("beacon-cafe", 251, "activity-details", "page-templates/activity.php"),
+    ("rock-solid", 60, "activity-details", "page-templates/activity.php"),
+    ("stepping-stones", 48, "activity-details", "page-templates/activity.php"),
+    ("lunch-club", 56, "activity-details", "page-templates/activity.php"),
+    ("craft-group", 565, "activity-details", "page-templates/activity.php"),
+    ("house-groups", 46, "activity-details", "page-templates/activity.php"),
 ]
 
 
@@ -40,6 +51,8 @@ def pattern_markup(name):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--apply", action="store_true", help="write changes (default: dry run)")
+    ap.add_argument("--force", metavar="SLUG", action="append", default=[],
+                    help="overwrite this page's content with its pattern (explicit; use only on pages you know are unedited)")
     args = ap.parse_args()
     wp = ss.WP(ss.load_env())
     print(f"{'APPLY' if args.apply else 'DRY RUN'} against {wp.base}")
@@ -48,16 +61,18 @@ def main():
         page = wp.call("GET", f"pages/{pid}", {"context": "edit", "_fields": "id,slug,template,content"})
         if page["slug"] != slug:
             sys.exit(f"page {pid} is {page['slug']!r}, expected {slug!r}")
-        patch = {}
-        if (THEME / template).is_file() and page["template"] != template:
-            patch["template"] = template
-        elif not (THEME / template).is_file():
-            print(f"  {slug}: template {template} not in the theme yet, left alone")
         markup = pattern_markup(pattern)
-        if not page["content"]["raw"].strip():
+        current = page["content"]["raw"].strip()
+        patch = {}
+        if current and current != markup and slug not in args.force:
+            print(f"  {slug} (page {pid}): has its own content ({len(current)} bytes), left alone")
+            continue
+        if not (THEME / template).is_file():
+            print(f"  {slug}: template {template} not in the theme yet, left alone")
+        elif page["template"] != template:
+            patch["template"] = template
+        if current != markup:
             patch["content"] = markup
-        elif page["content"]["raw"].strip() != markup:
-            print(f"  {slug}: has its own content ({len(page['content']['raw'])} bytes), left alone")
         if not patch:
             print(f"  {slug}: nothing to do")
             continue

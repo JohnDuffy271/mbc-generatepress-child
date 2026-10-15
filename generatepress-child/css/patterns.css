@@ -77,3 +77,40 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-band__social {
 	margin-bottom: var(--mbc-space-m);
 }
+
+/* ---- Activity page ---- */
+.mbc-activity__top {
+	align-items: start;
+	gap: var(--mbc-space-l);
+}
+
+.mbc-activity__top .wp-block-media-text__media img {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-facts {
+	padding: var(--mbc-space-m) var(--mbc-space-l);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-facts p {
+	margin: 0 0 var(--mbc-space-s);
+}
+
+.mbc-facts p:last-child {
+	margin-bottom: 0;
+}
+
+.mbc-facts strong {
+	display: block;
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step--1);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}

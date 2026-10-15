@@ -14,7 +14,7 @@
 <!-- /wp:heading -->
 
 <!-- wp:paragraph {"align":"center","className":"mbc-hero__tagline"} -->
-<p class="has-text-align-center mbc-hero__tagline">Loving God, living generously, following Christ.</p>
+<p class="has-text-align-center mbc-hero__tagline">Loving God. Living Generously. Following Jesus.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:buttons {"className":"mbc-hero__buttons"} -->

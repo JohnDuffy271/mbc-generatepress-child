@@ -5,3 +5,22 @@
 	flex: 1 1 100%;
 	min-width: 0;
 }
+
+/* Content pages (Activity, Info, Mission partner, Listing): title + block content. */
+.mbc-page {
+	flex: 1 1 100%;
+	min-width: 0;
+	max-width: var(--mbc-content-width);
+	margin: 0 auto;
+	padding: var(--mbc-space-xl) var(--mbc-gutter);
+	background: var(--mbc-surface);
+}
+
+.mbc-page__title {
+	margin-bottom: var(--mbc-space-l);
+	font-size: var(--mbc-step-5);
+}
+
+.mbc-page__content > * + * {
+	margin-top: var(--mbc-space-m);
+}
