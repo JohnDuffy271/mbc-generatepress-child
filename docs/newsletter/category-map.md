@@ -25,9 +25,11 @@ sandbox and the rebuild use different IDs, so the new newsletter must refer to c
   the v1.8 code do nothing. To confirm with John whether they were meant to be something else.
 - **Cas's Blog (42) and Graham's Message (27) have no posts**, so including 42 and excluding 27
   currently changes nothing.
-- **Graham's Message (27) is a child of Graham's Blog (9).** If the code includes 9 with `cat`,
-  WordPress also includes children, so excluding 27 matters in principle; with `category__in` it
-  does not. Check against the code once it is saved here.
+- **Graham's Message (27) is a child of Graham's Blog (9).** The v1.8 code uses `cat` with
+  `array(5, 8, 9, 10, 36, 38, 42, 59, -19, -27)`. WordPress includes the children of every positive
+  category (`include_children` is true in core), so including 9 would include 27 and the `-27` is
+  what keeps it out. It matters in principle, although 27 has no posts today. (Passing an array to
+  `cat` is fine: core joins it with commas.)
 - **News (5) holds 1,430 posts** and Church at Home (57) holds 69 but is not in the list: the
   newsletter's set of included categories is narrower than the live site's.
 

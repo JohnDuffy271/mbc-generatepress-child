@@ -413,9 +413,9 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [ ] Newsletter builder (research only, **no build yet**): John has
       custom PHP/HTML code (v1.8) that builds a Mailchimp newsletter from
       posts. It must be reviewed and adapted for the new build before
-      cutover. To save for reference only as
-      `docs/newsletter/newsletter-code-v1.8.php` (the paste had not arrived
-      by 15 Oct 2026; re-paste needed). Category IDs it uses are mapped in
+      cutover. Saved unchanged, for reference only, as
+      `docs/newsletter/newsletter-code-v1.8.php` (valid PHP; no secrets in
+      it). Category IDs it uses are mapped in
       `docs/newsletter/category-map.md` (included 5, 8, 9, 10, 36, 38, 42,
       59; excluded 19, 27): IDs 10, 36, 38 and 19 do not exist on live, and
       the rebuild must refer to categories by **slug**, never by ID.
@@ -434,11 +434,34 @@ Pages, menus and settings are managed via the WordPress REST API.
         the `[sc]` shortcodes in v1.8.
       - Access gated by a custom capability, **`mbc_manage_newsletter`**,
         granted explicitly (not to every editor).
-      **Bugs reported in v1.8 (from John; to verify against the code once
-      saved):** full-size thumbnails used in the email, `$query->$post`
-      (wrong property access on the query object), the sticky-post count,
-      `//` comments inside CSS (invalid; CSS needs `/* */`), and hard-coded
-      live-site URLs.
+      **v1.8 review (15 Oct 2026, read against the code and WordPress
+      core):** the five reported bugs are all confirmed.
+      1. *Full-size thumbnails:* `wp_get_attachment_url( $id, 'medium' )`
+         takes only an ID, so `'medium'` is ignored; the full-size file is
+         forced into a 200x200 box (distorted and heavy for email).
+      2. *`$query->$post->ID`:* `$post` is not defined in the snippet; it
+         only works because `get_post_thumbnail_id()` falls back to the
+         current post, and it raises warnings on PHP 8.
+      3. *Sticky logic:* `found_posts` counts every sticky post regardless
+         of age or the limit, so old stickies always appear; if there are
+         more stickies than the limit, the second query adds that many
+         *extra* posts instead of none; `showposts` is deprecated (it works).
+      4. *`//` comments in CSS* are invalid (use `/* */`), as are
+         `align="left"` and `width="100%"` written as CSS; the `<style>`
+         block sits in the body, which Gmail ignores.
+      5. *Hard-coded live URLs:* the header image, body background and
+         "no image" fallback, plus a Mailchimp **click-tracking link with a
+         fixed recipient hash** (`...list-manage.com/track/click?u=...&id=...&e=...`,
+         over plain http): every click on the header is credited to one old
+         recipient.
+      Also found: the first `articleTable` is opened and never closed;
+      stray `;` inside HTML attributes; the title and image URL are echoed
+      unescaped; the title is not linked and the "read more" `<a>` is
+      empty; there is no "since the last issue" date window; the issue's
+      title, image and post count come from Shortcoder `[sc name=...]`
+      values (`newsletter-title`, `-sub-title`, `-image-url`, `-image-width`,
+      `-image-height`, `-no-of-posts`) that the editorial fields must
+      replace. Passing an array to `cat` is fine (core joins it).
 
 ## Questions for Andy
 
