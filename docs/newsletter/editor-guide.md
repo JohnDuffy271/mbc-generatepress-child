@@ -34,6 +34,6 @@ The link contains a secret key. Anyone who has it can see the email, even before
 
 ## Good to know
 
-- Only posts in the **News** category are offered. Posts in other categories can still be added by hand with **Add a post** only if they are News posts.
+- The pre-filled list only uses posts in the **News** category. **Add a post** offers any of the 60 most recent posts.
 - A post that is unpublished or deleted after the issue was saved is left out of the web version and the email automatically.
 - Nothing here sends email. Sending happens in Mailchimp.

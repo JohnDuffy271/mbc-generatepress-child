@@ -940,13 +940,13 @@ scale. Every value is traced to the original in the file's comments. Layout
       the new names and slugs, and 301 `/category/<old-slug>/` to the new slug
       (old-to-new table in `docs/newsletter/category-map.md`, section
       "Renames"). The theme's code already uses the new slugs.
-- [ ] Newsletter cutover: run `docs/newsletter/` checks on the live site's
-      data (categories `news` and the two `ministers-*` slugs exist; the sticky
+- [ ] Newsletter cutover: check the migrated data (categories `news` and the two `ministers-*` slugs exist; the sticky
       posts are what you expect); Mailchimp test done; John S moved to the
       Newsletter editor role; Code Snippets and Shortcoder removed (ask);
       point Mailchimp's import at the keyed email URL (or the old address);
-      header image supplied; Flush permalinks once after deploy (the type
-      adds `/newsletter/`; the version option does this on first load).
+      header image supplied; the type adds `/newsletter/` and its rewrite
+      rules are flushed once by the version option on first load (confirm
+      `/newsletter/` returns 200 after deploy).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
 - [ ] Privacy Notice and Cookies linked in the footer menu. The Privacy
