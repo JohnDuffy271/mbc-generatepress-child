@@ -84,6 +84,7 @@ class _QuickConnect(http.client.HTTPSConnection):
     """
 
     read_timeout = LIVE_TIMEOUT
+    on_retry = None  # optional callback(message), set by test tooling to log and count connect retries
 
     def connect(self):
         last = None
@@ -97,6 +98,8 @@ class _QuickConnect(http.client.HTTPSConnection):
                 last = exc
                 self.close()
                 if attempt < CONNECT_ATTEMPTS - 1:
+                    if self.on_retry:
+                        self.on_retry(f"connect to {self.host} failed ({exc}); retry {attempt + 1}")
                     time.sleep(CONNECT_BACKOFF[attempt])
         raise last
 

@@ -212,6 +212,15 @@ Pages, menus and settings are managed via the WordPress REST API.
   `composer.json` to the repo: the repo root deploys to `themes/`.
 - `bin/` deploys too; `bin/lint.sh` is covered by the root `.htaccess`
   `.sh` deny (verify 403 after pushing changes to `bin/`).
+- **Check-script logs:** every script in `~/src/mbc-tests/` starts with
+  `import runlog; runlog.start()` (`runlog.py`). Full output goes to
+  `~/src/mbc-tests/logs/<script>-<YYYYmmdd-HHMMSS>.log` (newest 20 kept per
+  script); a one-line summary (passed, failed, network retries, exit code)
+  ends each run and, on failure, the log path and the first failing check.
+  Network stalls are retried up to 2 times with a logged `WARN retry` line
+  (Playwright `goto`, the connect step of `_QuickConnect`, `nl_lib.Client`;
+  a non-GET is retried only if it cannot have been sent). New check scripts
+  must add the two lines. `excerpt_check.php` is not covered.
 - **Intermittent TCP connect stalls** (measured 15 Oct 2026): from John's
   IP, about 1 connection in 10 to the server stalls in the TCP connect for
   20-68 s (the server then answers in ~0.5 s). Not the user agent, no
