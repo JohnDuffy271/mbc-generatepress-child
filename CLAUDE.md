@@ -563,6 +563,17 @@ Pages are hierarchical (`/about-us/who-we-are/`), whereas live pages are
 mostly flat at the root, so the live-old → new redirect map is still needed
 (see Status).
 
+## Block patterns
+
+Patterns are files in `generatepress-child/patterns/*.php` (header comment:
+Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
+list in a transient keyed on the theme `Version`** (`style.css`), so a new
+or renamed pattern file is not registered until the cache expires or the
+version changes. **When you add a pattern or change a pattern header, bump
+`Version` in `generatepress-child/style.css`** (currently 1.0.1). Edits to a
+pattern's body markup need no bump. A pattern used for seeding
+(`bin/seed_patterns.py`) must contain no PHP after its header.
+
 ## Looks (alternate token sets)
 
 A look is a CSS file in `generatepress-child/css/looks/` that overrides
