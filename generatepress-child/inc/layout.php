@@ -30,6 +30,28 @@ function mbc_take_over_layout() {
     remove_action( 'generate_before_header', 'generate_top_bar', 5 );
     add_action( 'generate_header', 'mbc_render_header' );
     add_action( 'generate_footer', 'mbc_render_footer' );
+
+    // RULE: the new templates place their own image. Never output
+    // GeneratePress's featured-image banner on them. (Legacy Elementor pages
+    // keep it until they are converted.)
+    if ( is_page_template( mbc_page_templates() ) || is_singular( 'post' ) ) {
+        remove_action( 'generate_after_header', 'generate_featured_page_header', 10 );
+    }
+}
+
+/**
+ * The page templates this theme provides for content pages.
+ *
+ * @return string[]
+ */
+function mbc_page_templates() {
+    return array(
+        'page-templates/front-page.php',
+        'page-templates/activity.php',
+        'page-templates/info.php',
+        'page-templates/mission-partner.php',
+        'page-templates/listing.php',
+    );
 }
 
 // No sidebar anywhere: the old pages' GP widgets (Search, Recent Posts...)

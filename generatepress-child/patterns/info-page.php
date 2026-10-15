@@ -7,6 +7,8 @@
  * Keywords: info, about, resources, prose
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:paragraph {"className":"mbc-lead"} -->
 <p class="mbc-lead">Add a short introduction that says what this page is about.</p>

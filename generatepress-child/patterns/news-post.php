@@ -8,6 +8,8 @@
  * Keywords: news, post, article, story
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:paragraph {"className":"mbc-lead"} -->
 <p class="mbc-lead">Write a short introduction that sums up the story in a sentence or two.</p>

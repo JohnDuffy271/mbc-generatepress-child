@@ -7,6 +7,8 @@
  * Keywords: home, hero, zigzag, bands
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:group {"className":"mbc-hero"} -->
 <div class="wp-block-group mbc-hero"><!-- wp:heading {"textAlign":"center","level":1} -->

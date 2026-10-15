@@ -7,6 +7,8 @@
  * Keywords: activity, what's on, group, details
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:media-text {"mediaType":"image","className":"mbc-activity__top"} -->
 <div class="wp-block-media-text is-stacked-on-mobile mbc-activity__top"><figure class="wp-block-media-text__media"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:group {"className":"mbc-facts"} -->

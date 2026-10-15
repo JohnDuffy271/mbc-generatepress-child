@@ -7,6 +7,8 @@
  * Keywords: news, posts, query loop, listing
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:query {"queryId":1,"query":{"perPage":6,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":false},"className":"mbc-news"} -->
 <div class="wp-block-query mbc-news"><!-- wp:post-template -->

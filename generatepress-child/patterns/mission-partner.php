@@ -7,6 +7,8 @@
  * Keywords: mission, partner, charity, support
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:media-text {"mediaType":"image","className":"mbc-partner__top"} -->
 <div class="wp-block-media-text is-stacked-on-mobile mbc-partner__top"><figure class="wp-block-media-text__media"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:paragraph {"className":"mbc-lead"} -->

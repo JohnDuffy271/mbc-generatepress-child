@@ -7,6 +7,8 @@
  * Keywords: contact, address, listing
  * Viewport Width: 1280
  */
+
+defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:paragraph {"className":"mbc-lead"} -->
 <p class="mbc-lead">We’d love to hear from you.</p>
