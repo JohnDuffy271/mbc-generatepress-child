@@ -560,66 +560,77 @@ Pages, menus and settings are managed via the WordPress REST API.
       a second dry run reports 10 unchanged. Open for the single-post
       template: each post has a featured image *and* often the same photo
       inline, so it may show twice. Cleanup is in the cutover checklist.
-- [ ] Newsletter builder (research only, **no build yet**): John has
-      custom PHP/HTML code (v1.8) that builds a Mailchimp newsletter from
-      posts. It must be reviewed and adapted for the new build before
-      cutover. Saved unchanged, for reference only, as
-      `docs/newsletter/newsletter-code-v1.8.php` (valid PHP; no secrets in
-      it). Category IDs it uses are mapped in
-      `docs/newsletter/category-map.md` (included 5, 8, 9, 10, 36, 38, 42,
-      59; excluded 19, 27): IDs 10, 36, 38 and 19 do not exist on live, and
-      the rebuild must refer to categories by **slug**, never by ID.
-      **Known design flaw:** the current newsletter links to a *live* post
-      list, so posts added after sending change what readers see.
-      **Proposed design (to confirm with John before building):**
-      - A **"Newsletter issue" content type** (custom post type) that
-        stores a **fixed list of post IDs**: pre-filled with the posts
-        published since the last issue, then editable, so an issue is a
-        snapshot that later posts cannot change.
-      - **Email-safe HTML** generated per issue for Mailchimp (inline
-        styles and tables as email clients need; images at an email-sized
-        width, not full size).
-      - A **public web archive** of past issues, each at a stable URL.
-      - **Editorial fields** (intro, sign-off, per-item notes) replacing
-        the `[sc]` shortcodes in v1.8.
-      - Access gated by a custom capability, **`mbc_manage_newsletter`**,
-        granted explicitly (not to every editor).
-      **v1.8 review (15 Oct 2026, read against the code and WordPress
-      core):** the five reported bugs are all confirmed.
-      1. *Full-size thumbnails:* `wp_get_attachment_url( $id, 'medium' )`
-         takes only an ID, so `'medium'` is ignored; the full-size file is
-         forced into a 200x200 box (distorted and heavy for email).
-      2. *`$query->$post->ID`:* `$post` is not defined in the snippet; it
-         only works because `get_post_thumbnail_id()` falls back to the
-         current post, and it raises warnings on PHP 8.
-      3. *Sticky logic:* `found_posts` counts every sticky post regardless
-         of age or the limit, so old stickies always appear; if there are
-         more stickies than the limit, the second query adds that many
-         *extra* posts instead of none; `showposts` is deprecated (it works).
-      4. *`//` comments in CSS* are invalid (use `/* */`), as are
-         `align="left"` and `width="100%"` written as CSS; the `<style>`
-         block sits in the body, which Gmail ignores.
-      5. *Hard-coded live URLs:* the header image, body background and
-         "no image" fallback, plus a Mailchimp **click-tracking link with a
-         fixed recipient hash** (`...list-manage.com/track/click?u=...&id=...&e=...`,
-         over plain http): every click on the header is credited to one old
-         recipient.
-      Also found: the first `articleTable` is opened and never closed;
-      stray `;` inside HTML attributes; the title and image URL are echoed
-      unescaped; the title is not linked and the "read more" `<a>` is
-      empty; there is no "since the last issue" date window; the issue's
-      title, image and post count come from Shortcoder `[sc name=...]`
-      values (`newsletter-title`, `-sub-title`, `-image-url`, `-image-width`,
-      `-image-height`, `-no-of-posts`) that the editorial fields must
-      replace. Passing an array to `cat` is fine (core joins it).
-      **Why John S is an administrator today, and the plan:** John S has
-      the Administrator role only because the newsletter lives in code
-      snippets (the Code Snippets plugin needs that). The rework moves the
-      code into git (this theme), exposes **only the editorial settings**
-      (title, intro, image, post selection) through an admin screen gated
-      by the custom capability `mbc_manage_newsletter`, lets John S work as
-      **Editor plus that capability**, and then **removes the code snippets
-      plugin from the new site** (ask before removing any plugin).
+- [ ] **Newsletter rework** (built 15 Oct 2026, replaces the v1.8 code snippet;
+      `inc/newsletter/`, `template-parts/newsletter-email.php`,
+      `single-` / `archive-mbc_newsletter.php`). Built and tested on the
+      sandbox: steps 0-5 (content type, edit screen, pre-fill and list editor,
+      web version, archive, email endpoint, legacy address). Still to do:
+      **step 7** (move John S to the role, then remove Code Snippets and
+      Shortcoder, **asking first**) and the Mailchimp test (see below).
+      v1.8 is kept unchanged in `docs/newsletter/newsletter-code-v1.8.php`
+      for reference; its five known bugs (wrong thumbnail size, undefined
+      `$post`, sticky logic, invalid CSS/HTML, hard-coded live URLs and a
+      click-tracking link with one recipient's hash) do not exist in the
+      rebuild.
+      - **Content type `mbc_newsletter`**: an issue is a stored snapshot (title,
+        optional subtitle `mbc_nl_subtitle`, header image = featured image,
+        intro in the classic editor limited to paragraphs/links/lists, and an
+        ordered list of post IDs `mbc_nl_posts`). Later posts never change a
+        saved issue; a post deleted or unpublished later is skipped. Published
+        means public: `/newsletter/` (archive, linked from the News page) and
+        `/newsletter/<slug>/` (web version).
+      - **Pre-fill** ("Refill from posts since the last issue"): sticky posts
+        first (whatever their age; remove per issue), then everything published
+        after the previous issue's date, newest first, capped at 12; 14 days
+        when there is no previous issue. Categories are referenced by **slug**:
+        `mbc_newsletter_category_slugs` (default `news`) and
+        `mbc_newsletter_exclude_category_slugs` (default `ministers-message`).
+      - **Capability and role**: `mbc_manage_newsletter` (all the type's
+        capabilities map to it; `read` does not, so logged-out visitors read the
+        archive). Administrators have it in code. Role "Newsletter editor" =
+        Editor + `mbc_manage_newsletter` + `edit_theme_options` (menus);
+        created once, re-synced when `MBC_NL_VERSION` changes (also flushes
+        rewrite rules). Elementor needs nothing beyond Editor.
+      - **Email** `/newsletter/<slug>/email/`: standalone 600px table document,
+        inline styles, absolute https links, Mailchimp merge tags
+        (`*|UNSUB|*`, `*|UPDATE_PROFILE|*`, `*|LIST:ADDRESSLINE|*`,
+        `*|CURRENT_YEAR|*`), light colour scheme, VML "Read more" button for
+        Outlook, header image links home (the issue's header image, else the
+        site logo, else the site name). Colours, font and sizes are read from
+        `tokens.css` (`inc/newsletter/email-style.php`; `--mbc-email-*` tokens
+        hold the pixel sizes). Always `noindex`. **Access:** a per-issue secret
+        key (`_mbc_nl_key`, 40 hex characters, made on first save, never over
+        REST) in `?key=` serves the email for any status without a login
+        (`no-store`, no referrer, `hash_equals`); without a key a published
+        issue is public and anything else needs the capability, else 404. The
+        edit screen has "Copy email URL" and "Regenerate key" (the old link
+        then stops working). **Mailchimp imports from the keyed URL.**
+      - **Old address `/mbc-newsletter-articles/`**: 302 to the latest issue's
+        email version if it is 10 days old or less, otherwise a fresh unsaved
+        pre-fill as an email. Whether Mailchimp's import follows a redirect is
+        **untested**: check it in the Mailchimp test.
+      - **Checks** (outside the repo, sandbox only, all pass):
+        `~/src/mbc-tests/newsletter_check.py [caps|prefill|adminjs|web|legacy]`,
+        `newsletter_email_check.py <shots-dir>` (access rules, key, static
+        email checks, 360/700px), `excerpt_check.php` (excerpt of an
+        Elementor-built post is clean prose, including the "... Read More"
+        tail of imported excerpts).
+      - **Mailchimp test (not done; John's own address only, never the
+        audience):** publish a test issue (or use its keyed URL), start a "Code
+        your own" campaign with import from URL, check what the import does
+        (it is believed to copy the HTML once, when Import is pressed, not at
+        send time), send a test to John's address only, view in Gmail (web and
+        phone) and one Outlook client; check the merge tags are replaced and
+        that the old-address redirect is followed. Never schedule or send to
+        the audience from the sandbox.
+      - **Why John S is an administrator today, and the plan:** only because
+        the v1.8 code lives in Code Snippets. After the Mailchimp test, move
+        John S to "Newsletter editor" (first list every capability they lose
+        and get John's say-so), then remove Code Snippets and Shortcoder (ask
+        before removing any plugin).
+      - **Header image and issue copy:** John will supply the header image
+        file later (the email shows the site logo or name meanwhile). Editor
+        how-to: `docs/newsletter/editor-guide.md`.
 
 ## Questions for Andy
 
@@ -929,8 +940,13 @@ scale. Every value is traced to the original in the file's comments. Layout
       the new names and slugs, and 301 `/category/<old-slug>/` to the new slug
       (old-to-new table in `docs/newsletter/category-map.md`, section
       "Renames"). The theme's code already uses the new slugs.
-- [ ] Newsletter builder code reviewed and adapted for the new build
-      (category IDs and post markup differ from the old site).
+- [ ] Newsletter cutover: run `docs/newsletter/` checks on the live site's
+      data (categories `news` and the two `ministers-*` slugs exist; the sticky
+      posts are what you expect); Mailchimp test done; John S moved to the
+      Newsletter editor role; Code Snippets and Shortcoder removed (ask);
+      point Mailchimp's import at the keyed email URL (or the old address);
+      header image supplied; Flush permalinks once after deploy (the type
+      adds `/newsletter/`; the version option does this on first load).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
 - [ ] Privacy Notice and Cookies linked in the footer menu. The Privacy
