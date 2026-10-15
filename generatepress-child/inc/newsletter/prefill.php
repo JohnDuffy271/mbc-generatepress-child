@@ -146,6 +146,8 @@ function mbc_nl_excerpt( $post, $words = 40 ) {
     $text   = '' !== $manual ? $manual : mbc_nl_plain_text( (string) $post->post_content );
     $text   = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
     $text   = trim( mbc_nl_re( '/\s+/u', ' ', $text ) );
+    // Elementor-era excerpts end with their own "… Read More…" link text; the email has a button.
+    $text   = mbc_nl_re( '/\s*(?:…|\.\.\.|\[…\])?\s*Read\s+more\s*(?:…|\.\.\.|»)?\s*$/iu', '…', $text );
     return wp_trim_words( $text, (int) $words, '…' );
 }
 
