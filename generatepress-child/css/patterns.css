@@ -290,15 +290,31 @@ html body .mbc-band__social .wp-social-link a {
 	margin-top: 0;
 }
 
-.mbc-people-list {
-	columns: 3 12rem;
-	column-gap: var(--mbc-space-xl);
+.mbc-people-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+	gap: var(--mbc-space-l) var(--mbc-space-m);
 	margin: 0 0 var(--mbc-space-m);
-	padding: 0;
-	list-style: none;
 }
 
-.mbc-people-list li {
-	break-inside: avoid;
-	padding: var(--mbc-space-3xs) 0;
+.mbc-person {
+	margin: 0;
+}
+
+.mbc-person .wp-block-image {
+	margin: 0 0 var(--mbc-space-xs);
+}
+
+.mbc-person img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	object-position: center 20%;
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-person__name {
+	margin: 0;
+	font-weight: var(--mbc-weight-strong);
 }

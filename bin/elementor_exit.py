@@ -11,6 +11,16 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       Build an Activity-pattern block version of the page's text and image as a
       NEW DRAFT page ("<title> (block draft)"). The original page is untouched.
 
+  elementor_exit.py assets  PAGE_ID [--alts FILE.json] [--apply]
+      Download the images and documents the page references from the live site's
+      /wp-content/uploads/ (GET only, no credentials, paced; the safety extension in
+      CLAUDE.md) and upload them to the SANDBOX media library with mbc_live_source_url
+      meta. Idempotent (matched on that meta). The next `draft` relinks to the sandbox
+      copies. --alts maps a file name to alt text (applied to the media item).
+
+  elementor_exit.py self-test
+      Static checks that this file can only reach live through import_live_posts.LiveReader.
+
   elementor_exit.py publish PAGE_ID DRAFT_ID [--apply]
       On approval: back up, copy the draft's content and template into the
       page, remove its Elementor meta, then TRASH the draft (never force-delete).
@@ -24,15 +34,19 @@ is removed, _elementor_data, _elementor_edit_mode, _elementor_page_settings and
 post_content are saved and the file is read back as valid JSON.
 """
 import argparse
+import ast
 import html
 import json
+import mimetypes
 import re
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import import_live_posts as lp  # noqa: E402  (its LiveReader is the only live client)
 import scaffold_site as ss  # noqa: E402
 import seed_patterns as sp  # noqa: E402
 
@@ -392,6 +406,8 @@ def cmd_draft(wp, args):
         body, notes = build_info(page, facts, dict(extra, alt=args.alt), fixes, image_override)
     else:
         body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override, extra)
+    if "/wp-content/uploads/" in body:  # files already copied to the sandbox (see `assets`): link to those
+        body = relink_assets(body, sandbox_assets(lp.SandboxWriter(lp.load_env())))
     title = f"{page['title']['raw']} (block draft)"
     slug = f"{page['slug']}-block-draft"
     existing = wp.call("GET", "pages", {"slug": slug, "status": "draft,publish,private,pending", "_fields": "id"})
@@ -420,6 +436,119 @@ def cmd_draft(wp, args):
         made = wp.call("POST", "pages", body=payload, params={"_fields": "id,link"})
     print(f"draft page {made['id']} saved (status draft, not published).")
     print(f"preview (log in first): {wp.base}/?page_id={made['id']}&preview=true")
+
+
+UPLOAD_URL_RE = re.compile(r"https?://(?:www\.)?moortownbaptistchurch\.org\.uk/wp-content/uploads/[^\"'\s<>\\)]+")
+
+
+def live_upload_urls(*texts):
+    """Live /wp-content/uploads/ URLs mentioned in the given texts (JSON escapes undone)."""
+    found = []
+    for text in texts:
+        for url in UPLOAD_URL_RE.findall(html.unescape((text or "").replace("\\/", "/"))):
+            if url not in found:
+                found.append(url)
+    return found
+
+
+def sandbox_assets(sb):
+    """{live URL: media item} for every sandbox media item that carries mbc_live_source_url."""
+    found, page = {}, 1
+    while True:
+        items, headers = sb.call("GET", "media", {"per_page": 100, "page": page, "context": "edit",
+                                                   "_fields": "id,source_url,meta"}, retries=2)
+        for m in items:
+            src = (m.get("meta") or {}).get("mbc_live_source_url") if isinstance(m.get("meta"), dict) else None
+            if src:
+                found[src] = m
+        if page >= int(headers.get("x-wp-totalpages", 1)):
+            return found
+        page += 1
+
+
+def relink_assets(body, assets):
+    """Point links and images at the sandbox copy of each uploaded asset."""
+    for live_url, item in assets.items():
+        old = urllib.parse.urlsplit(live_url).path
+        new = urllib.parse.urlsplit(item["source_url"]).path
+        if old != new:
+            body = body.replace(f'"{old}"', f'"{new}"')
+    return body
+
+
+def cmd_assets(wp, args):
+    page = get_page(wp, args.page_id)
+    meta = page["meta"] if isinstance(page["meta"], dict) else {}
+    texts = [meta.get("_elementor_data"), page["content"]["raw"]]
+    for path in BACKUP_DIR.glob(f"{page['id']}-*.json"):  # a converted page: its backup still names the files
+        data = json.loads(path.read_text())
+        texts += [data["elementor"].get("_elementor_data"), data.get("post_content")]
+    urls = live_upload_urls(*texts)
+    sb = lp.SandboxWriter(lp.load_env())
+    have = sandbox_assets(sb)
+    alts = json.loads(Path(args.alts).read_text()) if args.alts else {}
+    todo = [u for u in urls if u not in have]
+    print(f"{'APPLY' if args.apply else 'DRY RUN'}: page {page['id']} ({page['slug']}) references {len(urls)} live upload(s); "
+          f"{len(urls) - len(todo)} already on the sandbox, {len(todo)} to fetch")
+    for u in urls:
+        print(f"   {'have ' if u in have else 'fetch'} {Path(urllib.parse.urlsplit(u).path).name}")
+    if not args.apply:
+        print("dry run: nothing downloaded or written (use --apply)")
+        return
+    live = lp.LiveReader()
+    for u in todo:
+        name = Path(urllib.parse.urlsplit(u).path).name
+        data = live.get_bytes(u)
+        mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
+        made, _ = sb.call("POST", "media", raw=data, headers={"Content-Type": mime,
+                          "Content-Disposition": f'attachment; filename="{name}"'})
+        sb.call("POST", f"media/{made['id']}", body={"alt_text": alts.get(name, ""), "meta": {"mbc_live_source_url": u}},
+                params={"_fields": "id"})
+        have[u] = {"id": made["id"], "source_url": made["source_url"]}
+        print(f"uploaded {name} -> media {made['id']} ({len(data)} bytes)")
+    for u in urls:
+        name = Path(urllib.parse.urlsplit(u).path).name
+        if u not in todo and name in alts:
+            sb.call("POST", f"media/{have[u]['id']}", body={"alt_text": alts[name]}, params={"_fields": "id"})
+            print(f"alt text set on media {have[u]['id']} ({name})")
+    print(f"\nDone. Live requests made: {live.request_count}")
+
+
+def self_test():
+    """Static checks: the only way this file reaches the live site is LiveReader.get_bytes, inside cmd_assets."""
+    tree = ast.parse(Path(__file__).read_text())
+    parents = {c: p for p in ast.walk(tree) for c in ast.iter_child_nodes(p)}
+
+    def func_of(node):
+        while node in parents:
+            node = parents[node]
+            if isinstance(node, ast.FunctionDef):
+                return node.name
+        return None
+
+    results = []
+
+    def check(ok, text):
+        results.append(ok)
+        print(("PASS " if ok else "FAIL ") + text)
+
+    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
+    raw = [n for n in calls if n.func.attr in ("request", "putrequest", "urlopen", "build_opener", "create_connection",
+                                               "send", "sendall", "connect", "getresponse")]
+    check(not raw, "this file makes no network calls of its own (everything goes through import_live_posts)")
+    live_calls = [n for n in calls if isinstance(n.func.value, ast.Name) and n.func.value.id == "live"]
+    check(bool(live_calls) and all(n.func.attr == "get_bytes" and func_of(n) == "cmd_assets" for n in live_calls),
+          f"the live reader is used only for get_bytes, only in cmd_assets ({len(live_calls)} call site)")
+    check(not [n for n in calls if n.func.attr == "get_json"], "live get_json is never called here")
+    made = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "LiveReader"]
+    check(len(made) == 1 and func_of(made[0]) == "cmd_assets", "LiveReader is created once, in cmd_assets")
+    imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
+    imported |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
+    check(not imported & {"urllib.request", "http.client", "socket", "subprocess", "requests"}, "no networking or subprocess imports")
+    check(bool(live_upload_urls('{"a":"https:\\/\\/moortownbaptistchurch.org.uk\\/wp-content\\/uploads\\/x.pdf"}'))
+          and not live_upload_urls("https://moortownbaptistchurch.org.uk/wp-admin/x.php"), "URL finder accepts uploads only")
+    print("\nSELF-TEST", "PASSED" if all(results) else "FAILED")
+    return all(results)
 
 
 def cmd_publish(wp, args):
@@ -457,10 +586,15 @@ def main():
     d.add_argument("--fix", action="append", metavar="OLD=>NEW", help="correct a typo in the text (repeatable)")
     d.add_argument("--facts-file", help="JSON file with when/where/who/contact/alt/fix")
     d.add_argument("--apply", action="store_true")
+    a = sub.add_parser("assets"); a.add_argument("page_id", type=int); a.add_argument("--alts"); a.add_argument("--apply", action="store_true")
+    sub.add_parser("self-test")
     p = sub.add_parser("publish"); p.add_argument("page_id", type=int); p.add_argument("draft_id", type=int); p.add_argument("--apply", action="store_true")
     args = ap.parse_args()
+    if args.cmd == "self-test":
+        sys.exit(0 if (self_test() and lp.self_test()) else 1)
     wp = ss.WP(ss.load_env())
-    {"backup": lambda: backup(wp, args.page_id), "draft": lambda: cmd_draft(wp, args), "publish": lambda: cmd_publish(wp, args)}[args.cmd]()
+    {"backup": lambda: backup(wp, args.page_id), "draft": lambda: cmd_draft(wp, args), "assets": lambda: cmd_assets(wp, args),
+     "publish": lambda: cmd_publish(wp, args)}[args.cmd]()
 
 
 if __name__ == "__main__":

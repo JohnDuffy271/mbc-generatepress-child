@@ -239,6 +239,14 @@ Pages, menus and settings are managed via the WordPress REST API.
   checks this statically. The exception covers that one script only: any
   other live access (including ad-hoc probes) needs John's explicit say-so
   first. Run it as a script file, never with direct curl against live.
+  **Extension (John, 15 Oct 2026):** the Elementor-exit tool
+  (`bin/elementor_exit.py assets PAGE_ID`) may also download the images and
+  documents referenced by the page being converted, from live
+  `/wp-content/uploads/` only, using the same `LiveReader` (GET only, no
+  credentials, paced, same-host redirects only, path restricted to
+  `/wp-content/uploads/`), and upload them to the sandbox media library
+  with `mbc_live_source_url` meta. Nothing else on live; the tool's
+  `self-test` checks this statically.
 - Ask before: installing or removing plugins, changing permalinks,
   deleting pages or media, editing any `.htaccess` (site root or repo)
   or `wp-config.php`, any FTP write or delete.
@@ -394,7 +402,10 @@ Pages, menus and settings are managed via the WordPress REST API.
          `--fix 'OLD=>NEW'` reports each correction). Facts that are not in
          the old page ("Where", "Contact") come from John; never name
          individual group leaders unless John says so (use the church
-         office). Alt text is added to the image and to the media item.
+         office). **Team pages exception (John, 15 Oct 2026):** the
+         stale-names rule does not apply to a page whose purpose is to name
+         people (Meet the team): keep the names, roles and "Current as of
+         ...". Alt text is added to the image and to the media item.
          Email addresses at the church domain (for example the office
          email) now pass the protect-live hook (fixed by John and retested
          15 Oct 2026 with a command containing one); `--facts-file` (JSON)
@@ -576,6 +587,12 @@ Open design questions to put to Andy Berry (John to ask):
 2. **Lunch Club:** the **venue** (which room).
 3. **Stepping Stones:** confirm the **rooms** used (main room, Corner Room,
    Sports Hall, taken from the old text).
+4. **Who we are, wording to approve:** the old sentence "Led by our
+   full-time minister, Shelley Dring, you'll find us by the big roundabout
+   where King Lane and Stonegate Road cross" (a dangling modifier) is
+   rewritten in the draft as "We’re led by our full-time minister, and
+   you’ll find us by the big roundabout where King Lane and Stonegate Road
+   cross." John S to approve or reword.
 (The contact for all the Activity pages is the church office, Lesley,
 0113 2693750.)
 
@@ -589,6 +606,9 @@ in the image**.
   designed graphic with text in it, shown uncropped as a stopgap).
 - **Beacon Café:** a photo of people at the café (the current image is a
   4:1 panorama of two mugs, shown uncropped as a stopgap).
+- **Room Hire:** photos of the rooms available for hire (the current image
+  is a designed graphic with text and a black-and-gold look, kept as a
+  stopgap). The Info page's image is full width, so a wide photo is fine.
 Photo consent is managed by John S (see Safety).
 
 ## Header and footer architecture
@@ -699,9 +719,14 @@ contrast check reports it as informational only.
 - [ ] Remove the demo import: delete posts where `mbc_demo_import=1` (10
       posts selected from live on 15 Oct 2026, all in the pre-existing
       "News" category, so no categories were created and "News" must stay),
-      delete the media with meta `mbc_live_source_url` that the import
-      uploaded, then delete `inc/demo-import.php` and its `require` in
-      `functions.php`.
+      delete **exactly** the 19 media the post importer uploaded (IDs 670,
+      671, 672, 673, 675, 676, 678, 680, 681, 683, 684, 686, 688, 689, 692,
+      693, 695, 696, 697). **Do not** delete other media carrying
+      `mbc_live_source_url`: since 15 Oct 2026 the Elementor-exit tool also
+      sets it on photos and PDFs uploaded for converted pages, which are
+      real content. Then delete `inc/demo-import.php` and its `require` in
+      `functions.php` (this also drops the meta registration; the existing
+      values stay in the database, harmlessly).
 - [ ] Newsletter builder code reviewed and adapted for the new build
       (category IDs and post markup differ from the old site).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
