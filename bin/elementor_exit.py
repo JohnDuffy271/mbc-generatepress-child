@@ -146,6 +146,148 @@ def paragraphs(texts):
     return "\n\n".join(out), warnings
 
 
+INFO_TEMPLATE = "page-templates/info.php"
+ALLOWED_INLINE = {"a", "strong", "em", "br", "sup", "sub"}
+OFFICE_CTA = "Church office: Lesley, 0113 2693750, admin@moortownbaptistchurch.org.uk"
+
+
+def relativise(url):
+    """Same-site absolute URLs become relative, so no domain is baked into content."""
+    return re.sub(r"^https?://(?:www\.|new\.)?moortownbaptistchurch\.org\.uk(?=/)", "", url)
+
+
+def clean_inline(fragment, unbold=False):
+    """Keep only simple inline markup: links, strong, em, br, sup, sub. Drops all
+    classes, styles, ids and other attributes (and span/div/font wrappers)."""
+    def fix(m):
+        closing, tag, attrs = m.group(1), m.group(2).lower(), m.group(3)
+        tag = {"b": "strong", "i": "em"}.get(tag, tag)
+        if tag not in ALLOWED_INLINE or (unbold and tag == "strong"):
+            return ""
+        if closing:
+            return f"</{tag}>"
+        if tag != "a":
+            return "<br />" if tag == "br" else f"<{tag}>"
+        keep = []
+        for name in ("href", "target", "rel"):
+            mm = re.search(rf'\b{name}\s*=\s*"([^"]*)"', attrs)
+            if mm:
+                keep.append(f'{name}="{relativise(mm.group(1)) if name == "href" else mm.group(1)}"')
+        if 'target="_blank"' in keep and not any(k.startswith("rel=") for k in keep):
+            keep.append('rel="noopener"')
+        return "<a " + " ".join(keep) + ">"
+    return re.sub(r"<(/?)([a-zA-Z0-9]+)([^>]*)>", fix, fragment)
+
+
+def para_block(text, unbold=False, headings=()):
+    """A paragraph block (or an h2 if the whole text is one of the given heading words)."""
+    text = typography(re.sub(r"\s*<br\s*/?>\s*", " ", clean_inline(text, unbold)).strip())
+    plain = re.sub(r"<[^>]+>", "", text).strip()
+    if not plain:
+        return []
+    if plain in headings:
+        return [f'<!-- wp:heading -->\n<h2 class="wp-block-heading">{plain}</h2>\n<!-- /wp:heading -->']
+    return [f"<!-- wp:paragraph -->\n<p>{text}</p>\n<!-- /wp:paragraph -->"]
+
+
+def split_paragraphs(fragment, unbold=False, headings=()):
+    out = []
+    for part in re.split(r"(?:\s*<br\s*/?>\s*){2,}", fragment):
+        out += para_block(part, unbold, headings)
+    return out
+
+
+def list_block(tag, inner, unbold=False):
+    items = re.findall(r"<li\b[^>]*>(.*?)</li>", inner, re.S | re.I)
+    attrs = ' {"ordered":true}' if tag == "ol" else ""
+    lis = "\n\n".join(f"<!-- wp:list-item -->\n<li>{typography(clean_inline(i, unbold).strip())}</li>\n<!-- /wp:list-item -->" for i in items)
+    return [f'<!-- wp:list{attrs} -->\n<{tag} class="wp-block-list">{lis}</{tag}>\n<!-- /wp:list -->']
+
+
+def html_to_blocks(fragment, unbold=False, headings=()):
+    """Block markup for a text-editor fragment: p, h1-h6, ul/ol and loose text."""
+    out, pos = [], 0
+    for m in re.finditer(r"<(p|h[1-6]|ul|ol|blockquote)\b[^>]*>(.*?)</\1>", fragment, re.S | re.I):
+        out += split_paragraphs(re.sub(r"</?div[^>]*>", "", fragment[pos:m.start()]).strip(), unbold, headings)
+        tag, inner = m.group(1).lower(), m.group(2)
+        if tag == "p":
+            out += split_paragraphs(inner, unbold, headings)
+        elif tag[0] == "h":
+            level = int(tag[1])
+            text = typography(clean_inline(inner, True).strip())
+            attrs = "" if level == 2 else f' {{"level":{level}}}'
+            out.append(f'<!-- wp:heading{attrs} -->\n<h{level} class="wp-block-heading">{text}</h{level}>\n<!-- /wp:heading -->')
+        elif tag in ("ul", "ol"):
+            out += list_block(tag, inner, unbold)
+        else:  # blockquote
+            out.append("<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\">" + "".join(
+                f"<!-- wp:paragraph -->\n<p>{typography(clean_inline(x, unbold).strip())}</p>\n<!-- /wp:paragraph -->"
+                for x in re.findall(r"<p\b[^>]*>(.*?)</p>", inner, re.S)) + "</blockquote>\n<!-- /wp:quote -->")
+        pos = m.end()
+    out += split_paragraphs(re.sub(r"</?div[^>]*>", "", fragment[pos:]).strip(), unbold, headings)
+    return out
+
+
+def image_block(img):
+    rel = relativise(img["url"])
+    mid = int(img["id"]) if str(img.get("id", "")).isdigit() else None
+    attrs = (f'"id":{mid},' if mid else "") + '"sizeSlug":"large","linkDestination":"none"'
+    cls = f' class="wp-image-{mid}"' if mid else ""
+    return (f'<!-- wp:image {{{attrs}}} -->\n<figure class="wp-block-image size-large"><img src="{rel}" '
+            f'alt="{html.escape(img.get("alt", "") or "", quote=True)}"{cls}/></figure>\n<!-- /wp:image -->')
+
+
+def cta_block(heading, text):
+    return ('<!-- wp:group {"className":"mbc-cta"} -->\n<div class="wp-block-group mbc-cta"><!-- wp:heading {"level":3} -->\n'
+            f'<h3 class="wp-block-heading">{html.escape(heading)}</h3>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>{html.escape(text)}</p>\n<!-- /wp:paragraph -->\n\n'
+            '<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact-us/">Contact us</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons --></div>\n<!-- /wp:group -->')
+
+
+def build_info(page, facts, extra, fixes, image_override):
+    """Info-pattern content from the page's Elementor widgets, in document order."""
+    meta = page["meta"] if isinstance(page["meta"], dict) else {}
+    tree = json.loads(meta.get("_elementor_data") or "[]")
+    widgets, notes = [], []
+
+    def walk(nodes):
+        for n in nodes:
+            if n.get("elType") == "widget":
+                widgets.append(n)
+            walk(n.get("elements", []))
+    walk(tree)
+    unbold, headings = bool(extra.get("unbold")), tuple(extra.get("headings", ()))
+    blocks = []
+    for w in widgets:
+        kind, st = w["widgetType"], w.get("settings", {})
+        if kind == "text-editor":
+            blocks += html_to_blocks(st.get("editor", ""), unbold, headings)
+        elif kind == "heading":
+            level = int(str(st.get("header_size", "h2"))[-1]) if str(st.get("header_size", "h2"))[-1].isdigit() else 2
+            attrs = "" if level == 2 else f' {{"level":{level}}}'
+            blocks.append(f'<!-- wp:heading{attrs} -->\n<h{level} class="wp-block-heading">{typography(html.escape(html.unescape(st.get("title", ""))))}</h{level}>\n<!-- /wp:heading -->')
+        elif kind == "image" and isinstance(st.get("image"), dict):
+            blocks.append(image_block(dict(st["image"], alt=extra.get("alt") or st["image"].get("alt", ""))))
+        else:
+            notes.append(f"Elementor widget NOT converted: {kind}")
+    if extra.get("lead", True) and blocks and blocks[0].startswith("<!-- wp:paragraph -->"):
+        blocks[0] = blocks[0].replace("<!-- wp:paragraph -->", '<!-- wp:paragraph {"className":"mbc-lead"} -->', 1).replace("<p>", '<p class="mbc-lead">', 1)
+        notes.append("first paragraph is the lead")
+    if image_override:
+        img = dict(image_override, alt=extra.get("alt") or image_override.get("alt", ""))
+        blocks.insert(1 if blocks else 0, image_block(img))
+        notes.append(f"image: media {img['id']} (featured image)")
+    if extra.get("cta", True):
+        blocks.append(cta_block(extra.get("cta_heading", "Got a question?"), facts["contact"] if facts.get("contact") else OFFICE_CTA))
+    body = "\n\n".join(blocks)
+    for old, new in fixes:
+        count = body.count(old)
+        if not count:
+            sys.exit(f"--fix {old!r}: not found in the converted text")
+        body = body.replace(old, new)
+        notes.append(f"fixed ({count}x): {old!r} -> {new!r}")
+    return body, notes
+
+
 def build_activity(page, facts, alt=None, fixes=(), image_override=None, extra=None):
     texts, images, other = elementor_parts(page)
     body = sp.pattern_markup("activity-details")
@@ -213,7 +355,8 @@ def cmd_draft(wp, args):
         for key in ("when", "where", "who", "contact", "alt", "image_id"):
             if getattr(args, key, None) is None and key in given:
                 setattr(args, key, given[key])
-        extra = {k: given[k] for k in ("description", "description_prefix", "image_fit") if k in given}
+        extra = {k: given[k] for k in ("description", "description_prefix", "image_fit", "kind", "lead", "unbold", "headings",
+                                       "cta", "cta_heading", "image", "content_file") if k in given}
         args.fix = list(args.fix or []) + list(given.get("fix", []))
     facts = {"when": args.when or NEEDS, "where": args.where or NEEDS, "who": args.who or NEEDS, "contact": args.contact or NEEDS}
     fixes = []
@@ -221,32 +364,49 @@ def cmd_draft(wp, args):
         if "=>" not in f:
             sys.exit(f"--fix needs OLD=>NEW, got {f!r}")
         fixes.append(tuple(f.split("=>", 1)))
+    kind = extra.get("kind", "activity")
+    template = INFO_TEMPLATE if kind == "info" else ACTIVITY_TEMPLATE
     image_override = None
     widget_images = elementor_parts(page)[1]
     media_id = getattr(args, "image_id", None) or (None if widget_images else page.get("featured_media"))
+    if kind == "info" and extra.get("image") is False:
+        media_id = None
     if media_id:
         m = wp.call("GET", f"media/{int(media_id)}", {"context": "edit", "_fields": "id,source_url,alt_text,media_details"})
         large = m["media_details"].get("sizes", {}).get("large", {}).get("source_url") or m["source_url"]
         image_override = {"id": m["id"], "url": large, "alt": m["alt_text"]}
-    body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override, extra)
+    if extra.get("content_file"):  # hand-authored block markup (for bespoke pages)
+        body, notes = Path(extra["content_file"]).read_text(), ["content supplied from a file (hand-authored blocks)"]
+        for bad, why in ((r"<style\b", "a <style> element"), (r"\bstyle\s*=", "an inline style"), (r"elementor", "Elementor markup"),
+                         (r"#[0-9a-fA-F]{6}\b", "a hard-coded colour"), (r"moortownbaptistchurch\.org\.uk/wp-content", "an absolute site URL")):
+            if re.search(bad, body):
+                sys.exit(f"content file contains {why}: not allowed (tokens and relative URLs only)")
+    elif kind == "info":
+        body, notes = build_info(page, facts, extra, fixes, image_override)
+    else:
+        body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override, extra)
     title = f"{page['title']['raw']} (block draft)"
     slug = f"{page['slug']}-block-draft"
     existing = wp.call("GET", "pages", {"slug": slug, "status": "draft,publish,private,pending", "_fields": "id"})
     print(f"source page {page['id']} {page['link']} (left untouched)")
-    print(f"draft: {title!r}, parent {page['parent']}, template {ACTIVITY_TEMPLATE}, {'update ' + str(existing[0]['id']) if existing else 'create'}")
-    for k, v in facts.items():
-        print(f"   {k:<8} {v}")
+    print(f"draft: {title!r}, parent {page['parent']}, template {template}, {'update ' + str(existing[0]['id']) if existing else 'create'}")
+    if kind == "activity":
+        for k, v in facts.items():
+            print(f"   {k:<8} {v}")
     for n in notes:
         print("   NOTE:", n)
     if not args.apply:
         print("dry run: nothing written (use --apply)")
         return
-    if args.alt:  # also put the alt text on the media library item
+    if kind == "info" and image_override and (args.alt or image_override.get("alt")) and args.alt:
+        wp.call("POST", f"media/{int(image_override['id'])}", body={"alt_text": args.alt}, params={"_fields": "id"})
+        print(f"alt text set on media {image_override['id']}")
+    elif args.alt and kind == "activity":  # also put the alt text on the media library item
         target = image_override or (widget_images[0] if widget_images else None)
         if target and str(target.get("id", "")).isdigit():
             wp.call("POST", f"media/{int(target['id'])}", body={"alt_text": args.alt}, params={"_fields": "id"})
             print(f"alt text set on media {target['id']}")
-    payload = {"title": title, "slug": slug, "status": "draft", "parent": page["parent"], "template": ACTIVITY_TEMPLATE, "content": body}
+    payload = {"title": title, "slug": slug, "status": "draft", "parent": page["parent"], "template": template, "content": body}
     if existing:
         made = wp.call("POST", f"pages/{existing[0]['id']}", body=payload, params={"_fields": "id,link"})
     else:

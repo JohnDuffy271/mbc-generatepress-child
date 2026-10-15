@@ -265,3 +265,39 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-pagination .page-numbers.current {
 	font-weight: var(--mbc-weight-strong);
 }
+
+/* ---- Meet the team ---- */
+.wp-block-media-text.mbc-team__minister {
+	grid-template-columns: minmax(0, 30%) 1fr;
+	align-items: start;
+	gap: var(--mbc-space-l);
+	margin-block: var(--mbc-space-l);
+}
+
+.mbc-team__minister .wp-block-media-text__media,
+.mbc-team__minister .wp-block-media-text__content {
+	align-self: start;
+	padding: 0;
+}
+
+.mbc-team__minister .wp-block-media-text__media img {
+	width: 100%;
+	height: auto;
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-team__minister h2 {
+	margin-top: 0;
+}
+
+.mbc-people-list {
+	columns: 3 12rem;
+	column-gap: var(--mbc-space-xl);
+	padding: 0;
+	list-style: none;
+}
+
+.mbc-people-list li {
+	break-inside: avoid;
+	padding: var(--mbc-space-3xs) 0;
+}
