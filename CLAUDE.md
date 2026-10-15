@@ -355,6 +355,13 @@ Pages, menus and settings are managed via the WordPress REST API.
       `front_page_check.py`, `activity_check.py`, `templates_check.py`,
       `posts_audit.py`, `contrast_check.py` with `CC_PAGES=` for specific
       pages, `page_inventory.py`).
+- [x] Posting news (15 Oct 2026): a "News post" block pattern (MBC
+      category, posts only: intro paragraph, image, body text) is in
+      `patterns/news-post.php`, and the site's default post category is now
+      **News** (id 12 on the sandbox; set via REST `default_category`).
+      Checks and pages above still apply. **An editor's how-to guide for
+      posting news will follow once the single-post template is final**
+      (not written yet).
 - [ ] Imported demo content must not carry inline colours or fonts: the
       import strips them (they made post text black on dark). Apply the same
       rule when converting legacy pages in the Elementor exit.
@@ -380,10 +387,29 @@ Pages, menus and settings are managed via the WordPress REST API.
          publish are dry runs without `--apply`; the draft is a *new* draft
          page "<title> (block draft)" because WordPress cannot hold an
          unpublished version of a live page; the original is untouched).
-         Pilot: Craft Group (page 565), draft page 720, awaiting John's
-         review (no publish yet). Note: the sandbox "modified" dates cannot
-         show which version is newer (the scaffold touched every page on
-         14 Oct 2026); compare content, not dates.
+         **Typo rule (every page):** "verbatim" means don't lose content,
+         not preserve errors. Fix typos when converting (the tool's
+         `--fix 'OLD=>NEW'` reports each correction). Facts that are not in
+         the old page ("Where", "Contact") come from John; never name
+         individual group leaders unless John says so (use the church
+         office). Alt text is added to the image and to the media item.
+         Text containing the live domain (for example the office email) must
+         not be typed into a shell command (the protect-live hook blocks it);
+         put it in a `--facts-file` JSON written with the Write tool.
+         **Pilot done:** Craft Group (page 565) was converted on 15 Oct 2026
+         via draft page 720 (reviewed and approved by John); backup in
+         `~/src/mbc-elementor-backups/565-craft-group.json`; the draft is in
+         the trash. Note: the sandbox "modified" dates cannot show which
+         version is newer (the scaffold touched every page on 14 Oct 2026);
+         compare content, not dates. Live has no standalone Craft Group page
+         (it is a paragraph in a combined live page), so for some pages
+         "compare with live" will find nothing to compare.
+         **Open (John):** page 565 has a page-level *featured image* (a
+         crochet photo) that GeneratePress shows as a full-width banner above
+         the title, in addition to the tiger picture in the Activity layout.
+         The draft preview had no banner. Decide: hide the banner on the new
+         templates (matches the approved draft), or use the photo as the
+         activity image. Check every converted page for a featured image.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -462,6 +488,14 @@ Pages, menus and settings are managed via the WordPress REST API.
       values (`newsletter-title`, `-sub-title`, `-image-url`, `-image-width`,
       `-image-height`, `-no-of-posts`) that the editorial fields must
       replace. Passing an array to `cat` is fine (core joins it).
+      **Why John S is an administrator today, and the plan:** John S has
+      the Administrator role only because the newsletter lives in code
+      snippets (the Code Snippets plugin needs that). The rework moves the
+      code into git (this theme), exposes **only the editorial settings**
+      (title, intro, image, post selection) through an admin screen gated
+      by the custom capability `mbc_manage_newsletter`, lets John S work as
+      **Editor plus that capability**, and then **removes the code snippets
+      plugin from the new site** (ask before removing any plugin).
 
 ## Questions for Andy
 

@@ -6,7 +6,8 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       Save the page's Elementor data to ~/src/mbc-elementor-backups/<id>-<slug>.json
       (outside the repo) and verify the file is written and valid JSON.
 
-  elementor_exit.py draft   PAGE_ID [--when ..] [--where ..] [--who ..] [--contact ..] [--apply]
+  elementor_exit.py draft   PAGE_ID [--when ..] [--where ..] [--who ..] [--contact ..]
+                            [--alt TEXT] [--fix 'OLD=>NEW' ...] [--facts-file FILE.json] [--apply]
       Build an Activity-pattern block version of the page's text and image as a
       NEW DRAFT page ("<title> (block draft)"). The original page is untouched.
 
@@ -14,7 +15,10 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       On approval: back up, copy the draft's content and template into the
       page, remove its Elementor meta, then TRASH the draft (never force-delete).
 
-Dry run by default for draft and publish. Backup rule: before any Elementor meta
+Typo rule: "verbatim" means don't lose content, not preserve errors; use --fix for
+each correction (it must match, and is reported). --facts-file takes the same options
+as JSON (keys when, where, who, contact, alt, fix as a list). Dry run by default for
+draft and publish. Backup rule: before any Elementor meta
 is removed, _elementor_data, _elementor_edit_mode, _elementor_page_settings and
 post_content are saved and the file is read back as valid JSON.
 """
@@ -115,7 +119,7 @@ def paragraphs(texts):
     return "\n\n".join(out), warnings
 
 
-def build_activity(page, facts):
+def build_activity(page, facts, alt=None, fixes=()):
     texts, images, other = elementor_parts(page)
     body = sp.pattern_markup("activity-details")
     notes = []
@@ -130,14 +134,20 @@ def build_activity(page, facts):
         body = body.replace('{"mediaType":"image","className":"mbc-activity__top"}', "{" + attrs + '"mediaType":"image","className":"mbc-activity__top"}', 1)
         cls = f' class="wp-image-{int(img["id"])}"' if attrs else ""
         body = re.sub(r'<img src="/wp-content/themes/generatepress-child/images/placeholder\.svg" alt=""/>',
-                      f'<img src="{rel}" alt="{html.escape(img.get("alt", ""), quote=True)}"{cls}/>', body, count=1)
+                      f'<img src="{rel}" alt="{html.escape(alt if alt is not None else img.get("alt", ""), quote=True)}"{cls}/>', body, count=1)
         if len(images) > 1:
             notes.append(f"{len(images) - 1} more image(s) not carried over")
-        if not img.get("alt"):
+        if not (alt or img.get("alt")):
             notes.append("the image has no alt text")
     else:
         notes.append("no image in the Elementor page: placeholder kept")
     desc, warnings = paragraphs(texts)
+    for old, new in fixes:
+        count = desc.count(old)
+        if not count:
+            sys.exit(f"--fix {old!r}: not found in the text")
+        desc = desc.replace(old, new)
+        notes.append(f"typo fixed ({count}x): {old!r} -> {new!r}")
     if not desc:
         notes.append("no text found")
     block = "<!-- wp:paragraph -->\n<p>Describe what happens, what to expect and how to take part.</p>\n<!-- /wp:paragraph -->"
@@ -154,8 +164,19 @@ def cmd_draft(wp, args):
     meta = page["meta"] if isinstance(page["meta"], dict) else {}
     if meta.get("_elementor_edit_mode") != "builder":
         sys.exit(f"page {args.page_id} is not Elementor-built")
+    if args.facts_file:  # same options as JSON; command-line options win
+        given = json.loads(Path(args.facts_file).read_text())
+        for key in ("when", "where", "who", "contact", "alt"):
+            if getattr(args, key, None) is None and key in given:
+                setattr(args, key, given[key])
+        args.fix = list(args.fix or []) + list(given.get("fix", []))
     facts = {"when": args.when or NEEDS, "where": args.where or NEEDS, "who": args.who or NEEDS, "contact": args.contact or NEEDS}
-    body, notes, ok = build_activity(page, facts)
+    fixes = []
+    for f in args.fix or []:
+        if "=>" not in f:
+            sys.exit(f"--fix needs OLD=>NEW, got {f!r}")
+        fixes.append(tuple(f.split("=>", 1)))
+    body, notes, ok = build_activity(page, facts, args.alt, fixes)
     title = f"{page['title']['raw']} (block draft)"
     slug = f"{page['slug']}-block-draft"
     existing = wp.call("GET", "pages", {"slug": slug, "status": "draft,publish,private,pending", "_fields": "id"})
@@ -168,6 +189,11 @@ def cmd_draft(wp, args):
     if not args.apply:
         print("dry run: nothing written (use --apply)")
         return
+    if args.alt:  # also put the alt text on the media library item
+        _, images, _ = elementor_parts(page)
+        if images and str(images[0].get("id", "")).isdigit():
+            wp.call("POST", f"media/{int(images[0]['id'])}", body={"alt_text": args.alt}, params={"_fields": "id"})
+            print(f"alt text set on media {images[0]['id']}")
     payload = {"title": title, "slug": slug, "status": "draft", "parent": page["parent"], "template": ACTIVITY_TEMPLATE, "content": body}
     if existing:
         made = wp.call("POST", f"pages/{existing[0]['id']}", body=payload, params={"_fields": "id,link"})
@@ -207,6 +233,9 @@ def main():
     d = sub.add_parser("draft"); d.add_argument("page_id", type=int)
     for f in ("when", "where", "who", "contact"):
         d.add_argument(f"--{f}")
+    d.add_argument("--alt", help="alt text for the image")
+    d.add_argument("--fix", action="append", metavar="OLD=>NEW", help="correct a typo in the text (repeatable)")
+    d.add_argument("--facts-file", help="JSON file with when/where/who/contact/alt/fix")
     d.add_argument("--apply", action="store_true")
     p = sub.add_parser("publish"); p.add_argument("page_id", type=int); p.add_argument("draft_id", type=int); p.add_argument("--apply", action="store_true")
     args = ap.parse_args()
