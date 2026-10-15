@@ -334,12 +334,30 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [ ] Open question (Home menu item): the logo is Home per Andy's spec;
       John to check with Andy whether an explicit "Home" item is wanted.
 - [ ] Rockhost SSH ticket (raised 14 Oct 2026): no reply yet; not blocking.
-- [ ] Remaining page templates (front page is done): `page-templates/info.php`, `activity.php`,
-      `mission-partner.php`, `listing.php`. Then re-run
-      `bin/scaffold_site.py --apply`: it assigns templates only when the
-      file exists (About Us/Resources children → info, What's On children
-      → activity, Mission children → mission-partner, News/Events/Contact
-      → listing).
+- [x] All page templates built (15 Oct 2026): front page, Activity, Info,
+      Mission partner, Listing (News Query Loop; Events and Contact
+      placeholders) and the single post, each with a block pattern in
+      `patterns/` and styles in `css/layout.css` / `css/patterns.css`.
+      `bin/seed_patterns.py` seeds only *empty* pages and assigns the
+      template; **Elementor-built (legacy) pages are skipped by both it and
+      `bin/scaffold_site.py`** (content and template untouched) until the
+      Elementor exit. Currently on the new templates: front page (home);
+      Activity: House Groups; Info: FAQs, BU & YBA, Giving; Mission
+      partner: Mission Group, Moortown Emergency Relief Fund, Pathways;
+      Listing: News, Events; single post: the 10 demo posts. Placeholder
+      text ("Add the day and time...") on the seeded pages needs real
+      content. The News listing is six per page, newest first. Single post:
+      the featured image is not shown when the first content image is the
+      same picture (`inc/post-helpers.php`, tolerant of WordPress's
+      `-scaled`, `-WxH` and `-N` file-name suffixes). Still blank:
+      the parent pages About Us (341) and Resources (623), which are menu
+      toggles, not links. Checks: `~/src/mbc-tests/` (`header_check.py`,
+      `front_page_check.py`, `activity_check.py`, `templates_check.py`,
+      `posts_audit.py`, `contrast_check.py` with `CC_PAGES=` for specific
+      pages, `page_inventory.py`).
+- [ ] Imported demo content must not carry inline colours or fonts: the
+      import strips them (they made post text black on dark). Apply the same
+      rule when converting legacy pages in the Elementor exit.
 - [ ] **Elementor exit** (after the templates exist). Goal: no page
       depends on Elementor; both plugins deactivated before cutover.
       1. For each of the 24 Elementor-built pages, compare the sandbox
