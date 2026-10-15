@@ -444,6 +444,24 @@ Pages, menus and settings are managed via the WordPress REST API.
          more current" cannot be answered by comparison; facts were taken
          from the sandbox text and from live pages and weekly news (with
          dates).
+         **Batch 2 (Info pages), 15 Oct 2026, drafts awaiting John's
+         review, nothing published:** 741 Who we are (page 343), 742 What
+         we believe (345), 743 Meet the team (42), 744 Room Hire (391),
+         745 Policies & Documents (276); all five backed up. Review list
+         and preview screenshots (the drafts injected into the real Info
+         template; drafts cannot be opened without a login):
+         `~/src/mbc-tests/review/` (`elementor-batch-2-review.md`,
+         `preview_draft.py`). Tool: `elementor_exit.py draft` now converts
+         Info pages (`"kind": "info"` in the facts file): headings, lists,
+         links and tidy inline markup in document order, pasted classes and
+         styles dropped, same-site URLs made relative, optional
+         `content_file` for a hand-built page (Meet the team). Open points:
+         Meet the team names people (kept; the page is the roster); eight
+         deacon photos and all nine policy PDFs are not on the sandbox (they
+         are only on live; downloading them needs John's explicit OK as the
+         live-access exception covers only `import_live_posts.py`); the
+         Room Hire graphic is text-in-image; the Privacy Notice PDF in the
+         Policies list may serve the cutover Privacy Notice.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
