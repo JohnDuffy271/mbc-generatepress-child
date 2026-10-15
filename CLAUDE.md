@@ -644,12 +644,17 @@ Pages, menus and settings are managed via the WordPress REST API.
         |---|---|---|
         | `newsletter-title` | per issue | the issue's title |
         | `newsletter-sub-title` | per issue (was hidden) | `mbc_nl_subtitle` |
-        | `newsletter-image-url` | `MailchimpHeader.jpg` (media library; varies) | the issue's featured image, else the **default header image** (option `mbc_nl_default_header_id`, sandbox media 840, copied from live by `bin/newsletter_header_image.py`) |
+        | `newsletter-image-url` | `MailchimpHeader.jpg`, later `MBC_Newsletter_Header_20251223-.jpg` (media library; varies) | the issue's featured image, else the **default header image** (option `mbc_nl_default_header_id`, sandbox media 865, copied from live by `bin/newsletter_header_image.py`) |
         | `newsletter-image-width` | 600 px | not needed: the email is 600 px wide and images are never stretched |
         | `newsletter-image-height` | 275 px | not needed: height follows the image |
         | `newsletter-no-of-posts` | 6 (varies; redundant now) | pre-fill cap default 6, filter `mbc_newsletter_max_posts`; the list is editable per issue |
-        The live file is actually **600 x 100 px** (not 275 high): it shows at
-        its natural size, no upscaling. Its alt text is on the media item.
+        John replaced the first image (`MailchimpHeader.jpg`, 600 x 100; its
+        media 840 was unreferenced and deleted) on 15 Oct 2026 with the one
+        now in use on live, **600 x 338 px** ("MBC NEWS" over a line drawing
+        of the church). The email shows it at width 600, height 338 (its
+        natural size, no upscaling); the web version uses the same image.
+        The old Shortcoder height of 275 px did not match either file. Its
+        alt text is on the media item.
         Change the default image by uploading another and setting the option
         over REST `/wp/v2/settings` (or the script); an issue's own featured
         image always wins. Check at cutover that the image is on live
