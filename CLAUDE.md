@@ -410,17 +410,35 @@ Pages, menus and settings are managed via the WordPress REST API.
       a second dry run reports 10 unchanged. Open for the single-post
       template: each post has a featured image *and* often the same photo
       inline, so it may show twice. Cleanup is in the cutover checklist.
-- [ ] Newsletter builder (open item, no action yet): John has custom
-      PHP/HTML code that builds a Mailchimp newsletter from posts. It must
-      be reviewed and adapted for the new build before cutover (category
-      IDs and post markup will differ). John will share the code in a later
-      session.
-      Known design flaw to fix in the rebuild: the current newsletter links
-      to a *live* post list, so posts added after sending change what
-      readers see. Each issue should be a fixed snapshot. Options to
-      discuss: freeze by send time (a cut-off date stored per issue), a
-      per-issue tag or category, content baked into the email itself, or a
-      per-issue archive page.
+- [ ] Newsletter builder (research only, **no build yet**): John has
+      custom PHP/HTML code (v1.8) that builds a Mailchimp newsletter from
+      posts. It must be reviewed and adapted for the new build before
+      cutover. To save for reference only as
+      `docs/newsletter/newsletter-code-v1.8.php` (the paste had not arrived
+      by 15 Oct 2026; re-paste needed). Category IDs it uses are mapped in
+      `docs/newsletter/category-map.md` (included 5, 8, 9, 10, 36, 38, 42,
+      59; excluded 19, 27): IDs 10, 36, 38 and 19 do not exist on live, and
+      the rebuild must refer to categories by **slug**, never by ID.
+      **Known design flaw:** the current newsletter links to a *live* post
+      list, so posts added after sending change what readers see.
+      **Proposed design (to confirm with John before building):**
+      - A **"Newsletter issue" content type** (custom post type) that
+        stores a **fixed list of post IDs**: pre-filled with the posts
+        published since the last issue, then editable, so an issue is a
+        snapshot that later posts cannot change.
+      - **Email-safe HTML** generated per issue for Mailchimp (inline
+        styles and tables as email clients need; images at an email-sized
+        width, not full size).
+      - A **public web archive** of past issues, each at a stable URL.
+      - **Editorial fields** (intro, sign-off, per-item notes) replacing
+        the `[sc]` shortcodes in v1.8.
+      - Access gated by a custom capability, **`mbc_manage_newsletter`**,
+        granted explicitly (not to every editor).
+      **Bugs reported in v1.8 (from John; to verify against the code once
+      saved):** full-size thumbnails used in the email, `$query->$post`
+      (wrong property access on the query object), the sticky-post count,
+      `//` comments inside CSS (invalid; CSS needs `/* */`), and hard-coded
+      live-site URLs.
 
 ## Questions for Andy
 
