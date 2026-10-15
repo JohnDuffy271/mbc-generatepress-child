@@ -369,6 +369,21 @@ Pages, menus and settings are managed via the WordPress REST API.
       3. John or John S reviews each page.
       4. On approval: publish the block version and remove that page's
          `_elementor_edit_mode` / `_elementor_data` meta.
+         **Backup rule (every page):** *before* any Elementor meta is
+         removed, save the page's `_elementor_data`, `_elementor_edit_mode`,
+         `_elementor_page_settings` and `post_content` to
+         `~/src/mbc-elementor-backups/<page-id>-<slug>.json` (outside the
+         repo), then confirm the file is written and valid JSON (read it
+         back). `bin/elementor_exit.py publish` does this first and stops if
+         it fails. The draft copy is **trashed, never force-deleted**.
+         Tool: `bin/elementor_exit.py backup|draft|publish` (draft and
+         publish are dry runs without `--apply`; the draft is a *new* draft
+         page "<title> (block draft)" because WordPress cannot hold an
+         unpublished version of a live page; the original is untouched).
+         Pilot: Craft Group (page 565), draft page 720, awaiting John's
+         review (no publish yet). Note: the sandbox "modified" dates cannot
+         show which version is newer (the scaffold touched every page on
+         14 Oct 2026); compare content, not dates.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -422,6 +437,10 @@ Open design questions to put to Andy Berry (John to ask):
 4. **Left-aligned band text:** the front page bands are left-aligned
    throughout (a deliberate deviation); his wireframe right-aligns headings
    beside a left-hand image. Is left-aligned acceptable?
+5. **About Us (341) and Resources (623) overview pages:** both are menu
+   toggles (not links) but are reachable by URL and currently blank. Decide
+   between short overview content (a list of the child pages) or a redirect
+   to the first child page. (Decision later; no action yet.)
 
 ## Header and footer architecture
 
