@@ -650,6 +650,51 @@ Photo consent is managed by John S (see Safety).
   `bin/scaffold_site.py` in step with `youtube_services_url`. If a services
   playlist is created later, point `youtube_services_url` at it.
 
+### Newsletter signup form (MC4WP form 206)
+
+**The sandbox form posts to the real Mailchimp audience.** Test only with
+John's own address, never anyone else's, and never submit it from an
+automated test: `~/src/mbc-tests/footer_form_check.py` reads styles and
+tabs through the fields but fails if any non-GET request is made.
+
+The form lives in the database (MC4WP → Forms → form 206), not in git, so
+its markup is recorded here (changed 16 Oct 2026: First name and Last name
+added). If the form is ever lost or rebuilt, this is what the theme CSS
+(`css/footer.css`) expects: one `<p>` per field inside the plugin's
+`.mc4wp-form-fields` wrapper, with the email first and the submit last
+(the 768px layout targets `p:first-child` and `p:last-child`).
+
+```html
+<p>
+  <label for="mc4wp-email">Email address:</label>
+  <input type="email" id="mc4wp-email" name="EMAIL" placeholder="Your email address" autocomplete="email" required />
+</p>
+<p>
+  <label for="mc4wp-fname">First name:</label>
+  <input type="text" id="mc4wp-fname" name="FNAME" placeholder="First name" autocomplete="given-name" />
+</p>
+<p>
+  <label for="mc4wp-lname">Last name:</label>
+  <input type="text" id="mc4wp-lname" name="LNAME" placeholder="Last name" autocomplete="family-name" />
+</p>
+<p>
+  <input type="submit" value="Sign up" />
+</p>
+```
+
+- **Merge tags:** `EMAIL` (required), `FNAME`, `LNAME` (both optional). They
+  must exist in the Mailchimp audience with exactly these tags, or the names
+  are silently dropped.
+- The honeypot, timestamp and form-ID hidden fields are added by the
+  plugin; the honeypot sits in a `display: none` label.
+- Layout: stacked below 768px; from 768px the name fields share one row
+  under the email, and Sign up spans the full row. Styling uses the footer
+  and input tokens only; labels, inputs, placeholders and focus rings are
+  identical across the three fields in all four looks (checked with
+  `footer_form_check.py` and `contrast_check.py`).
+- The form now collects names as well as email addresses, which the
+  Privacy Notice must cover (cutover checklist).
+
 ## Permalinks
 
 Decision (15 Oct 2026, approved by John): the sandbox uses the live site's
