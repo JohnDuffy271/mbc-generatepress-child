@@ -115,6 +115,11 @@ Consequences of deploying the repo root into `themes/`:
   on 14 Oct 2026.)
 - Any new top-level folder that is not a theme needs its own
   `.htaccess` with `Require all denied`.
+- The root `.htaccess` denies every dotfile and `.md/.py/.json/.sh/...` files
+  (`.gitignore` was readable until 15 Oct 2026). `.git/` is not deployed.
+  `~/src/mbc-tests/exposure_check.py` GETs every tracked non-theme path
+  plus extras and fails on anything but 403/404; run it after any deploy
+  change.
 - After adding anything sensitive-adjacent, verify it returns 403:
   ```bash
   /usr/bin/curl -s -o /dev/null -w '%{http_code}\n' "https://new.moortownbaptistchurch.org.uk/wp-content/themes/<path>"
