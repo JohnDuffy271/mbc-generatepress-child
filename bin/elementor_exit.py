@@ -18,6 +18,15 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       meta. Idempotent (matched on that meta). The next `draft` relinks to the sandbox
       copies. --alts maps a file name to alt text (applied to the media item).
 
+  elementor_exit.py verify PAGE_ID DRAFT_ID
+      The post-publish checks on their own (publish runs them itself). Exit 1 if any fails.
+
+  elementor_exit.py publish-batch PAGE:DRAFT [PAGE:DRAFT ...] [--apply]
+      publish for each pair, in order; the first failed step or check stops the run (non-zero exit).
+
+  elementor_exit.py live-read SLUG [SLUG ...] [--full] [--chars N]
+      Read live pages (public REST API, GET only, paced) to compare with a sandbox page.
+
   elementor_exit.py self-test
       Static checks that this file can only reach live through import_live_posts.LiveReader.
 
@@ -516,8 +525,27 @@ def cmd_assets(wp, args):
     print(f"\nDone. Live requests made: {live.request_count}")
 
 
+def cmd_live_read(args):
+    """Read live PAGES (public REST API, GET only) to compare with the sandbox. Writes nothing anywhere."""
+    live = lp.LiveReader()
+    for slug in args.slugs:
+        found, _ = live.get_json("pages", {"slug": slug, "_fields": "id,slug,link,modified,title,content"})
+        if not found:
+            print(f"== {slug}: no published live page with this slug")
+            continue
+        for pg in found:
+            text = html.unescape(re.sub(r"<[^>]+>", " ", pg["content"]["rendered"]))
+            text = re.sub(r"\s+", " ", text).strip()
+            print(f"== live page {pg['id']} {pg['link']} (modified {pg['modified'][:10]}): {html.unescape(pg['title']['rendered'])}")
+            print(text if args.full else text[:args.chars] + (" ..." if len(text) > args.chars else ""))
+            links = sorted(set(re.findall(r'href="([^"]+)"', pg["content"]["rendered"])))
+            if links:
+                print("   links:", ", ".join(links[:12]))
+    print(f"live requests made: {live.request_count}")
+
+
 def self_test():
-    """Static checks: the only way this file reaches the live site is LiveReader.get_bytes, inside cmd_assets."""
+    """Static checks: this file reaches the live site only through LiveReader: get_bytes in cmd_assets, get_json('pages') in cmd_live_read."""
     tree = ast.parse(Path(__file__).read_text())
     parents = {c: p for p in ast.walk(tree) for c in ast.iter_child_nodes(p)}
 
@@ -539,11 +567,14 @@ def self_test():
                                                "send", "sendall", "connect", "getresponse")]
     check(not raw, "this file makes no network calls of its own (everything goes through import_live_posts)")
     live_calls = [n for n in calls if isinstance(n.func.value, ast.Name) and n.func.value.id == "live"]
-    check(bool(live_calls) and all(n.func.attr == "get_bytes" and func_of(n) == "cmd_assets" for n in live_calls),
-          f"the live reader is used only for get_bytes, only in cmd_assets ({len(live_calls)} call site)")
-    check(not [n for n in calls if n.func.attr == "get_json"], "live get_json is never called here")
+    allowed = {"get_bytes": "cmd_assets", "get_json": "cmd_live_read"}
+    check(bool(live_calls) and all(allowed.get(n.func.attr) == func_of(n) for n in live_calls),
+          f"live reader calls are only get_bytes in cmd_assets and get_json in cmd_live_read ({len(live_calls)} call sites)")
+    gj = [n for n in live_calls if n.func.attr == "get_json"]
+    check(bool(gj) and all(n.args and isinstance(n.args[0], ast.Constant) and n.args[0].value == "pages" for n in gj),
+          "live get_json reads only the literal route 'pages'")
     made = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "LiveReader"]
-    check(len(made) == 1 and func_of(made[0]) == "cmd_assets", "LiveReader is created once, in cmd_assets")
+    check(sorted(func_of(n) for n in made) == ["cmd_assets", "cmd_live_read"], "LiveReader is created only in cmd_assets and cmd_live_read")
     imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
     imported |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
     check(not imported & {"urllib.request", "http.client", "socket", "subprocess", "requests"}, "no networking or subprocess imports")
@@ -574,6 +605,62 @@ def cmd_publish(wp, args):
         sys.exit("Elementor meta is still set after the update: draft NOT trashed; restore from the backup if needed")
     wp.call("DELETE", f"pages/{draft['id']}", params={"_fields": "id"})  # no force: goes to the trash
     print(f"page {page['id']} converted; draft {draft['id']} moved to the trash. Backup: {BACKUP_DIR}/{page['id']}-{page['slug']}.json")
+    if not verify_published(wp, page["id"], draft["id"]):  # any failed check stops the run with a non-zero exit
+        sys.exit(f"VERIFICATION FAILED for page {page['id']}: stopping (nothing further was changed; restore from the backup if needed)")
+
+
+def verify_published(wp, page_id, draft_id):
+    """Check a published conversion. Prints PASS/FAIL per check; returns True only if every check passed."""
+    sb = lp.SandboxWriter(lp.load_env())
+    page, draft = get_page(wp, page_id), get_page(wp, draft_id)
+    meta = page["meta"] if isinstance(page["meta"], dict) else {}
+    backups = sorted(BACKUP_DIR.glob(f"{page_id}-*.json"))
+    results = []
+
+    def check(ok, text):
+        results.append(bool(ok))
+        print(("PASS " if ok else "FAIL ") + text)
+
+    check(page["status"] == "publish", f"page {page_id} is published ({page['template']})")
+    check(not meta.get("_elementor_edit_mode") and not meta.get("_elementor_data"), "Elementor meta removed")
+    check("elementor" not in page["content"]["raw"].lower(), "no Elementor markup in the stored content")
+    check(draft["status"] == "trash", f"draft {draft_id} is in the trash")
+    try:
+        saved = json.loads(backups[0].read_text())["elementor"]["_elementor_data"] if backups else None
+    except (OSError, ValueError, KeyError):
+        saved = None
+    check(bool(saved), f"backup present, valid JSON, with Elementor data ({backups[0].name if backups else 'none found'})")
+    try:
+        status, body = sb.fetch_public(urllib.parse.urlsplit(page["link"]).path)
+    except Exception as exc:  # a network failure is a failed check, not a pass
+        status, body = None, ""
+        print(f"     (public fetch failed: {exc})")
+    check(status == 200, f"public URL returns 200: {page['link']}")
+    main = re.search(r"<main.*?</main>", body, re.S)
+    check(bool(main) and "elementor" not in main.group(0).lower(), "rendered <main> has no Elementor classes")
+    check("mbc-page" in body, "new template wrapper present (mbc-page)")
+    check(bool(body) and "page-header-image" not in body, "no GeneratePress featured-image banner")
+    return all(results)
+
+
+def cmd_verify(wp, args):
+    if not verify_published(wp, args.page_id, args.draft_id):
+        sys.exit(1)
+
+
+def cmd_publish_batch(wp, args):
+    """PAGE:DRAFT pairs, one at a time, in order. The first failure of any step or check stops the whole run."""
+    pairs = []
+    for item in args.pairs:
+        try:
+            a, b = item.split(":")
+            pairs.append((int(a), int(b)))
+        except ValueError:
+            sys.exit(f"pairs look like PAGE_ID:DRAFT_ID, got {item!r}")
+    for page_id, draft_id in pairs:
+        print(f"=== page {page_id} <- draft {draft_id}")
+        cmd_publish(wp, argparse.Namespace(page_id=page_id, draft_id=draft_id, apply=args.apply))  # exits non-zero on failure
+    print(f"\n{len(pairs)} page(s) {'published and verified' if args.apply else 'planned (dry run)'}.")
 
 
 def main():
@@ -590,13 +677,19 @@ def main():
     d.add_argument("--apply", action="store_true")
     a = sub.add_parser("assets"); a.add_argument("page_id", type=int); a.add_argument("--alts"); a.add_argument("--apply", action="store_true")
     sub.add_parser("self-test")
+    v = sub.add_parser("verify"); v.add_argument("page_id", type=int); v.add_argument("draft_id", type=int)
+    pb = sub.add_parser("publish-batch"); pb.add_argument("pairs", nargs="+", metavar="PAGE:DRAFT"); pb.add_argument("--apply", action="store_true")
+    lr = sub.add_parser("live-read"); lr.add_argument("slugs", nargs="+"); lr.add_argument("--full", action="store_true"); lr.add_argument("--chars", type=int, default=900)
     p = sub.add_parser("publish"); p.add_argument("page_id", type=int); p.add_argument("draft_id", type=int); p.add_argument("--apply", action="store_true")
     args = ap.parse_args()
     if args.cmd == "self-test":
         sys.exit(0 if (self_test() and lp.self_test()) else 1)
+    if args.cmd == "live-read":
+        return cmd_live_read(args)
     wp = ss.WP(ss.load_env())
     {"backup": lambda: backup(wp, args.page_id), "draft": lambda: cmd_draft(wp, args), "assets": lambda: cmd_assets(wp, args),
-     "publish": lambda: cmd_publish(wp, args)}[args.cmd]()
+     "publish": lambda: cmd_publish(wp, args), "verify": lambda: cmd_verify(wp, args),
+     "publish-batch": lambda: cmd_publish_batch(wp, args)}[args.cmd]()
 
 
 if __name__ == "__main__":

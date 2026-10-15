@@ -247,6 +247,12 @@ Pages, menus and settings are managed via the WordPress REST API.
   `/wp-content/uploads/`), and upload them to the sandbox media library
   with `mbc_live_source_url` meta. Nothing else on live; the tool's
   `self-test` checks this statically.
+  **Second extension (John, 15 Oct 2026):** for the whole Elementor exit,
+  the same tool (`elementor_exit.py live-read SLUG...`) may make read-only
+  reads of live **pages** through the public REST API (`pages`), via the
+  same `LiveReader` (GET only, no credentials, paced), to compare a
+  sandbox page with its live equivalent. It never writes anything and
+  reads nothing but `pages` and the uploads above.
 - Ask before: installing or removing plugins, changing permalinks,
   deleting pages or media, editing any `.htaccess` (site root or repo)
   or `wp-config.php`, any FTP write or delete.

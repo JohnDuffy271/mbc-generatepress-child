@@ -216,6 +216,27 @@ class SandboxWriter:
             self._conn.close()
         self._conn = None
 
+    def fetch_public(self, path, retries=2):
+        """GET a public sandbox page as a visitor would (no credentials sent). Returns (status, body text)."""
+        if not path.startswith("/"):
+            sys.exit(f"fetch_public needs a site path, got {path!r}")
+        for attempt in range(retries + 1):
+            try:
+                conn = self._connection()
+                try:
+                    conn.request("GET", path, headers={"User-Agent": USER_AGENT})
+                    resp = conn.getresponse()
+                except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
+                    conn.close()
+                    conn.request("GET", path, headers={"User-Agent": USER_AGENT})
+                    resp = conn.getresponse()
+                return resp.status, resp.read().decode("utf-8", "replace")
+            except (http.client.HTTPException, OSError) as exc:
+                self._reset()
+                if attempt >= retries:
+                    raise
+                time.sleep(2)
+
     def call(self, method, route, params=None, body=None, raw=None, headers=None, retries=0):
         path = f"/wp-json/wp/v2/{route}"
         if params:
