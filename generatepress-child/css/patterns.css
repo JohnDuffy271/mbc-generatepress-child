@@ -348,3 +348,81 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-nl__list .mbc-card__title:last-child {
 	padding-bottom: var(--mbc-space-m);
 }
+
+/* ---- Newsletter web version: one centred column, posts as a single-column list ----
+   The column is the page wrapper narrowed to the newsletter measure (it keeps the usual side
+   padding on small screens). The archive keeps the card grid above (.mbc-nl__list). */
+.mbc-page--newsletter {
+	max-width: calc(var(--mbc-newsletter-measure) + 2 * var(--mbc-gutter));
+}
+
+.mbc-nl-issue .mbc-post__content {
+	max-width: none;
+}
+
+/* Natural size, shrunk to fit the column, never enlarged. */
+.mbc-nl-issue .mbc-post__figure img {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+}
+
+.mbc-nl-issue__list {
+	container-type: inline-size;
+	display: flex;
+	flex-direction: column;
+	gap: var(--mbc-space-m);
+	margin: var(--mbc-space-l) 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mbc-nl-item {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+	height: auto;
+}
+
+.mbc-nl-item--has-image {
+	grid-template-columns: var(--mbc-newsletter-thumb) 1fr;
+}
+
+.mbc-nl-item .mbc-card__image {
+	display: block;
+}
+
+.mbc-nl-item .mbc-card__image img {
+	width: 100%;
+	height: 100%;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+.mbc-nl-item__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mbc-space-xs);
+	min-width: 0;
+	padding: var(--mbc-space-m);
+}
+
+.mbc-nl-item__body > * {
+	padding-inline: 0;
+}
+
+.mbc-nl-item__body .mbc-card__date {
+	margin-top: 0;
+}
+
+/* Below about 480px of column width the thumbnail goes on top (a container query, so it follows
+   the column, not the viewport). */
+@container (max-width: 30rem) {
+	.mbc-nl-item--has-image {
+		grid-template-columns: 1fr;
+	}
+}
+
+.mbc-nl-issue__email {
+	margin: var(--mbc-space-xl) 0 0;
+}

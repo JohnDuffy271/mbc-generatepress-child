@@ -105,6 +105,8 @@
 	/* Layout */
 	--mbc-content-width: 72rem;
 	--mbc-measure: 44rem; /* comfortable reading width for post text */
+	--mbc-newsletter-measure: 40rem; /* the newsletter web version's single column (640px) */
+	--mbc-newsletter-thumb: 11.25rem; /* its post thumbnails (180px, as in the email) */
 	--mbc-gutter: var(--mbc-space-m);
 	--mbc-header-height: 4.5rem;
 	--mbc-tap-target: 2.75rem;
