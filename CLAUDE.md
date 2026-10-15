@@ -415,10 +415,16 @@ Pages, menus and settings are managed via the WordPress REST API.
          and describe it in the alt text. Very wide banner-shaped images
          (Sunday Mornings 8:3, Beacon Café about 4:1) crop heavily in the
          4:3 slot: flag them for John.
-         **Batch 1 (Activity pages), 15 Oct 2026, decisions applied,
-         awaiting John's final look, nothing published:** drafts 725 Sunday
-         Mornings (page 44), 726 Beacon Café (251), 727 Rock Solid (60), 728
-         Stepping Stones (48), 729 Lunch Club (56); all five backed up.
+         **Batch 1 (Activity pages), 15 Oct 2026: PUBLISHED** Sunday
+         Mornings (page 44), Beacon Café (251), Stepping Stones (48) and
+         Lunch Club (56), one at a time with the backup-first publish step
+         (drafts trashed; Lunch Club wording made neutral: "our guests").
+         **Rock Solid (60) is deliberately NOT published:** draft 727 and
+         the Elementor original stay as they are until John S supplies the
+         local copy. Stepping Stones and Lunch Club went live with a
+         visible "need(s) confirming" note each (rooms; venue). History:
+         drafts 725 Sunday Mornings, 726 Beacon Café, 727 Rock Solid, 728
+         Stepping Stones, 729 Lunch Club; all five backed up.
          Review list and image crop sheet: `~/src/mbc-tests/review/`
          (outside the repo). Applied: Contact is the church office on all
          five; Lunch Club no longer names its seniors' worker (Where is
@@ -662,6 +668,15 @@ contrast check reports it as informational only.
 - [ ] Disable the look switcher (`add_filter( 'mbc_looks_enabled',
       '__return_false' )`) or keep only the chosen look's file, and remove
       the others.
+- [ ] **Zero placeholder markers:** `python3 bin/scan_placeholders.py`
+      exits 0. It scans the rendered content of every published page and
+      post (`--drafts` adds drafts) for "Needs confirming" / "need
+      confirming", "Needs local copy", the block patterns' prompts ("Add
+      the day and time...", "Describe what happens...", "Delete this box
+      if..."), "Lorem ipsum", "will appear here" and the placeholder image.
+      On 15 Oct 2026 it found 11 pages: Home (placeholder band images),
+      FAQs, BU & YBA, Giving, Mission Group, Moortown Emergency Relief
+      Fund, Pathways, Events, House Groups, Stepping Stones, Lunch Club.
 - [ ] Remove the `/style-guide` page (ID 668, ask first).
 - [ ] Remove the demo import: delete posts where `mbc_demo_import=1` (10
       posts selected from live on 15 Oct 2026, all in the pre-existing
