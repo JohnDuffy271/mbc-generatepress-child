@@ -1,8 +1,10 @@
 # Deployed by Plesk Git to wp-content/themes/.
 # Block repo artefacts that land alongside the themes.
-<FilesMatch "\.(md|zip|tar|gz|sql|log|sh)$">
+# (docs/ and bin/ carry their own "Require all denied".)
+<FilesMatch "\.(md|zip|tar|gz|sql|log|sh|py|json|lock|ya?ml|ini|env|bak|orig|swp)$">
     Require all denied
 </FilesMatch>
-<Files ".htaccess">
+# Every dotfile: .htaccess, .gitignore, .gitattributes, .env, .git* ...
+<FilesMatch "^\.">
     Require all denied
-</Files>
+</FilesMatch>
