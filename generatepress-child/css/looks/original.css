@@ -1,0 +1,109 @@
+/*
+ * Look: original. Recreates, as far as the tokens allow, the colours, fonts
+ * and type of the first sandbox build (git tag split-layout-final, commit
+ * 1007816: assets/mbc-shared.css and assets/split-layout.css). Layout (the
+ * fixed sidebar, the split homepage) is deliberately not part of it.
+ *
+ * Token values only, with one exception: the @font-face rules below. They
+ * are here (not in a component file) so the fonts load only while this look
+ * is active; font-display: swap, latin subset, self-hosted (theme /fonts/,
+ * SIL OFL, see fonts/README.txt), so no request goes to Google.
+ *
+ * Every value is traced to the original in the comments. Where a value had
+ * to change to pass WCAG AA (contrast_check.py), the original is noted as
+ * "was". What has no token (so is NOT reproduced) is listed in CLAUDE.md,
+ * "Looks": Outfit for the UI text, uppercase and letter-spaced labels, the
+ * gold italic <em> in headings, link underline style, 900-weight titles,
+ * the translucent blurred header and gold top borders on cards.
+ */
+
+/* ---- Fonts: latin subset, only the weights the original loaded ---- */
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 700; font-display: swap;
+	src: url("../../fonts/playfair-display-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 900; font-display: swap;
+	src: url("../../fonts/playfair-display-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400; font-display: swap;
+	src: url("../../fonts/playfair-display-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 700; font-display: swap;
+	src: url("../../fonts/playfair-display-latin-700-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 300; font-display: swap;
+	src: url("../../fonts/lato-latin-300-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 400; font-display: swap;
+	src: url("../../fonts/lato-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 700; font-display: swap;
+	src: url("../../fonts/lato-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* Outfit was the original's UI face (nav, buttons, labels). No token uses it yet, so it
+   is declared (and costs nothing: a face is only fetched when text uses it) but unused. */
+@font-face { font-family: "Outfit"; font-style: normal; font-weight: 300; font-display: swap;
+	src: url("../../fonts/outfit-latin-300-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Outfit"; font-style: normal; font-weight: 400; font-display: swap;
+	src: url("../../fonts/outfit-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Outfit"; font-style: normal; font-weight: 600; font-display: swap;
+	src: url("../../fonts/outfit-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Outfit"; font-style: normal; font-weight: 700; font-display: swap;
+	src: url("../../fonts/outfit-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+:root {
+	/* Surfaces: html #0d0d0d, body and content #111, nav and footer #0a0a0a */
+	--mbc-surface: #111111;
+	--mbc-surface-alt: #0d0d0d;
+	--mbc-header-bg: #0a0a0a;           /* was rgba(10,10,10,.95) with blur */
+
+	/* Text: paragraphs rgba(255,255,255,.78) on #111 = #cbcbcb; excerpts .62 = #a5a5a5 */
+	--mbc-text: #cbcbcb;
+	--mbc-text-muted: #a5a5a5;
+	--mbc-border: #2a2a2a;              /* dividers #1e1e1e to #2a2a2a, cards #222 */
+	--mbc-hover-bg: #1c1a15;            /* rgba(201,168,76,.06) over #111 */
+
+	/* Gold accent #c9a84c: links, focus, buttons; #111 on gold for buttons */
+	--mbc-accent: #c9a84c;
+	--mbc-accent-contrast: #111111;
+	--mbc-link: #c9a84c;
+	--mbc-focus: #c9a84c;
+	--mbc-button-hover-bg: #b8943d;     /* original button hover */
+	--mbc-button-hover-text: #111111;
+	--mbc-button-hover-border: #b8943d;
+
+	/* Footer #0a0a0a, text rgba(255,255,255,.70) = #b5b5b5 */
+	--mbc-footer-bg: #0a0a0a;
+	--mbc-footer-text: #b5b5b5;
+	--mbc-footer-border: #1e1e1e;
+	--mbc-footer-focus: #c9a84c;
+	--mbc-footer-button-bg: #c9a84c;
+	--mbc-footer-button-text: #111111;
+	--mbc-footer-button-border: #c9a84c;
+	--mbc-footer-button-hover-bg: #b8943d;
+	--mbc-footer-button-hover-text: #111111;
+	--mbc-footer-button-hover-border: #b8943d;
+
+	/* Fields: #181818, white text. Border was #2a2a2a (1.2:1, fails the 3:1 for
+	   field borders), now #666666. Placeholder: the original set none (browser grey). */
+	--mbc-input-bg: #181818;
+	--mbc-input-text: #ffffff;
+	--mbc-input-border: #666666;
+	--mbc-placeholder: #8a8a8a;
+
+	/* Type: Playfair Display for headlines, Lato (weight 300) for body */
+	--mbc-font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
+	--mbc-font-body: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--mbc-weight-body: 300;
+	--mbc-weight-strong: 700;
+	--mbc-leading-body: 1.8;            /* paragraphs 1.82, lists 1.8 */
+
+	/* Sizes: the original's modest scale (body 1rem, page title clamp(1.8rem,3.5vw,2.8rem),
+	   h2 1.5rem, card titles 1.1rem) squeezed onto our steps */
+	--mbc-step--1: 0.8rem;
+	--mbc-step-0: 1rem;
+	--mbc-step-1: 1.1rem;
+	--mbc-step-2: 1.25rem;
+	--mbc-step-3: 1.4rem;
+	--mbc-step-4: 1.5rem;
+	--mbc-step-5: clamp(1.8rem, 3.5vw, 2.8rem);
+
+	/* Shape: the original is square (buttons, cards, images); 2px on map and social boxes */
+	--mbc-radius-sm: 2px;
+	--mbc-radius-md: 0;
+	--mbc-radius-pill: 0;               /* buttons: no dedicated button-radius token */
+}
