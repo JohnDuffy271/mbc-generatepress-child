@@ -62,7 +62,7 @@ CHILDREN = {
     "whats-on": [
         ("sunday-mornings", 44, "Sunday Mornings", "activity"),
         ("events", None, "Events", "listing"),
-        ("beacon-cafe", 251, "Beacon Cafe", "activity"),
+        ("beacon-cafe", 251, "Beacon Café", "activity"),
         ("rock-solid", 60, "Rock Solid", "activity"),
         ("stepping-stones", 48, "Stepping Stones", "activity"),
         ("lunch-club", 56, "Lunch Club", "activity"),

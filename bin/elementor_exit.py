@@ -17,7 +17,8 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
 
 Typo rule: "verbatim" means don't lose content, not preserve errors; use --fix for
 each correction (it must match, and is reported). --facts-file takes the same options
-as JSON (keys when, where, who, contact, alt, fix as a list). Dry run by default for
+as JSON (keys when, where, who, contact, alt, image_id, fix as a list; also
+description and description_prefix as lists of paragraphs, and image_fit "contain"). Dry run by default for
 draft and publish. Backup rule: before any Elementor meta
 is removed, _elementor_data, _elementor_edit_mode, _elementor_page_settings and
 post_content are saved and the file is read back as valid JSON.
@@ -101,6 +102,32 @@ def clean_styles(fragment):
     return re.sub(r'\sstyle\s*=\s*"([^"]*)"', fix, fragment)
 
 
+def typography(fragment):
+    """Curly apostrophes and quotes in text (never inside tags or attributes).
+
+    WordPress curls them on display anyway; this makes the stored text match.
+    Double quotes are only converted when they pair up within the fragment.
+    """
+    parts = re.split(r"(<[^>]+>)", fragment)
+    pair_ok = "".join(x for x in parts if not x.startswith("<")).count('"') % 2 == 0
+    is_open, out = True, []
+    for part in parts:
+        if part.startswith("<"):
+            out.append(part)
+            continue
+        part = re.sub(r"(?<=\w)'(?=\w)", "\u2019", part)             # it's, MBC's
+        part = re.sub(r"(?<=[sS])'(?=[\s.,;:!?)]|$)", "\u2019", part)  # Seniors' Worker
+        if pair_ok:
+            def curl(_m):
+                nonlocal is_open
+                ch = "\u201c" if is_open else "\u201d"
+                is_open = not is_open
+                return ch
+            part = re.sub(r'"', curl, part)
+        out.append(part)
+    return "".join(out)
+
+
 def paragraphs(texts):
     """Paragraph blocks from text-editor HTML. Returns (markup, warnings)."""
     out, warnings = [], []
@@ -113,13 +140,13 @@ def paragraphs(texts):
             c = re.sub(r"</?div[^>]*>", "", c).strip()
             # Elementor often uses a double <br> where a paragraph break is meant.
             for part in re.split(r"(?:\s*<br\s*/?>\s*){2,}", c):
-                part = part.strip()
+                part = re.sub(r"\s*<br\s*/?>\s*", " ", part).strip()  # a single <br> is a stray line break
                 if part:
-                    out.append(f"<!-- wp:paragraph -->\n<p>{part}</p>\n<!-- /wp:paragraph -->")
+                    out.append(f"<!-- wp:paragraph -->\n<p>{typography(part)}</p>\n<!-- /wp:paragraph -->")
     return "\n\n".join(out), warnings
 
 
-def build_activity(page, facts, alt=None, fixes=(), image_override=None):
+def build_activity(page, facts, alt=None, fixes=(), image_override=None, extra=None):
     texts, images, other = elementor_parts(page)
     body = sp.pattern_markup("activity-details")
     notes = []
@@ -144,7 +171,16 @@ def build_activity(page, facts, alt=None, fixes=(), image_override=None):
             notes.append("the image has no alt text")
     else:
         notes.append("no image in the Elementor page: placeholder kept")
-    desc, warnings = paragraphs(texts)
+    extra = extra or {}
+    if extra.get("description"):  # John-approved wording replaces the extracted text
+        desc, warnings = paragraphs([f"<p>{x}</p>" for x in extra["description"]])
+        notes.append("description wording supplied (split and tidied from the original text)")
+    else:
+        desc, warnings = paragraphs(texts)
+    if extra.get("description_prefix"):
+        pre, _ = paragraphs([f"<p>{x}</p>" for x in extra["description_prefix"]])
+        desc = pre + "\n\n" + desc
+        notes.append("note paragraph(s) added at the top of the description: remove before publishing")
     for old, new in fixes:
         count = desc.count(old)
         if not count:
@@ -157,6 +193,10 @@ def build_activity(page, facts, alt=None, fixes=(), image_override=None):
     if block not in body:
         sys.exit("pattern description block not found")
     body = body.replace(block, desc or block, 1)
+    if extra.get("image_fit") == "contain":  # wide graphics: show uncropped (see css/patterns.css)
+        body = body.replace('"className":"mbc-activity__top"', '"className":"mbc-activity__top mbc-image-contain"', 1)
+        body = body.replace('is-stacked-on-mobile mbc-activity__top"', 'is-stacked-on-mobile mbc-activity__top mbc-image-contain"', 1)
+        notes.append("image shown uncropped (contain)")
     if other:
         notes.append(f"other Elementor widgets NOT converted: {other}")
     return body, notes + warnings, bool(texts or images)
@@ -167,11 +207,13 @@ def cmd_draft(wp, args):
     meta = page["meta"] if isinstance(page["meta"], dict) else {}
     if meta.get("_elementor_edit_mode") != "builder":
         sys.exit(f"page {args.page_id} is not Elementor-built")
+    extra = {}
     if args.facts_file:  # same options as JSON; command-line options win
         given = json.loads(Path(args.facts_file).read_text())
         for key in ("when", "where", "who", "contact", "alt", "image_id"):
             if getattr(args, key, None) is None and key in given:
                 setattr(args, key, given[key])
+        extra = {k: given[k] for k in ("description", "description_prefix", "image_fit") if k in given}
         args.fix = list(args.fix or []) + list(given.get("fix", []))
     facts = {"when": args.when or NEEDS, "where": args.where or NEEDS, "who": args.who or NEEDS, "contact": args.contact or NEEDS}
     fixes = []
@@ -186,7 +228,7 @@ def cmd_draft(wp, args):
         m = wp.call("GET", f"media/{int(media_id)}", {"context": "edit", "_fields": "id,source_url,alt_text,media_details"})
         large = m["media_details"].get("sizes", {}).get("large", {}).get("source_url") or m["source_url"]
         image_override = {"id": m["id"], "url": large, "alt": m["alt_text"]}
-    body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override)
+    body, notes, ok = build_activity(page, facts, args.alt, fixes, image_override, extra)
     title = f"{page['title']['raw']} (block draft)"
     slug = f"{page['slug']}-block-draft"
     existing = wp.call("GET", "pages", {"slug": slug, "status": "draft,publish,private,pending", "_fields": "id"})

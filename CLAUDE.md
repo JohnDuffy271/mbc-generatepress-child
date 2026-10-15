@@ -30,7 +30,7 @@ The old layout is preserved at git tag `split-layout-final` (commit 1007816).
 
 - Logo (left) = Home link
 - **About Us** → Who we are · What we believe · Meet the team · FAQs
-- **What's On** → Sunday Mornings · Events · Beacon Cafe · Rock Solid ·
+- **What's On** → Sunday Mornings · Events · Beacon Café · Rock Solid ·
   Stepping Stones · Lunch Club · Craft Group · House Groups
 - **Mission** → Mission Group · BMS · Leeds Furniture Mission ·
   Mission Aviation Fellowship · Romania · Moortown Emergency Relief Fund ·
@@ -292,7 +292,7 @@ Pages, menus and settings are managed via the WordPress REST API.
       `template-parts/page.php` (reused by Info, Mission partner and
       Listing). Of the What's On children only House Groups (46) was empty,
       so only it was seeded (with obvious "Add ..." placeholder text, to be
-      filled in); the six others (Sunday Mornings, Beacon Cafe, Rock Solid,
+      filled in); the six others (Sunday Mornings, Beacon Café, Rock Solid,
       Stepping Stones, Lunch Club, Craft Group) carry legacy Elementor
       content and were left completely alone (content *and* template);
       Events (628) is a Listing page. `bin/seed_patterns.py` and
@@ -411,15 +411,15 @@ Pages, menus and settings are managed via the WordPress REST API.
          media library, unused. When converting a page, use its featured
          image as the activity image if the page has no image of its own,
          and describe it in the alt text. Very wide banner-shaped images
-         (Sunday Mornings 8:3, Beacon Cafe about 4:1) crop heavily in the
+         (Sunday Mornings 8:3, Beacon Café about 4:1) crop heavily in the
          4:3 slot: flag them for John.
          **Batch 1 (Activity pages), 15 Oct 2026, awaiting John's review,
          nothing published:** drafts 725 Sunday Mornings (page 44), 726
-         Beacon Cafe (251), 727 Rock Solid (60), 728 Stepping Stones (48),
+         Beacon Café (251), 727 Rock Solid (60), 728 Stepping Stones (48),
          729 Lunch Club (56); all five backed up. Review list and image crop
          sheet: `~/src/mbc-tests/review/` (outside the repo). Open points:
          "Contact" is "Needs confirming" on all five; Sunday Mornings and
-         Beacon Cafe images are unusable in the 4:3 slot (text graphic /
+         Beacon Café images are unusable in the 4:3 slot (text graphic /
          panorama); photos of identifiable people (children) need consent;
          Lunch Club's text names an individual. Compare-with-live finding:
          the sandbox texts are independent rewrites (no shared sentences

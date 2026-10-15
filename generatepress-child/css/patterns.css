@@ -143,6 +143,12 @@ html body .mbc-band__social .wp-social-link a {
 	margin-bottom: 0;
 }
 
+/* Wide graphics (banners, panoramas) shown whole instead of cropped to 4:3. */
+.mbc-image-contain .wp-block-media-text__media img {
+	aspect-ratio: auto;
+	object-fit: contain;
+}
+
 /* ---- Mission partner page ---- */
 .mbc-partner__top {
 	align-items: start;
