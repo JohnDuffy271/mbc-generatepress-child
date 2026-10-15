@@ -1,4 +1,5 @@
 <?php
+// NOTE (16 Oct 2026): archived verbatim below. It selects categories by ID (9 and 27 are now the ministers-blog and ministers-message categories in the rebuild; see category-map.md).
 
     //  For reference the code below is a PHP Snippet named "newsletter-code"
     //  For the new website

@@ -923,6 +923,12 @@ scale. Every value is traced to the original in the file's comments. Layout
       real content. Then delete `inc/demo-import.php` and its `require` in
       `functions.php` (this also drops the meta registration; the existing
       values stay in the database, harmlessly).
+- [ ] **Rename the minister's categories when posts are migrated:** the two
+      categories named after a former minister on the live site become
+      `ministers-blog` and `ministers-message`. Create or rename them with
+      the new names and slugs, and 301 `/category/<old-slug>/` to the new slug
+      (old-to-new table in `docs/newsletter/category-map.md`, section
+      "Renames"). The theme's code already uses the new slugs.
 - [ ] Newsletter builder code reviewed and adapted for the new build
       (category IDs and post markup differ from the old site).
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently

@@ -4,7 +4,7 @@
  *
  * Categories are referenced by SLUG, never by ID (the live and sandbox IDs differ).
  * Filters: mbc_newsletter_category_slugs (default: news), mbc_newsletter_exclude_category_slugs
- * (default: grahams-message).
+ * (default: ministers-message).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -49,7 +49,7 @@ function mbc_nl_post_query_args() {
         'no_found_rows'       => true,
         'has_password'        => false,
     );
-    $excluded = mbc_nl_category_ids( 'mbc_newsletter_exclude_category_slugs', array( 'grahams-message' ) );
+    $excluded = mbc_nl_category_ids( 'mbc_newsletter_exclude_category_slugs', array( 'ministers-message' ) );
     if ( $excluded ) {
         $args['category__not_in'] = $excluded;
     }
