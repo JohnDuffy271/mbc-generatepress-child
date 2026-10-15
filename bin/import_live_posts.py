@@ -324,6 +324,28 @@ def rewrite_images(content, mapping):
     return IMG_RE.sub(fix, content)
 
 
+STYLE_ATTR_RE = re.compile(r'\sstyle\s*=\s*"([^"]*)"', re.I)
+FONT_TAG_RE = re.compile(r"<font\b[^>]*>", re.I)
+FONT_ATTR_RE = re.compile(r'\s(?:color|face|size|bgcolor)\s*=\s*"[^"]*"', re.I)
+DROPPED_STYLES = {"color", "background", "background-color", "font-family", "font-size", "line-height", "text-shadow"}
+
+
+def clean_inline_styles(content):
+    """Remove colour, background and font declarations from inline styles.
+
+    Imported text must take its colours and fonts from the theme tokens (and
+    so from every look), not from hard-coded values copied from the old site.
+    Other declarations (font-weight, text-align, ...) are kept.
+    """
+    def fix(match):
+        kept = [d.strip() for d in match.group(1).split(";")
+                if d.strip() and d.split(":")[0].strip().lower() not in DROPPED_STYLES]
+        return f' style="{"; ".join(kept)}"' if kept else ""
+
+    content = STYLE_ATTR_RE.sub(fix, content)
+    return FONT_TAG_RE.sub(lambda m: FONT_ATTR_RE.sub("", m.group(0)), content)
+
+
 # ------------------------------------------------------- Elementor unwrap
 
 KNOWN_WIDGETS = {"text-editor", "image", "gallery", "heading"}
@@ -586,10 +608,12 @@ def main():
     selected, flagged = select_posts(live, ids, args.count, args.unwrap_elementor)
     widget_counts = {}
     for p in selected:  # the content that will actually be imported
+        p["content"]["rendered"] = clean_inline_styles(p["content"]["rendered"]) if not (is_elementor(p) and args.unwrap_elementor) else p["content"]["rendered"]
         if is_elementor(p) and args.unwrap_elementor:
             p["content"]["rendered"], counts = unwrap_elementor(p["content"]["rendered"])
             for k, v in counts.items():
                 widget_counts[k] = widget_counts.get(k, 0) + v
+            p["content"]["rendered"] = clean_inline_styles(p["content"]["rendered"])
             p["_unwrapped"] = True
     cat_ids = sorted({c for p in selected for c in p["categories"]})
     live_cats = {}
