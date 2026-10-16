@@ -326,7 +326,12 @@ Pages, menus and settings are managed via the WordPress REST API.
       noticeboard (media 1020, `mbc-sign-20261016.jpg`, made with
       `image_prep.py` as a `band` image; page content backed up to
       `~/src/mbc-elementor-backups/182-home-pre-aboutus-image.json`). The
-      sign names the minister, so it dates if that changes. John approved the front page; the block editor opens
+      sign names the minister, so it dates if that changes. **Sunday Mornings**
+      (16 Oct 2026): a photo of a service from the balcony sound desk (media
+      1024, `sunday-service-20261016.jpg`, `band`, widest 4:3 crop, kept the
+      sound desk at John's request; John S approved it for publication;
+      content backup `182-home-pre-sunday-image.json`). The other two bands
+      still use the placeholder. John approved the front page; the block editor opens
       page 182 cleanly (no invalid blocks).
 - [x] Activity template (15 Oct 2026): `page-templates/activity.php`,
       `patterns/activity-details.php` (image, When, Where, Who it's for,
