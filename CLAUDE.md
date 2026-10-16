@@ -404,6 +404,20 @@ Pages, menus and settings are managed via the WordPress REST API.
       `uploads/elementor/google-fonts/`.
       **Still true:** #208 and the Theme Builder remain until the Elementor
       exit (step 5 there).
+- [ ] **Image weight findings (16 Oct 2026, report only, nothing changed yet).**
+      The news post "Minister's Appreciation Day" is 1271 kB at 360px because
+      three imported inline JPEGs are 1215 kB of it: two `-scaled` 2560px
+      originals (588 and 524 kB) shown at 328px, and no `srcset` at all (the
+      imported markup lacks the `wp-image-ID` class, so WordPress cannot build
+      one). Site-wide (43 URLs): 24 clean; 36 distinct files flagged, 5 FAIL,
+      31 WARN. FAILs (real content): the Craft_Group_2 slideshow placeholder
+      (572 kB), the Room Hire and Sunday Mornings PNG graphics (363 and 361 kB)
+      and the Meet the team photo that uses a 1024px file in a 146px square
+      (7x). Recommendations are in the 16 Oct report: accurate `sizes` for
+      cards, newsletter thumbnails, slideshow and team grid (theme); give the
+      migration importer the `wp-image-ID` class and `post`-preset images; turn
+      the two PNG graphics into JPEG or real photos; prepare the team photos as
+      `square`; demo content is left (deleted at cutover).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -1016,7 +1030,13 @@ and kB-cap rule, metadata stripping, the consent check (John S) and the
 `image_prep.py` workflow (inbox -> grid -> preview -> OK -> `--apply`) are in
 **`docs/image-standards.md`**. `~/src/mbc-tests/bin/measure_slots.py` measures
 the rendered slots in all looks and **fails if any preset drops below 2x**;
-re-run it after any template or CSS change that touches images. The tools and
+re-run it after any template or CSS change that touches images. `~/src/mbc-tests/images_weight_check.py` loads every published post, page and
+issue at 360 and 1280px and flags any image whose file is over 2.3x its largest
+rendered width or over 300 kB, saying why (`NO_SRCSET`, `SIZES` = the `sizes`
+attribute is too generous, `LADDER` = WordPress's size steps, `HEAVY`, `PNG`).
+A real image over 300 kB or over 3x FAILs; 2.3-3x and anything from the imported
+demo media is a WARN. It fails on the open findings below until they are fixed.
+The tools and
 their git repo live in `~/src/mbc-tests/` (outside this repo); photos in
 `~/src/mbc-images/`.
 
