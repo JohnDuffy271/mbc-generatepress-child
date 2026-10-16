@@ -90,7 +90,7 @@ function mbc_nl_email_styles() {
         's_sub'     => (int) $g( 'mbc-email-size-subtitle', '18px' ),
     );
 
-    $font = 'font-family:' . $c['font'] . ';';
+    $font = 'font-family:' . $c['font'] . ';word-break:break-word;overflow-wrap:break-word;';
     return array(
         'c'         => $c,
         'body'      => 'margin:0;padding:0;background-color:' . $c['page'] . ';' . $font . 'color:' . $c['text'] . ';',

@@ -59,9 +59,9 @@ img { -ms-interpolation-mode: bicubic; }
 <body style="<?php echo esc_attr( $s['body'] ); ?>">
 <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:<?php echo esc_attr( $c['page'] ); ?>;"><?php echo $e( $preheader ); ?>&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="<?php echo esc_attr( $s['wrap'] ); ?>">
-<tr><td align="center" style="padding:16px 8px;">
-<!--[if mso]><table role="presentation" width="<?php echo (int) $w; ?>" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
-<table role="presentation" class="mbc-nl-wrap" width="<?php echo (int) $w; ?>" cellpadding="0" cellspacing="0" border="0" style="width:<?php echo (int) $w; ?>px;max-width:100%;<?php echo esc_attr( $s['card'] ); ?>">
+<tr><td align="left" style="padding:16px 8px;">
+<!--[if mso]><table role="presentation" align="left" width="<?php echo (int) $w; ?>" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+<table role="presentation" class="mbc-nl-wrap" align="left" width="<?php echo (int) $w; ?>" cellpadding="0" cellspacing="0" border="0" style="width:<?php echo (int) $w; ?>px;max-width:100%;margin:0;<?php echo esc_attr( $s['card'] ); ?>">
 
 <?php if ( $web ) : ?>
 <tr><td align="center" style="padding:12px <?php echo (int) $c['gutter']; ?>px 0;<?php echo esc_attr( 'font-family:' . $c['font'] . ';font-size:' . $c['s_small'] . 'px;color:' . $c['muted'] . ';' ); ?>">Trouble reading this? <a href="<?php echo esc_url( $web ); ?>" style="<?php echo esc_attr( $s['a'] ); ?>">View it on our website</a>.</td></tr>
