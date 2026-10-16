@@ -111,10 +111,10 @@ img { -ms-interpolation-mode: bicubic; }
 <?php endforeach; ?>
 
 <tr><td align="center" style="<?php echo esc_attr( $s['foot'] ); ?>">
-    <p style="margin:0 0 8px 0;"><?php echo $e( $name ); ?></p>
-    <p style="margin:0 0 8px 0;">*|LIST:ADDRESSLINE|*</p>
-    <p style="margin:0 0 8px 0;"><a href="*|UPDATE_PROFILE|*" style="<?php echo esc_attr( $s['foot_a'] ); ?>">Update your details</a> &nbsp;|&nbsp; <a href="*|UNSUB|*" style="<?php echo esc_attr( $s['foot_a'] ); ?>">Unsubscribe</a></p>
-    <p style="margin:0;">&copy; *|CURRENT_YEAR|* <?php echo $e( $name ); ?></p>
+    <p style="margin:0 0 8px 0;word-break:break-word;overflow-wrap:break-word;"><?php echo $e( $name ); ?></p>
+    <p style="margin:0 0 8px 0;word-break:break-word;overflow-wrap:break-word;">*|LIST:ADDRESSLINE|*</p>
+    <p style="margin:0 0 8px 0;word-break:break-word;overflow-wrap:break-word;"><a href="*|UPDATE_PROFILE|*" style="<?php echo esc_attr( $s['foot_a'] ); ?>">Update your details</a> &nbsp;|&nbsp; <a href="*|UNSUB|*" style="<?php echo esc_attr( $s['foot_a'] ); ?>">Unsubscribe</a></p>
+    <p style="margin:0;word-break:break-word;overflow-wrap:break-word;">&copy; *|CURRENT_YEAR|* <?php echo $e( $name ); ?></p>
 </td></tr>
 
 </table>
