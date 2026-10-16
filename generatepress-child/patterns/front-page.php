@@ -3,7 +3,7 @@
  * Title: Front page
  * Slug: mbc/front-page
  * Categories: mbc
- * Description: Hero (name, tagline, three buttons, a line of small text) and four zigzag bands: About Us, Sunday Mornings, More at Moortown, Get in touch.
+ * Description: Hero (name, tagline, three buttons, a line of small text) and four zigzag bands: About Us, Sunday Mornings, More at Moortown (a slideshow), Get in touch.
  * Keywords: home, hero, zigzag, bands
  * Viewport Width: 1280
  */
@@ -78,8 +78,9 @@ defined( 'ABSPATH' ) || exit;
 <!-- /wp:buttons --></div></div>
 <!-- /wp:media-text -->
 
-<!-- wp:media-text {"mediaPosition":"right","mediaType":"image","className":"mbc-band"} -->
-<div class="wp-block-media-text has-media-on-the-right is-stacked-on-mobile mbc-band"><div class="wp-block-media-text__content"><!-- wp:heading -->
+<!-- wp:group {"className":"mbc-band mbc-band--slides"} -->
+<div class="wp-block-group mbc-band mbc-band--slides"><!-- wp:group {"className":"mbc-band__content"} -->
+<div class="wp-block-group mbc-band__content"><!-- wp:heading -->
 <h2 class="wp-block-heading">More at Moortown</h2>
 <!-- /wp:heading -->
 
@@ -99,8 +100,23 @@ defined( 'ABSPATH' ) || exit;
 <div class="wp-block-buttons"><!-- wp:button -->
 <div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/whats-on/">What’s On</a></div>
 <!-- /wp:button --></div>
-<!-- /wp:buttons --></div><figure class="wp-block-media-text__media"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure></div>
-<!-- /wp:media-text -->
+<!-- /wp:buttons --></div>
+<!-- /wp:group -->
+
+<!-- wp:gallery {"linkTo":"none","className":"mbc-slideshow mbc-slideshow--5s"} -->
+<figure class="wp-block-gallery has-nested-images columns-default is-cropped mbc-slideshow mbc-slideshow--5s"><!-- wp:image {"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure>
+<!-- /wp:image --></figure>
+<!-- /wp:gallery --></div>
+<!-- /wp:group -->
 
 <!-- wp:media-text {"mediaType":"image","className":"mbc-band"} -->
 <div class="wp-block-media-text is-stacked-on-mobile mbc-band"><figure class="wp-block-media-text__media"><img src="/wp-content/themes/generatepress-child/images/placeholder.svg" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:heading -->

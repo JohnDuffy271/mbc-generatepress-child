@@ -67,6 +67,38 @@
 	font-size: var(--mbc-step-4);
 }
 
+/* The slideshow band: a Group (text) beside a Gallery, laid out like the Media & Text bands. The
+   Gallery stacks above the text below 600px and sits on the side set by the zigzag above that
+   (core's own Media & Text stacking point). The slideshow itself is css/slideshow.css. */
+.mbc-band--slides {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.mbc-band--slides > .mbc-band__content {
+	order: 2;
+	padding: var(--mbc-space-xl) var(--mbc-gutter);
+}
+
+.mbc-band--slides > .wp-block-gallery {
+	order: 1;
+	margin: var(--mbc-space-m);
+}
+
+@media (min-width: 601px) {
+	.mbc-band--slides {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.mbc-band--slides > .mbc-band__content {
+		order: 1;
+	}
+
+	.mbc-band--slides > .wp-block-gallery {
+		order: 2;
+	}
+}
+
 /* Social icons take the text colour, not the brand colours core gives them. */
 html body .mbc-band__social .wp-social-link,
 html body .mbc-band__social .wp-social-link a {

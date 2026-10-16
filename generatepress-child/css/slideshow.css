@@ -1,0 +1,184 @@
+/*
+ * Slideshow (a core Gallery block with the class mbc-slideshow). Front end only; the editor shows
+ * an ordinary gallery. Tokens only (css/tokens.css).
+ *
+ * Everything that sets the frame is under html.mbc-js (set in <head> before first paint), so the
+ * layout is final from the first frame and nothing shifts when js/slideshow.js starts. Without
+ * JavaScript the Gallery stays an ordinary gallery. The core gallery rules carry :not(#id) to win
+ * on specificity, so these do too (:not(#mbc) adds the same weight).
+ */
+
+/* The ordinary-gallery fallback (no JavaScript): tidy 4:3 tiles. */
+.mbc-slideshow img {
+	aspect-ratio: var(--mbc-slide-ratio);
+	object-fit: cover;
+}
+
+/* The frame: a fixed shape, whatever size the photos are. */
+html.mbc-js .mbc-slideshow.wp-block-gallery {
+	position: relative;
+	display: block;
+	aspect-ratio: var(--mbc-slide-ratio);
+	overflow: hidden;
+	margin: var(--mbc-space-m);
+	padding: 0;
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-surface-alt);
+	touch-action: pan-y; /* the browser keeps vertical scrolling; horizontal swipes are ours */
+}
+
+html.mbc-js .mbc-slideshow.wp-block-gallery figure.wp-block-image:not(#mbc) {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	opacity: 0;
+	visibility: hidden;
+}
+
+/* Before the script has run, the first photo shows; afterwards the active one. */
+html.mbc-js .mbc-slideshow.wp-block-gallery:not(.is-enhanced) figure.wp-block-image:first-of-type:not(#mbc),
+html.mbc-js .mbc-slideshow.wp-block-gallery figure.wp-block-image.is-active:not(#mbc) {
+	opacity: 1;
+	visibility: visible;
+}
+
+html.mbc-js .mbc-slideshow.wp-block-gallery figure.wp-block-image img:not(#mbc) {
+	display: block;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	aspect-ratio: auto;
+	object-fit: cover;
+	border-radius: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html.mbc-js .mbc-slideshow.is-enhanced figure.wp-block-image:not(#mbc) {
+		transition: opacity var(--mbc-slide-fade) var(--mbc-ease), visibility 0s linear var(--mbc-slide-fade);
+	}
+
+	html.mbc-js .mbc-slideshow.is-enhanced figure.wp-block-image.is-active:not(#mbc) {
+		transition: opacity var(--mbc-slide-fade) var(--mbc-ease), visibility 0s;
+	}
+}
+
+/* Optional caption: a strip above the control bar, only if the image has one. */
+html.mbc-js .mbc-slideshow.wp-block-gallery figure.wp-block-image figcaption.wp-element-caption:not(#mbc) {
+	position: absolute;
+	top: auto;
+	right: 0;
+	bottom: var(--mbc-tap-target);
+	left: 0;
+	width: auto;
+	max-height: 40%;
+	margin: 0;
+	padding: var(--mbc-space-xs) var(--mbc-space-m);
+	overflow: hidden;
+	background: var(--mbc-overlay-bg);
+	color: var(--mbc-overlay-text);
+	font-size: var(--mbc-step--1);
+	text-align: left;
+	text-shadow: none;
+}
+
+/* Controls (added by the script): every hit area is at least the tap target. */
+.mbc-slideshow__btn {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	width: var(--mbc-tap-target);
+	height: var(--mbc-tap-target);
+	min-width: var(--mbc-tap-target);
+	min-height: var(--mbc-tap-target);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--mbc-radius-pill);
+	background: var(--mbc-overlay-bg);
+	color: var(--mbc-overlay-text);
+	cursor: pointer;
+	transition: none;
+}
+
+.mbc-slideshow__btn[hidden] {
+	display: none;
+}
+
+.mbc-slideshow__btn:hover {
+	background: var(--mbc-overlay-bg-hover);
+	color: var(--mbc-overlay-text);
+}
+
+/* The ring is the focus token, with a light gap so it shows on any photo. */
+.mbc-slideshow__btn:focus-visible {
+	outline: var(--mbc-focus-width) solid var(--mbc-focus);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 2px var(--mbc-overlay-text);
+}
+
+.mbc-slideshow__btn svg {
+	display: block;
+	width: 1.25rem;
+	height: 1.25rem;
+	fill: currentColor;
+	pointer-events: none;
+}
+
+.mbc-slideshow__prev,
+.mbc-slideshow__next {
+	top: calc(50% - var(--mbc-tap-target) / 2);
+}
+
+.mbc-slideshow__prev {
+	left: var(--mbc-space-xs);
+}
+
+.mbc-slideshow__next {
+	right: var(--mbc-space-xs);
+}
+
+.mbc-slideshow__pause {
+	top: var(--mbc-space-xs);
+	right: var(--mbc-space-xs);
+}
+
+.mbc-slideshow__dots {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	justify-content: center;
+	height: var(--mbc-tap-target);
+	background: linear-gradient(to top, var(--mbc-overlay-bg), transparent);
+	pointer-events: none; /* only the dots themselves take clicks */
+}
+
+.mbc-slideshow__dot {
+	position: static;
+	pointer-events: auto;
+	background: transparent;
+	border-radius: 0;
+}
+
+.mbc-slideshow__dot:hover {
+	background: transparent;
+}
+
+.mbc-slideshow__dot::before {
+	content: "";
+	display: block;
+	width: 0.75rem;
+	height: 0.75rem;
+	border: 2px solid var(--mbc-overlay-text);
+	border-radius: var(--mbc-radius-pill);
+	box-sizing: border-box;
+}
+
+.mbc-slideshow__dot[aria-current="true"]::before {
+	background: var(--mbc-overlay-text);
+}

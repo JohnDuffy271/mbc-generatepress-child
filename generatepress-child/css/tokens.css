@@ -116,6 +116,13 @@
 	--mbc-radius-md: 0.5rem;
 	--mbc-radius-pill: 999px;
 
+	/* Slideshow band (css/slideshow.css, js/slideshow.js) */
+	--mbc-slide-ratio: 4 / 3; /* the frame, whatever the photos' own shape */
+	--mbc-slide-fade: 500ms;
+	--mbc-overlay-bg: rgb(0 0 0 / 0.7); /* controls and captions over a photo */
+	--mbc-overlay-bg-hover: rgb(0 0 0 / 0.88);
+	--mbc-overlay-text: #ffffff;
+
 	/* Layers and motion */
 	--mbc-z-header: 100;
 	--mbc-z-menu: 110;
