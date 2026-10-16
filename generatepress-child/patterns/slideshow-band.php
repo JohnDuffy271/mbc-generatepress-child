@@ -10,8 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:group {"className":"mbc-band mbc-band--slides"} -->
-<div class="wp-block-group mbc-band mbc-band--slides"><!-- wp:group {"className":"mbc-band__content"} -->
+<!-- wp:group {"className":"mbc-band mbc-band--slides","layout":{"type":"default"}} -->
+<div class="wp-block-group mbc-band mbc-band--slides"><!-- wp:group {"className":"mbc-band__content","layout":{"type":"default"}} -->
 <div class="wp-block-group mbc-band__content"><!-- wp:heading -->
 <h2 class="wp-block-heading">More at Moortown</h2>
 <!-- /wp:heading -->
