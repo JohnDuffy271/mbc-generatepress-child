@@ -15,6 +15,7 @@ require_once get_stylesheet_directory() . '/inc/layout.php';
 require_once get_stylesheet_directory() . '/inc/looks.php';
 require_once get_stylesheet_directory() . '/inc/post-helpers.php';
 require_once get_stylesheet_directory() . '/inc/slideshow.php';
+require_once get_stylesheet_directory() . '/inc/image-sizes.php';
 require_once get_stylesheet_directory() . '/inc/newsletter/cpt.php';
 require_once get_stylesheet_directory() . '/inc/demo-import.php'; // TEMPORARY: remove before launch.
 
