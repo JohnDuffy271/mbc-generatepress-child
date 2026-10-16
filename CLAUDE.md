@@ -322,7 +322,11 @@ Pages, menus and settings are managed via the WordPress REST API.
       confirmation). Band text is left-aligned throughout, a **deliberate
       deviation** from the wireframe (which right-aligns headings beside a
       left-hand image) to confirm with Andy. Band images are neutral
-      placeholders. John approved the front page; the block editor opens
+      placeholders, except **About Us** (16 Oct 2026): a photo of the church
+      noticeboard (media 1020, `mbc-sign-20261016.jpg`, made with
+      `image_prep.py` as a `band` image; page content backed up to
+      `~/src/mbc-elementor-backups/182-home-pre-aboutus-image.json`). The
+      sign names the minister, so it dates if that changes. John approved the front page; the block editor opens
       page 182 cleanly (no invalid blocks).
 - [x] Activity template (15 Oct 2026): `page-templates/activity.php`,
       `patterns/activity-details.php` (image, When, Where, Who it's for,
