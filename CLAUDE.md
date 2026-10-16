@@ -376,40 +376,34 @@ Pages, menus and settings are managed via the WordPress REST API.
         Notice, to the sandbox copy of the PDF (media 766). Cookies is
         still open: add it to `FOOTER_LINKS` in that script once the page
         exists (cutover checklist).
-- [ ] **Elementor frontend script error on every non-Elementor page**
-      (found 16 Oct 2026, not yet fixed). Exact message (uncaught, in the
-      browser console): `ReferenceError: elementorFrontendConfig is not
-      defined`, thrown at load by
-      `/wp-content/plugins/elementor/assets/js/frontend.min.js?ver=4.3.5`
-      (Elementor 4.3.5). It happens on every page built with our templates
-      (front page, Info, Activity, Mission partner, News, newsletter archive
-      and issues) and **not** on Elementor-built pages (Rock Solid 60,
-      Mission 374: there the config is defined).
-      **Likely cause (inferred, not proven):** the Elementor Pro Theme
-      Builder "Entire site" footer template #208 makes Elementor load its
-      frontend scripts and styles on every page (`post-208.css` and
-      `post-7.css` are fetched), but `inc/layout.php` removes the footer
-      actions, so the template never renders and Elementor never prints its
-      inline `elementorFrontendConfig`.
-      **Visitor impact:** no visible effect found. It is a separate script
-      file, so our own scripts (navigation, slideshow) run normally on the
-      same pages, and those pages have no Elementor content. It costs one
-      console error and **8 unused Elementor files on every such page**,
-      about 305 kB after decompression (measured 16 Oct 2026; transfer size
-      is smaller as they are Brotli/gzip): `frontend.min.css` 55 kB,
-      Roboto and Roboto Slab font CSS 136 kB, and 113 kB of JavaScript
-      (`webpack.runtime`, `frontend-modules`, `frontend.min.js`).
-      **Fix options (ask John first):** (a) a small theme filter that
-      dequeues Elementor's frontend scripts and styles on pages that carry no
-      Elementor data (must leave the legacy Elementor pages untouched; would
-      cut the weight now); or (b) leave it: it ends with the Elementor exit
-      when both plugins are deactivated. Either way, measure page speed
-      before and after (Elementor exit step 5).
-      **Tests:** `~/src/mbc-tests/slideshow_check.py` tolerates exactly this
-      message from exactly that script (anything else fails) and logs a
-      `WARN known page error suppressed` line each time; delete
-      `KNOWN_ERROR` there once this is fixed.
-
+- [x] **Elementor assets and a console error on every non-Elementor page**
+      (found and fixed 16 Oct 2026, sandbox only). Every page built with our
+      templates loaded 8 unused Elementor files (frontend CSS, Roboto and
+      Roboto Slab font CSS, three scripts) and Elementor's `frontend.min.js`
+      threw `ReferenceError: elementorFrontendConfig is not defined` on each.
+      **Cause:** the Elementor Pro Theme Builder footer template #208 had the
+      display condition "Entire site" (`include/general`), which makes Elementor
+      enqueue its frontend assets everywhere, but `inc/layout.php` removes the
+      footer actions, so the template never rendered and Elementor never
+      printed its inline `elementorFrontendConfig`.
+      **Fix (no theme code):** the condition was removed over Elementor's own
+      REST route (`POST /elementor/v1/site-editor/templates-conditions/208`
+      with `{"conditions": []}`). Template #208 is untouched otherwise: still
+      published, now inactive ("No instances"). Backup (the whole template
+      and its condition) in
+      `~/src/mbc-elementor-backups/208-elementor-footer-208.json`. **To undo:**
+      POST `{"conditions":[{"type":"include","name":"general","sub_name":"","sub_id":""}]}`
+      to the same route. No dequeue code was needed (so none was added).
+      **Result** (360px, empty cache, `~/src/mbc-tests/bin/measure_weight.py`):
+      0 Elementor files and 0 console errors on every non-Elementor page; the
+      three Elementor-built pages (60, 374, 327) still load Elementor and have
+      clean consoles. Checked by `~/src/mbc-tests/elementor_assets_check.py`
+      (every published page, post and issue, archives, search and 404).
+      Before/after table: see "Page weight" below. **Roboto** was never loaded
+      from Google: Elementor's "load Google fonts locally" copy in
+      `uploads/elementor/google-fonts/`.
+      **Still true:** #208 and the Theme Builder remain until the Elementor
+      exit (step 5 there).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -950,6 +944,25 @@ in `inc/layout.php` removes it for the MBC page templates and single posts;
 legacy Elementor pages keep it until converted). The tests assert there is
 no `.page-header-image` on new-template pages.
 
+## Page weight (Elementor template condition removed, 16 Oct 2026)
+
+Measured with `~/src/mbc-tests/bin/measure_weight.py` (Chromium at 360px, empty cache, compressed bytes on the
+wire, `networkidle`), before and after removing template #208's "Entire site" condition (see Status). The
+saving is the same 8 requests and about 94 kB on every non-Elementor page (the bytes left are the page's own
+images, fonts and scripts); the Elementor pages lose only `post-208.css`.
+
+| Page (360px, empty cache) | Requests before | after | Transferred before | after | Elementor files before | after | Console errors before | after |
+|---|---|---|---|---|---|---|---|---|
+| Front page | 36 | 25 | 636 kB | 548 kB | 8 | 0 | 1 | 0 |
+| Info page (Who we are) | 28 | 17 | 203 kB | 115 kB | 8 | 0 | 1 | 0 |
+| A news post | 30 | 19 | 1358 kB | 1271 kB | 8 | 0 | 1 | 0 |
+| News listing | 33 | 22 | 1760 kB | 1672 kB | 8 | 0 | 1 | 0 |
+| Newsletter archive | 27 | 16 | 142 kB | 54 kB | 8 | 0 | 1 | 0 |
+| Elementor page (Rock Solid, 60) | 36 | 35 | 375 kB | 374 kB | 15 | 14 | 0 | 0 |
+| Elementor page (Mission, 374) | 36 | 35 | 360 kB | 360 kB | 15 | 14 | 0 | 0 |
+
+Re-run it after a template or plugin change; it is the baseline for the page-speed comparison planned for the Elementor exit.
+
 ## Slideshow
 
 The front page's "More at Moortown" band is a slideshow (built 16 Oct 2026): a
@@ -1151,5 +1164,6 @@ scale. Every value is traced to the original in the file's comments. Layout
       with the church's data protection lead.**
 - [ ] Live-old → new redirect map (see Status).
 - [ ] Remove the E2E test page 620 (ask first).
-- [ ] Elementor frontend error gone: `slideshow_check.py` logs no `WARN known page
-      error suppressed` line (see the Status item), then remove `KNOWN_ERROR` from it.
+- [ ] **Live:** if live shows the same symptom (Elementor assets and the `elementorFrontendConfig`
+      error on non-Elementor pages), the same fix applies (remove template #208's "Entire site"
+      condition) but only after checking what the footer template does on live. Not touched.
