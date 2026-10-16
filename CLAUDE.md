@@ -72,6 +72,9 @@ Same header and footer on every page.
 3. Prefer PHP templates and template parts in the child theme over
    database-stored layouts, so everything is in git.
 4. Zigzag bands = core Media & Text block (or a pattern built on it).
+   **One deliberate exception (John, 16 Oct 2026):** "More at Moortown" on the
+   front page is a slideshow band (a Group beside a Gallery, see "Slideshow"
+   below), because a Media & Text block's picture slot holds one image only.
 5. Four page templates cover the site:
    - **Info page** (About Us, Resources): prose, optional image, optional CTA.
    - **Activity page** (What's On ×8): when, where, who it's for, contact,
@@ -946,6 +949,51 @@ featured-image banner is **never** output on them (`mbc_take_over_layout()`
 in `inc/layout.php` removes it for the MBC page templates and single posts;
 legacy Elementor pages keep it until converted). The tests assert there is
 no `.page-header-image` on new-template pages.
+
+## Slideshow
+
+The front page's "More at Moortown" band is a slideshow (built 16 Oct 2026): a
+Group (class `mbc-band mbc-band--slides`, text in `mbc-band__content`) beside a
+core **Gallery** block with the classes `mbc-slideshow mbc-slideshow--5s`.
+Pattern: `patterns/slideshow-band.php` (`mbc/slideshow-band`; the front-page
+pattern uses the same markup with placeholder images). Editor guide:
+`docs/slideshow-guide.md` (3-5 photos, strongest first, captions, speed).
+
+- **Files:** `css/slideshow.css` and `js/slideshow.js`, loaded only on pages
+  whose content contains `mbc-slideshow` (`inc/slideshow.php`); the band's
+  two-column layout is in `css/patterns.css`; tokens `--mbc-slide-ratio` (4/3),
+  `--mbc-slide-fade`, `--mbc-overlay-bg`, `--mbc-overlay-bg-hover`,
+  `--mbc-overlay-text` in `tokens.css`. The slideshow CSS is not loaded in the
+  editor, which shows an ordinary gallery.
+- **Frame:** fixed 4:3 (`aspect-ratio` plus `object-fit: cover`), so photos of
+  any shape never change the box. All frame rules sit under `html.mbc-js` (the
+  flag set in `<head>`), so the layout is final at first paint and **CLS is 0**
+  (tested). Without JavaScript it stays an ordinary gallery.
+- **Behaviour:** 5 s per slide by default; change it with the class
+  `mbc-slideshow--Ns` (Additional CSS class, valid in the editor) or
+  `data-interval` (hand-written; the editor flags a hand-added attribute).
+  Pause/Play, Previous, Next and dots (all at least 44px, focus ring from
+  `--mbc-focus`), Left/Right keys, touch or mouse swipe (pointer events,
+  horizontal only, `touch-action: pan-y`), captions from the Gallery image
+  caption (strip above the controls, none if unset). Pauses on hover (real
+  mouse), keyboard focus, hidden tab and off screen; no autoplay and no fade
+  under `prefers-reduced-motion`. Only the active slide is exposed to
+  assistive technology (`aria-hidden` and `inert` on the rest).
+- **Gotchas found while building it:** core wraps a Group's children in
+  `.wp-block-group__inner-container` at render whatever the layout setting, so
+  the CSS flattens it (`display: contents`); WordPress stores `--` in block
+  comment attributes as `\u002d\u002d` (match that when editing page content
+  by script); core's gallery CSS needs `:not(#id)` to be out-weighed; a mouse
+  swipe needs `draggable=false` on the images.
+- **Content now:** placeholder photos from the media library (566, 299, 684,
+  568, captions on the first two) until John supplies real ones via the inbox
+  (`image_prep.py ... band`). Page 182 content backups before this work:
+  `~/src/mbc-elementor-backups/182-home-pre-slideshow.json`.
+- **Tests:** `~/src/mbc-tests/slideshow_check.py` (all five looks at 360 and
+  1280px for layout, controls, focus ring and contrast; autoplay, pause, hover,
+  focus, keys, swipe (mouse drag and real touch events, incl. that a vertical
+  swipe scrolls the page), captions, CLS, reduced motion, no-JS, the interval
+  override and the block editor). Fake clock, so it does not sleep.
 
 ## Image standards
 

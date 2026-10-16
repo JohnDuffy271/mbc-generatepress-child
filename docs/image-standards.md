@@ -27,6 +27,10 @@ Notes:
   size (768 px wide), shown in a fixed 3:2 box (180 px wide on desktop, full column on a phone)
   and 180 px wide in the email. They are made from the post's featured image, so a `post` or
   `card` image is more than enough.
+- **Slideshow photos** ("More at Moortown", `docs/slideshow-guide.md`) are `band` images: they sit in a
+  4:3 frame (560 x 420 on desktop, full column on a phone) and every slide is cropped to it with
+  `object-fit: cover`, so a photo that is not 4:3 is cropped from the centre. Prepare each one with
+  `image_prep.py` so the crop is chosen, not left to chance. `measure_slots.py` checks them against `band`.
 - **Logos** (Mission-partner pages) are shown whole, never cropped, and are not covered by a
   preset: supply the partner's own logo at 2x its displayed size.
 - **Not covered:** the front-page hero is text only today; there is no hero or teaser preset (removed
