@@ -65,6 +65,10 @@
 		var multiple = count > 1;
 
 		root.classList.add('is-enhanced');
+		// A mouse drag on a photo would start the browser's own image drag and cancel our swipe.
+		Array.prototype.forEach.call(root.querySelectorAll('img'), function (img) {
+			img.draggable = false;
+		});
 		root.setAttribute('role', 'region');
 		root.setAttribute('aria-roledescription', 'carousel');
 		root.setAttribute('aria-label', root.getAttribute('data-label') || 'Photos from around the church');

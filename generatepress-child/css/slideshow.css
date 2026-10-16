@@ -25,6 +25,7 @@ html.mbc-js .mbc-slideshow.wp-block-gallery {
 	border-radius: var(--mbc-radius-md);
 	background: var(--mbc-surface-alt);
 	touch-action: pan-y; /* the browser keeps vertical scrolling; horizontal swipes are ours */
+	user-select: none;
 }
 
 html.mbc-js .mbc-slideshow.wp-block-gallery figure.wp-block-image:not(#mbc) {
