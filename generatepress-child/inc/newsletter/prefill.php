@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const MBC_NL_MAX_POSTS    = 6;  // Default pre-fill cap (filter: mbc_newsletter_max_posts).
+const MBC_NL_THUMB_WIDTH  = 180; // Post thumbnails: CSS px in the email, and the web list's box (--mbc-newsletter-thumb).
 const MBC_NL_FIRST_WINDOW = 14; // Days, when there is no previous issue.
 
 /**

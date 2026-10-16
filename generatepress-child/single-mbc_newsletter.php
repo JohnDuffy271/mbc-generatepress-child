@@ -49,7 +49,7 @@ get_header();
                         <li class="mbc-card mbc-nl-item<?php echo $mbc_has_image ? ' mbc-nl-item--has-image' : ''; ?>">
                             <?php if ( $mbc_has_image ) : ?>
                                 <a class="mbc-card__image" href="<?php echo esc_url( get_permalink( $mbc_item ) ); ?>" tabindex="-1" aria-hidden="true">
-                                    <?php echo get_the_post_thumbnail( $mbc_item, 'medium' ); ?>
+                                    <?php echo get_the_post_thumbnail( $mbc_item, 'medium_large' ); ?>
                                 </a>
                             <?php endif; ?>
                             <div class="mbc-nl-item__body">

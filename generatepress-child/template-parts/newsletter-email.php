@@ -87,7 +87,7 @@ img { -ms-interpolation-mode: bicubic; }
 
 <?php foreach ( $posts as $post ) :
     $url   = mbc_nl_abs_url( get_permalink( $post ) );
-    $thumb = mbc_nl_email_image( get_post_thumbnail_id( $post ), $inner );
+    $thumb = mbc_nl_email_image( get_post_thumbnail_id( $post ), MBC_NL_THUMB_WIDTH, 'medium_large' ); // 180px wide, from the same size as the web version.
     $label = sprintf( /* translators: %s: post title */ __( 'Read more about %s', 'generatepress-child' ), get_the_title( $post ) );
     ?>
 <tr><td style="padding:0 <?php echo (int) $c['gutter']; ?>px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="<?php echo esc_attr( $s['rule'] ); ?>">&nbsp;</td></tr></table></td></tr>

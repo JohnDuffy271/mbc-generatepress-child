@@ -100,12 +100,16 @@ function mbc_nl_header_id( $issue ) {
 }
 
 /**
- * Image data for an email: absolute https URL, and the width/height to show it at.
+ * Image data for an email: absolute https URL, and the width/height to show it at (never above
+ * the size's own width, so nothing is enlarged).
  *
+ * @param int    $attachment_id Attachment.
+ * @param int    $max_width     Width to show it at, at most.
+ * @param string $size          Image size to use.
  * @return array{src:string,width:int,height:int}|null
  */
-function mbc_nl_email_image( $attachment_id, $max_width ) {
-    $img = $attachment_id ? wp_get_attachment_image_src( $attachment_id, 'large' ) : false;
+function mbc_nl_email_image( $attachment_id, $max_width, $size = 'large' ) {
+    $img = $attachment_id ? wp_get_attachment_image_src( $attachment_id, $size ) : false;
     if ( ! $img || empty( $img[1] ) || empty( $img[2] ) ) {
         return null;
     }
