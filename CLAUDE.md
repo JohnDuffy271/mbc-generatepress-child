@@ -948,7 +948,7 @@ no `.page-header-image` on new-template pages.
 
 Measured with `~/src/mbc-tests/bin/measure_weight.py` (Chromium at 360px, empty cache, compressed bytes on the
 wire, `networkidle`), before and after removing template #208's "Entire site" condition (see Status). The
-saving is the same 8 requests and about 94 kB on every non-Elementor page (the bytes left are the page's own
+saving is 11 fewer requests and about 88 kB on every non-Elementor page (8 of the requests are Elementor files; the other 3 went with them) (the bytes left are the page's own
 images, fonts and scripts); the Elementor pages lose only `post-208.css`.
 
 | Page (360px, empty cache) | Requests before | after | Transferred before | after | Elementor files before | after | Console errors before | after |
