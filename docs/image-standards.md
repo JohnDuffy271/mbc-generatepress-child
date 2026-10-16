@@ -94,6 +94,37 @@ Everything lives in `~/src/mbc-images/` (outside both repos): `inbox/` (original
 `image_prep.py presets` lists the presets and caps. Keep the preset table in the script, in
 `measure_slots.py` and in this file in step.
 
+## Sizes attributes and the 600px size
+
+- **`sizes` attributes** (`inc/image-sizes.php`): WordPress writes `sizes="(max-width: Wpx) 100vw, Wpx"`, which tells the
+  browser an image fills the screen, so a card in a 3-column grid fetched a 1536px file for a 355px box. The theme sets
+  accurate values for the four slots WordPress cannot work out (News cards, slideshow slides, team grid and minister
+  photo, newsletter list thumbnails), from the widths measured at 360, 600, 768, 1024 and 1280px (table in the file).
+  **When a layout changes, re-measure and update that table.** Other images keep WordPress's default.
+- **`mbc-600`**: an extra, uncropped 600px-wide size (`add_image_size`), so a ~330px slot is not served the 768px file
+  (WordPress's own steps jump from 300 to 768). It applies to **new uploads only**; existing images were not regenerated
+  (decision 16 Oct 2026), so they keep the 300/768 gap until they are re-uploaded.
+- **Accepted findings:** `~/src/mbc-tests/images_weight_accepted.json` lists the findings that are deliberately left
+  (file, reasons, why). They report as INFO; a listed finding that has gone FAILs as stale, so remove entries as the
+  images are replaced or the demo content is deleted.
+
+## Text in images
+
+Several legacy graphics carry their words as pixels (Room Hire, Sunday Mornings, the Mission partner banners). Text in an
+image cannot be edited, searched, translated or resized for readers, and is unreadable when a slot crops it on a phone.
+**When replacement photos arrive, put the words back as real page text over (or beside) the photo.** Until then such
+graphics are served as lossy WebP (`bin/convert_graphic.py`, same dimensions, 20-26x smaller than the PNG) and keep their
+alt text.
+
+## Migration requirement (content from the live site)
+
+The importer that brings real posts and pages over **must re-link every inline image to a media-library attachment**:
+import or match the attachment, then write the image with the `wp-image-<ID>` class (and the block's `id`), so WordPress
+builds `srcset` and `sizes` itself. Imported markup with a bare `<img src>` gets neither, which is why the demo post
+"Minister's Appreciation Day" is 1.27 MB. Also: **never reference `-scaled` originals** (2560px), and prepare
+migrated images at the `post` preset (1500 x 1000, 250 kB cap) with `image_prep.py`, or at least use the generated sizes.
+`images_weight_check.py` catches a migrated post that breaks this (`NO_SRCSET`, `HEAVY`).
+
 ## Web exposure
 
 `docs/` is deployed to the server with the rest of the repo and is blocked by `docs/.htaccess`

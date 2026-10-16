@@ -404,20 +404,31 @@ Pages, menus and settings are managed via the WordPress REST API.
       `uploads/elementor/google-fonts/`.
       **Still true:** #208 and the Theme Builder remain until the Elementor
       exit (step 5 there).
-- [ ] **Image weight findings (16 Oct 2026, report only, nothing changed yet).**
-      The news post "Minister's Appreciation Day" is 1271 kB at 360px because
-      three imported inline JPEGs are 1215 kB of it: two `-scaled` 2560px
-      originals (588 and 524 kB) shown at 328px, and no `srcset` at all (the
-      imported markup lacks the `wp-image-ID` class, so WordPress cannot build
-      one). Site-wide (43 URLs): 24 clean; 36 distinct files flagged, 5 FAIL,
-      31 WARN. FAILs (real content): the Craft_Group_2 slideshow placeholder
-      (572 kB), the Room Hire and Sunday Mornings PNG graphics (363 and 361 kB)
-      and the Meet the team photo that uses a 1024px file in a 146px square
-      (7x). Recommendations are in the 16 Oct report: accurate `sizes` for
-      cards, newsletter thumbnails, slideshow and team grid (theme); give the
-      migration importer the `wp-image-ID` class and `post`-preset images; turn
-      the two PNG graphics into JPEG or real photos; prepare the team photos as
-      `square`; demo content is left (deleted at cutover).
+- [x] **Image weight findings (16 Oct 2026): decided and done.** The news post
+      "Minister's Appreciation Day" is 1271 kB at 360px because three imported
+      inline JPEGs are 1215 kB of it (two `-scaled` 2560px originals, no
+      `srcset`: the imported markup lacks the `wp-image-ID` class). Decisions
+      (John): (1) accurate `sizes` for News cards, slideshow, team grid and
+      minister photo, newsletter thumbnails (`inc/image-sizes.php`, from the
+      measured slots); (2) a **migration requirement**, below; (3) the Room Hire
+      and Sunday Mornings PNG graphics converted to WebP (1694 and 1675 kB to 86
+      and 65 kB, same 2048x768, alt kept; page backups
+      `~/src/mbc-elementor-backups/391-room-hire-pre-webp.json` and
+      `44-sunday-mornings-pre-webp.json`; the old PNG media 392 and 362 are
+      still in the library, delete only on John's say-so); (4) team photos later,
+      via `image_prep.py` `square`, when John supplies them; (5) an intermediate
+      `mbc-600` size for new uploads (no regeneration; confirmed in the `srcset`
+      of a fresh upload); (6) demo content left. Known findings are in
+      `~/src/mbc-tests/images_weight_accepted.json` (INFO; stale entries FAIL).
+      **Migration requirement:** the importer for real live content must
+      re-link every inline image to an attachment (import or match it, write the
+      `wp-image-<ID>` class and the block `id`) so WordPress builds `srcset`;
+      never reference `-scaled` originals; prepare images at the `post` preset.
+      **Text in images** (Room Hire, Sunday Mornings, the partner banners) should
+      become real text over photos when replacements arrive. Details:
+      `docs/image-standards.md`. Weights, 360px: Room Hire 277 to 74 kB, Sunday
+      Mornings 279 to 73 kB; at 1280px the News listing 4327 to 1672 kB (still
+      mostly demo PNGs).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -619,6 +630,9 @@ Pages, menus and settings are managed via the WordPress REST API.
       site's public REST API; this needs a narrow exception to the
       protect-live hook at that point.
 - [ ] Content migration from live site (via its public REST API, read-only)
+      **Requirement:** inline images must be re-linked to attachment IDs (`wp-image-ID`
+      class, attachment imported or matched), never `-scaled` originals, prepared at the
+      `post` preset (see the image-weight item and `docs/image-standards.md`).
 - [ ] Contact form plugin decision
 - [x] Demo post import (15 Oct 2026, `bin/import_live_posts.py
       --unwrap-elementor`): 10 live posts (23 Sep to 12 Oct), all in
