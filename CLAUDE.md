@@ -612,7 +612,10 @@ Pages, menus and settings are managed via the WordPress REST API.
         size, never enlarged; the posts are a single-column list (thumbnail
         `--mbc-newsletter-thumb`, 180px, on the left, date, title and excerpt
         on the right; the thumbnail goes on top when the column is under
-        30rem, by container query) built on `.mbc-card`; "View as email" ends
+        30rem, by container query) built on `.mbc-card`. The thumbnail is the
+        post's `medium_large` size in a **fixed 3:2 box** (`object-fit: cover`,
+        never stretched to the row's height); the email shows the same size at
+        180px wide (`MBC_NL_THUMB_WIDTH`); "View as email" ends
         the column on published issues. The archive keeps the card grid
         (`.mbc-nl__list`); the issue page uses `.mbc-nl-issue__list`.
       - **Email** `/newsletter/<slug>/email/`: standalone 600px table document,
@@ -900,6 +903,18 @@ featured-image banner is **never** output on them (`mbc_take_over_layout()`
 in `inc/layout.php` removes it for the MBC page templates and single posts;
 legacy Elementor pages keep it until converted). The tests assert there is
 no `.page-header-image` on new-template pages.
+
+## Image standards
+
+Presets (banner 2240x896, post 1500x1000, band 1200x900, card 900x600, square
+700x700, newsletter-header 600 wide), each 2x the slot it serves, the quality
+and kB-cap rule, metadata stripping, the consent check (John S) and the
+`image_prep.py` workflow (inbox -> grid -> preview -> OK -> `--apply`) are in
+**`docs/image-standards.md`**. `~/src/mbc-tests/bin/measure_slots.py` measures
+the rendered slots in all looks and **fails if any preset drops below 2x**;
+re-run it after any template or CSS change that touches images. The tools and
+their git repo live in `~/src/mbc-tests/` (outside this repo); photos in
+`~/src/mbc-images/`.
 
 ## Looks (alternate token sets)
 
