@@ -373,6 +373,40 @@ Pages, menus and settings are managed via the WordPress REST API.
         Notice, to the sandbox copy of the PDF (media 766). Cookies is
         still open: add it to `FOOTER_LINKS` in that script once the page
         exists (cutover checklist).
+- [ ] **Elementor frontend script error on every non-Elementor page**
+      (found 16 Oct 2026, not yet fixed). Exact message (uncaught, in the
+      browser console): `ReferenceError: elementorFrontendConfig is not
+      defined`, thrown at load by
+      `/wp-content/plugins/elementor/assets/js/frontend.min.js?ver=4.3.5`
+      (Elementor 4.3.5). It happens on every page built with our templates
+      (front page, Info, Activity, Mission partner, News, newsletter archive
+      and issues) and **not** on Elementor-built pages (Rock Solid 60,
+      Mission 374: there the config is defined).
+      **Likely cause (inferred, not proven):** the Elementor Pro Theme
+      Builder "Entire site" footer template #208 makes Elementor load its
+      frontend scripts and styles on every page (`post-208.css` and
+      `post-7.css` are fetched), but `inc/layout.php` removes the footer
+      actions, so the template never renders and Elementor never prints its
+      inline `elementorFrontendConfig`.
+      **Visitor impact:** no visible effect found. It is a separate script
+      file, so our own scripts (navigation, slideshow) run normally on the
+      same pages, and those pages have no Elementor content. It costs one
+      console error and **8 unused Elementor files on every such page**,
+      about 305 kB after decompression (measured 16 Oct 2026; transfer size
+      is smaller as they are Brotli/gzip): `frontend.min.css` 55 kB,
+      Roboto and Roboto Slab font CSS 136 kB, and 113 kB of JavaScript
+      (`webpack.runtime`, `frontend-modules`, `frontend.min.js`).
+      **Fix options (ask John first):** (a) a small theme filter that
+      dequeues Elementor's frontend scripts and styles on pages that carry no
+      Elementor data (must leave the legacy Elementor pages untouched; would
+      cut the weight now); or (b) leave it: it ends with the Elementor exit
+      when both plugins are deactivated. Either way, measure page speed
+      before and after (Elementor exit step 5).
+      **Tests:** `~/src/mbc-tests/slideshow_check.py` tolerates exactly this
+      message from exactly that script (anything else fails) and logs a
+      `WARN known page error suppressed` line each time; delete
+      `KNOWN_ERROR` there once this is fixed.
+
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -1069,3 +1103,5 @@ scale. Every value is traced to the original in the file's comments. Layout
       with the church's data protection lead.**
 - [ ] Live-old → new redirect map (see Status).
 - [ ] Remove the E2E test page 620 (ask first).
+- [ ] Elementor frontend error gone: `slideshow_check.py` logs no `WARN known page
+      error suppressed` line (see the Status item), then remove `KNOWN_ERROR` from it.
