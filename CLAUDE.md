@@ -435,7 +435,12 @@ Pages, menus and settings are managed via the WordPress REST API.
       it held no iframe, only the placeholder; backup
       `~/src/mbc-elementor-backups/628-events-pre-calendar.json`). `inc/calendar/`
       (`config.php`, `fetch.php`, `render.php`), `css/calendar.css` (tokens only, no new
-      tokens), shortcode `[mbc_calendar weeks="8" limit="0" heading="3" links="yes"]`.
+      tokens), shortcode `[mbc_calendar weeks="8" limit="0" heading="3" links="yes" recurring="yes" more="" more_label="" empty=""]`
+      (17 Oct 2026 additions: `recurring="no"` drops instances of repeating events
+      (`recurringEventId`, stored as `recurring`; cache keys now carry `v2`);
+      `more="/whats-on/events/"` adds a "See all events" link in every state and
+      suppresses the Google link; `more_label`; `empty` replaces the empty line;
+      `links="no"` hides Subscribe/.ics).
       Google Calendar API v3 `events.list` server side (singleEvents, orderBy startTime,
       timeMin now, timeMax +weeks, timeZone Europe/London; `mbc_calendar_weeks` filter).
       Key and calendar ID are options `mbc_gcal_api_key` / `mbc_gcal_calendar_id` (not
@@ -452,7 +457,8 @@ Pages, menus and settings are managed via the WordPress REST API.
       `mbc_gcal_fixture` (token, fixed "now", items, `fail`) is honoured only with the token in
       `?mbc_cal_fixture=`; set and cleared over the same route. **Outbound IP of the sandbox
       server (for the key restriction): 45.145.100.121.** Live will differ (same Plesk server
-      probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (213 checks).
+      probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (252 checks; section `attrs` covers the new
+      attributes with fixture data). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
@@ -1037,7 +1043,7 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
 | `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
-| `this-week.php` | `mbc/this-week` | Compact `[mbc_calendar weeks="1" limit="5" links="no"]`; not placed yet (front page, if wanted) |
+| `this-week.php` | `mbc/this-week` | "Coming up": `[mbc_calendar weeks="1" limit="5" links="no" more="/whats-on/events/" empty="..."]`; slug kept, title renamed; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
 `slideshow-band` (editor inserts only). Pattern file count is now ten (nine when audited, plus `this-week`; `events-placeholder` became `events-calendar`).
