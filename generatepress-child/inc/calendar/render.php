@@ -8,6 +8,9 @@
  * links="no" hides the Subscribe/.ics links. recurring="no" leaves out instances of repeating events.
  * more="URL" adds a "See all events" link (also when the list is empty or the calendar is unavailable)
  * and then never links out to Google. empty="..." replaces the "no events" line.
+ * hide_empty="yes" outputs nothing at all (no wrapper, no heading) when there is nothing to show or the
+ * calendar is unavailable (the failure is still logged by fetch.php). heading_text="..." puts a section
+ * heading (h2) inside the output so it disappears with it. strip="yes" gives a full-width section look.
  *
  * Server-rendered from cached data (see fetch.php), so nothing loads or shifts in the browser.
  * Styled by css/calendar.css (tokens only); that file loads on pages whose content has the shortcode.
@@ -59,6 +62,9 @@ function mbc_calendar_shortcode( $atts ) {
         'more_label' => '',
         'empty'      => '',
         'view'       => 'list',
+        'hide_empty' => 'no',
+        'heading_text' => '',
+        'strip'      => 'no',
     ), $atts, 'mbc_calendar' );
     $h_day   = max( 2, min( 5, (int) $atts['heading'] ) );
     $h_event = min( 6, $h_day + 1 );
@@ -86,9 +92,16 @@ function mbc_calendar_shortcode( $atts ) {
     $more_label = '' !== trim( (string) $atts['more_label'] ) ? trim( (string) $atts['more_label'] ) : __( 'See all events', 'generatepress-child' );
     $empty_text = '' !== trim( (string) $atts['empty'] ) ? trim( (string) $atts['empty'] ) : __( 'There are no events in the diary just now. Please check again soon.', 'generatepress-child' );
 
+    if ( 'yes' === strtolower( (string) $atts['hide_empty'] ) && ( 'none' === $data['source'] || ! $events ) ) {
+        return '';
+    }
+
     $cards  = 'cards' === strtolower( (string) $atts['view'] );
     $source = 'fresh' === $data['source'] ? 'fresh' : ( 'last-good' === $data['source'] ? 'last-good' : 'fallback' );
-    $out    = '<div class="mbc-cal' . ( $cards ? ' mbc-cal--cards' : '' ) . '" data-source="' . esc_attr( $source ) . '">';
+    $out    = '<div class="mbc-cal' . ( $cards ? ' mbc-cal--cards' : '' ) . ( 'yes' === strtolower( (string) $atts['strip'] ) ? ' mbc-cal--strip' : '' ) . '" data-source="' . esc_attr( $source ) . '">';
+    if ( '' !== trim( (string) $atts['heading_text'] ) ) {
+        $out .= '<h2 class="mbc-cal__heading">' . esc_html( trim( (string) $atts['heading_text'] ) ) . '</h2>';
+    }
 
     if ( 'none' === $data['source'] ) {
         $out .= '<p class="mbc-cal__empty">' . esc_html__( 'Our events calendar is not available just now.', 'generatepress-child' );

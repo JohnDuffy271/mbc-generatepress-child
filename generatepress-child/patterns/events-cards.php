@@ -10,10 +10,6 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:heading -->
-<h2 class="wp-block-heading">Coming up</h2>
-<!-- /wp:heading -->
-
 <!-- wp:shortcode -->
-[mbc_calendar view="cards" weeks="8" limit="3" heading="3" links="no" recurring="no" more="/whats-on/events/" more_label="See all events" empty="Nothing is planned just now. Take a look at what’s coming up further ahead."]
+[mbc_calendar view="cards" weeks="8" limit="3" heading="3" heading_text="Coming up" links="no" recurring="no" more="/whats-on/events/" more_label="See all events" empty="Nothing is planned just now. Take a look at what’s coming up further ahead."]
 <!-- /wp:shortcode -->

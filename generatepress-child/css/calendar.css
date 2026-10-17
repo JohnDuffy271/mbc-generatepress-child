@@ -188,3 +188,21 @@
 		grid-template-columns: repeat(3, 1fr);
 	}
 }
+
+.mbc-cal__heading {
+	margin: 0 0 var(--mbc-space-m);
+	font-size: var(--mbc-step-4);
+}
+
+/* strip="yes": a full-width section between the front page's bands, set apart by the alternate surface. */
+.mbc-cal--strip {
+	max-width: var(--mbc-content-width);
+	margin: 0 auto;
+	padding: var(--mbc-space-xl) var(--mbc-gutter);
+	border-top: var(--mbc-border-width) solid var(--mbc-border);
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-cal--strip .mbc-cal__card {
+	background: var(--mbc-surface);
+}

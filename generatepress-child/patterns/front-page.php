@@ -78,6 +78,10 @@ defined( 'ABSPATH' ) || exit;
 <!-- /wp:buttons --></div></div>
 <!-- /wp:media-text -->
 
+<!-- wp:shortcode -->
+[mbc_calendar view="cards" weeks="8" limit="3" heading="3" heading_text="Coming up" links="no" recurring="no" more="/whats-on/events/" more_label="See all events" empty="Nothing is planned just now. Take a look at what’s coming up further ahead." hide_empty="yes" strip="yes"]
+<!-- /wp:shortcode -->
+
 <!-- wp:group {"className":"mbc-band mbc-band--slides"} -->
 <div class="wp-block-group mbc-band mbc-band--slides"><!-- wp:group {"className":"mbc-band__content"} -->
 <div class="wp-block-group mbc-band__content"><!-- wp:heading -->
