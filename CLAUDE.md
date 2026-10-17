@@ -699,9 +699,12 @@ Pages, menus and settings are managed via the WordPress REST API.
          anywhere and goes when that menu is deleted). **The weekly timetable is
          maintained by hand and duplicates the calendar's recurring events (raise with
          Andy)**; the section index list is also hand-kept and must follow the menu.
+         **Drafts 1093 (Mission) and 1094 (What's On) approved by John, 17 Oct 2026,
+         subject to changes coming soon; NOT published yet** (wait for John's go-ahead, then
+         `elementor_exit.py publish` with the backup-first step).
          **Legacy (Elementor) pages remaining:** Rock Solid (60, held), the
          parents Mission (374) and What's On (327) (drafts 1093 and 1094
-         await review), and the unlinked drafts Welcome (8), Baptism (54) and
+         approved, unpublished), and the unlinked drafts Welcome (8), Baptism (54) and
          Sunday School (556): none is in Andy's menu, so they are **not
          converted**; redirects approved by John (17 Oct 2026) for the cutover map:
          Welcome → Who we are, Baptism → What we believe, Sunday School →
