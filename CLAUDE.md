@@ -529,8 +529,16 @@ Pages, menus and settings are managed via the WordPress REST API.
       no attribute is needed in the content. An empty section outputs nothing to visitors and a dashed
       note to editors. **Cache:** one transient per menu (`mbc_si_1_<menu id>`, 12 h safety TTL),
       cleared when a menu, menu item or page is saved, trashed or deleted, or a page's featured image
-      changes. **Page excerpts are enabled** (`add_post_type_support`); none of the pages has one yet,
-      so the cards show the fallback text: the list for John S is in `docs/content-todo.md`.
+      changes. **Page excerpts are enabled** (`add_post_type_support`). **Description rules (17 Oct
+      2026):** the excerpt, else the first clean paragraph of the page (a `core/paragraph` outside the
+      key-facts block `mbc-facts` and call-to-action boxes, not opening with a bold label, at least five
+      words, cut at 20 words), else no description. Any text (excerpt included) that matches the placeholder
+      markers (the list mirrors `MARKERS` in `bin/scan_placeholders.py`; keep them in step) is dropped.
+      The eight What's On excerpts were set on 17 Oct 2026 (Sunday Mornings 44, Events 628, Beacon Café 251,
+      Rock Solid 60, Stepping Stones 48, Lunch Club 56, Craft Group 565, House Groups 46) and Sunday Mornings'
+      featured image is now the home-page congregation photo (media 1024; was the graphic 362). Drafted
+      excerpts for the other hubs' pages, the consent flags (Stepping Stones, Rock Solid) and the image
+      audit are in `docs/content-todo.md`; photo requests in `docs/image-wishlist.md`.
       **State of the four parents before this work:** About Us (341): empty, template
       `page-section-index.php` (not in the theme); Resources (623): empty, no template; Mission (374)
       and What's On (327): Elementor. **Now:** Mission (374) is published on the hub template (John's
