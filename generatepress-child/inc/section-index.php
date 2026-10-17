@@ -223,6 +223,23 @@ function mbc_section_index_card_html( array $card, $title_tag ) {
     return $html . '</div></li>';
 }
 
+/**
+ * For previewing a hub's block draft ("<title> (block draft)", slug "<slug>-block-draft", made by
+ * bin/elementor_exit.py): the ID of the page it will replace, which is the one the menu points to.
+ * Only for an unpublished page; a published page is looked up as itself.
+ */
+function mbc_section_index_original_of_draft( $page_id ) {
+    $post = get_post( $page_id );
+    if ( ! $post || 'page' !== $post->post_type || 'publish' === $post->post_status ) {
+        return 0;
+    }
+    if ( ! preg_match( '/^(.+)-block-draft(?:-\d+)?$/', $post->post_name, $m ) ) {
+        return 0;
+    }
+    $original = get_page_by_path( ( $post->post_parent ? get_page_uri( $post->post_parent ) . '/' : '' ) . $m[1] );
+    return $original ? (int) $original->ID : 0;
+}
+
 function mbc_section_index_shortcode( $atts ) {
     $atts = shortcode_atts(
         array(
@@ -235,6 +252,10 @@ function mbc_section_index_shortcode( $atts ) {
     );
     $page_id = '' !== $atts['page'] ? absint( $atts['page'] ) : (int) get_the_ID();
     $cards   = $page_id ? mbc_section_index_cards( $page_id ) : array();
+    if ( ! $cards && '' === $atts['page'] ) {
+        $original = mbc_section_index_original_of_draft( $page_id );
+        $cards    = $original ? mbc_section_index_cards( $original ) : array();
+    }
     if ( (int) $atts['limit'] > 0 ) {
         $cards = array_slice( $cards, 0, (int) $atts['limit'] );
     }
