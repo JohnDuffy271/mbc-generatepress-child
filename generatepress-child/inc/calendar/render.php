@@ -99,8 +99,14 @@ function mbc_calendar_shortcode( $atts ) {
     $cards  = 'cards' === strtolower( (string) $atts['view'] );
     $source = 'fresh' === $data['source'] ? 'fresh' : ( 'last-good' === $data['source'] ? 'last-good' : 'fallback' );
     $out    = '<div class="mbc-cal' . ( $cards ? ' mbc-cal--cards' : '' ) . ( 'yes' === strtolower( (string) $atts['strip'] ) ? ' mbc-cal--strip' : '' ) . '" data-source="' . esc_attr( $source ) . '">';
+    // With a section heading the See all events link sits on the right of the heading row; without one it follows the list.
+    $more_in_head = '' !== $more_url && '' !== trim( (string) $atts['heading_text'] );
     if ( '' !== trim( (string) $atts['heading_text'] ) ) {
-        $out .= '<h2 class="mbc-cal__heading">' . esc_html( trim( (string) $atts['heading_text'] ) ) . '</h2>';
+        $out .= '<div class="mbc-cal__head"><h2 class="mbc-cal__heading">' . esc_html( trim( (string) $atts['heading_text'] ) ) . '</h2>';
+        if ( $more_in_head ) {
+            $out .= '<a class="mbc-cal__all-link" href="' . esc_url( $more_url ) . '">' . esc_html( $more_label ) . ' <span aria-hidden="true">&rarr;</span></a>';
+        }
+        $out .= '</div>';
     }
 
     if ( 'none' === $data['source'] ) {
@@ -132,7 +138,7 @@ function mbc_calendar_shortcode( $atts ) {
         $out .= '</ol>';
     }
 
-    if ( '' !== $more_url ) {
+    if ( '' !== $more_url && ! $more_in_head ) {
         $out .= '<p class="mbc-cal__all"><a href="' . esc_url( $more_url ) . '">' . esc_html( $more_label ) . '</a></p>';
     }
 
@@ -215,8 +221,14 @@ function mbc_calendar_cards_html( array $events, $h, DateTimeInterface $now, $mo
             . '<div class="mbc-cal__card-body"><h' . (int) $h . ' class="mbc-cal__title">' . $title . '</h' . (int) $h . '>'
             . '<p class="mbc-cal__when"><span class="screen-reader-text">' . esc_html( $d->format( 'l j F' ) ) . ', </span>'
             . mbc_calendar_when_html( $e, $now ) . '</p>';
-        if ( '' !== $e['location'] ) {
-            $out .= '<p class="mbc-cal__where">' . esc_html( $e['location'] ) . '</p>';
+        // The venue name only (the part before the first comma); the agenda keeps the full address and map link.
+        $venue = trim( explode( ',', $e['location'] )[0] );
+        if ( '' !== $venue ) {
+            $out .= '<p class="mbc-cal__where">' . esc_html( $venue ) . '</p>';
+        }
+        $words = wp_trim_words( html_entity_decode( wp_strip_all_tags( str_ireplace( array( '<br>', '<br/>', '<br />' ), ' ', $e['description'] ) ), ENT_QUOTES, 'UTF-8' ), 15, '…' );
+        if ( '' !== trim( $words ) ) {
+            $out .= '<p class="mbc-cal__desc">' . esc_html( $words ) . '</p>';
         }
         $out .= '</div></li>';
     }

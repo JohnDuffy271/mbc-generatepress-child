@@ -189,9 +189,32 @@
 	}
 }
 
-.mbc-cal__heading {
+.mbc-cal__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--mbc-space-2xs) var(--mbc-space-m);
 	margin: 0 0 var(--mbc-space-m);
+}
+
+.mbc-cal__heading {
+	margin: 0;
 	font-size: var(--mbc-step-4);
+}
+
+.mbc-cal__all-link {
+	display: inline-block;
+	padding-block: var(--mbc-space-xs);
+	font-size: var(--mbc-step--1);
+}
+
+/* Narrow column: the link goes under the heading instead of beside it. */
+@container (max-width: 30rem) {
+	.mbc-cal__head {
+		flex-direction: column;
+		align-items: flex-start;
+	}
 }
 
 /* strip="yes": a full-width section between the front page's bands, set apart by the alternate surface. */
