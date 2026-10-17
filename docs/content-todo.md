@@ -62,7 +62,7 @@ Page IDs are in brackets. Re-run the scan after each batch of fixes.
   Claude can build it once you supply that.
 - Cookies page and footer link (page 3 `privacy-policy` is a draft).
 - Raise the Privacy Notice wording about Mailchimp and the names now collected with the church's data protection lead.
-- Choose the contact form plugin (plan in the 17 Oct report) so Contact Us can have a form.
+- Contact form: parked (see `docs/contact-form-plan.md`); nothing to do now.
 
 ## Not placeholders, but still to resolve
 - Run the Mailchimp test (your address only) before the newsletter cutover.

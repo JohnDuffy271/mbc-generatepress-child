@@ -84,8 +84,8 @@ Same header and footer on every page.
      how to support.
    - **Listing pages**: News (Query Loop), Events (fed by the "MBC Events"
      Google calendar), Contact.
-6. Forms: Elementor Pro forms are not used for new pages. Contact form
-   plugin is TBD — ask before installing anything. Newsletter signup uses
+6. Forms: Elementor Pro forms are not used for new pages. The contact form
+   is parked (see "Parked / possible later"); ask before installing anything. Newsletter signup uses
    MC4WP (Mailchimp for WordPress), already active.
 
 ## Repo layout
@@ -646,7 +646,6 @@ Pages, menus and settings are managed via the WordPress REST API.
       **Requirement:** inline images must be re-linked to attachment IDs (`wp-image-ID`
       class, attachment imported or matched), never `-scaled` originals, prepared at the
       `post` preset (see the image-weight item and `docs/image-standards.md`).
-- [ ] Contact form plugin decision
 - [x] Demo post import (15 Oct 2026, `bin/import_live_posts.py
       --unwrap-elementor`): 10 live posts (23 Sep to 12 Oct), all in
       "News", with 19 images, as sandbox posts 674-698 tagged
@@ -791,6 +790,18 @@ Pages, menus and settings are managed via the WordPress REST API.
       - **Header image and issue copy:** the default header image is the live
         one (above); John may supply a new one later. Editor how-to:
         `docs/newsletter/editor-guide.md`.
+
+## Parked / possible later
+
+- **Contact form (PARKED 17 Oct 2026, not cancelled):** live has no form, so
+  Contact Us has details only. Plan and John's decisions (Fluent Forms free,
+  `website@` Rockhost SMTP, 90-day retention, no Turnstile unless spam
+  appears, no consent checkbox, privacy line under the button) are in
+  `docs/contact-form-plan.md`.
+- **FluentSMTP for all WordPress mail** (password resets, notifications),
+  independent of any contact form. Would use a dedicated `website@` mailbox
+  on Rockhost; needs SPF/DKIM checked with Rockhost. Revisit at or before
+  cutover.
 
 ## Questions for Andy
 

@@ -1,5 +1,19 @@
 # Contact form plan: Fluent Forms (free) + FluentSMTP (not installed)
 
+**PARKED (17 Oct 2026): live has no form; revisit later.** Parked, not cancelled.
+
+## John's decisions (17 Oct 2026; these win wherever the plan below differs)
+- **Sending:** Rockhost SMTP through a dedicated `website@` mailbox, via FluentSMTP.
+- **Retention:** entries kept 90 days, then deleted (the plan below proposes 12 months).
+- **Spam:** honeypot only. No Turnstile unless spam appears (the plan below
+  proposes Turnstile).
+- **Consent:** no consent checkbox (the plan below has one).
+- **Privacy:** a short privacy line sits under the submit button, linking to the Privacy Notice.
+- Everything else below stands as the starting plan, including the fields,
+  recipient to confirm, theme integration and the checks.
+
+---
+
 Status: **plan only, for John's OK.** Nothing is installed. Written 17 Oct 2026.
 Items marked *check* are plugin features I could not confirm without
 installing it; confirm each on the sandbox before relying on it.
