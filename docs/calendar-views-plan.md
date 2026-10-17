@@ -1,4 +1,10 @@
-# Calendar views plan: month grid and cards (not built)
+# Calendar views plan: month grid and cards
+
+**Decisions (John, 17 Oct 2026):** cards = 3, and each card links to the Events page at its
+day (`#d-YYYY-MM-DD`, relative URL); the month view may go back 1 month; weeks start Monday.
+**Cards: built 17 Oct 2026** (see CLAUDE.md, "Events agenda"). **Month view: not built**, the
+plan below stands (the (b) section below is kept as written; where it says a card is not a link,
+the decision above wins).
 
 Written 17 Oct 2026, for John's OK. Both views read the same normalised data as
 the agenda (`mbc_calendar_get()` in `inc/calendar/fetch.php`) and are
@@ -193,8 +199,5 @@ existing 8-week fetch is enough, so it can be built first, independently.
 1. Cards (1 to 1.5 days), then place them on the front page once John wants the band.
 2. Month grid (about 3 days) with the toggle on the Events page.
 
-## Decisions for John
-1. Cards: three by default, or four? (Three fits the 3-column layout.)
-2. Should a card link anywhere (for example to the Events page filtered to that day)?
-3. Month view: allow going back one month (as proposed), or only forward?
-4. Month grid: week starts on Monday (proposed) or Sunday?
+## Decisions
+All four answered 17 Oct 2026 (see the top of this file).

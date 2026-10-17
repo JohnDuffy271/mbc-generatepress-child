@@ -444,7 +444,15 @@ Pages, menus and settings are managed via the WordPress REST API.
       (`recurringEventId`, stored as `recurring`; cache keys now carry `v2`);
       `more="/whats-on/events/"` adds a "See all events" link in every state and
       suppresses the Google link; `more_label`; `empty` replaces the empty line;
-      `links="no"` hides Subscribe/.ics).
+      `links="no"` hides Subscribe/.ics; `view="cards"` renders the next events as
+      cards, see below). Agenda day headings carry stable ids `d-YYYY-MM-DD`.
+      **Cards (built 17 Oct 2026, not placed on any page):** `view="cards"`, a `<ul>` of
+      `.mbc-card` items with a date badge (`aria-hidden`, a visually hidden full date in the
+      time line), title, time, place (plain text). With `more="/whats-on/events/"` each
+      title links to `more#d-YYYY-MM-DD` and the whole card is clickable through that
+      one link (stretched `::after`); a multi-day event under way uses today's date.
+      Columns by container query: 1, 2 from 30rem, 3 from 48rem. Pattern
+      `mbc/events-cards` (`recurring="no"`, `limit="3"`, `weeks="8"`).
       Google Calendar API v3 `events.list` server side (singleEvents, orderBy startTime,
       timeMin now, timeMax +weeks, timeZone Europe/London; `mbc_calendar_weeks` filter).
       Key and calendar ID are options `mbc_gcal_api_key` / `mbc_gcal_calendar_id` (not
@@ -461,8 +469,8 @@ Pages, menus and settings are managed via the WordPress REST API.
       `mbc_gcal_fixture` (token, fixed "now", items, `fail`) is honoured only with the token in
       `?mbc_cal_fixture=`; set and cleared over the same route. **Outbound IP of the sandbox
       server (for the key restriction): 45.145.100.121.** Live will differ (same Plesk server
-      probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (252 checks; section `attrs` covers the new
-      attributes with fixture data). Planned views (not built): `docs/calendar-views-plan.md`.
+      probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
+      attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
@@ -1027,7 +1035,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.5). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.6). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
@@ -1047,10 +1055,11 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
 | `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
+| `events-cards.php` | `mbc/events-cards` | "Coming up" as cards: `[mbc_calendar view="cards" weeks="8" limit="3" recurring="no" more="/whats-on/events/" ...]`; not placed yet (front page placement is John's decision) |
 | `this-week.php` | `mbc/this-week` | "Coming up": `[mbc_calendar weeks="1" limit="5" links="no" more="/whats-on/events/" empty="..."]`; slug kept, title renamed; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
-`slideshow-band` (editor inserts only). Pattern file count is now ten (nine when audited, plus `this-week`; `events-placeholder` became `events-calendar`).
+`slideshow-band` (editor inserts only). Pattern file count is now eleven (nine when audited, plus `this-week` and `events-cards`; `events-placeholder` became `events-calendar`).
 
 **Images rule:** the new templates place their own image; GeneratePress's
 featured-image banner is **never** output on them (`mbc_take_over_layout()`
@@ -1140,7 +1149,8 @@ attribute is too generous, `LADDER` = WordPress's size steps, `HEAVY`, `PNG`).
 A real image over 300 kB or over 3x FAILs; 2.3-3x and anything from the imported
 demo media is a WARN. It fails on the open findings below until they are fixed.
 The tools and
-their git repo live in `~/src/mbc-tests/` (outside this repo); photos in
+their git repo (remote `JohnDuffy271/mbc-tests` on GitHub; **push after every
+commit**) live in `~/src/mbc-tests/` (outside this repo); photos in
 `~/src/mbc-images/`.
 
 ## Looks (alternate token sets)
