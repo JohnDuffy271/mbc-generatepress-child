@@ -578,3 +578,11 @@ html body .mbc-band__social .wp-social-link a {
 	content: " \2192";
 	content: " \2192" / "";
 }
+
+/* ---- Logos (media flagged "This is a logo", inc/logo-flag.php): shown whole on a plain background; photos keep cropping.
+   Last in the file and doubled so it out-weighs the frame rules above (cover on Info images, contain on partner logos). ---- */
+body img.mbc-is-logo.mbc-is-logo {
+	object-fit: contain;
+	padding: var(--mbc-logo-padding);
+	background: var(--mbc-logo-bg);
+}

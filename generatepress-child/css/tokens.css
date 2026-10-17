@@ -120,6 +120,10 @@
 	--mbc-banner-ratio: 5 / 2; /* the banner frame, whatever the photo's own shape (preset 2240x896) */
 	--mbc-card-ratio: 3 / 2; /* a section card's picture (preset 900x600) */
 
+	/* Logos (media flagged "This is a logo"): shown whole on a plain background, whatever the look */
+	--mbc-logo-bg: #ffffff;
+	--mbc-logo-padding: var(--mbc-space-m);
+
 	/* Slideshow band (css/slideshow.css, js/slideshow.js) */
 	--mbc-slide-ratio: 4 / 3; /* the frame, whatever the photos' own shape */
 	--mbc-slide-fade: 500ms;
