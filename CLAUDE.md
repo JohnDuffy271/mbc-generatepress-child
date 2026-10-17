@@ -509,6 +509,44 @@ Pages, menus and settings are managed via the WordPress REST API.
       "Overview" entries; they were added so the four section pages are reachable from the
       menu (the parents are toggles only). Until the hub drafts are published, About Us (341)
       and Resources (623) are still blank pages behind their Overview links.
+- [x] **Section hubs (17 Oct 2026):** About Us, What's On, Mission and Resources share one layout:
+      banner (the page's featured image in a fixed 5:2 frame, `--mbc-banner-ratio`; none if
+      unset), title, two-sentence lead, the section's cards, then the section's own content.
+      Template `page-templates/hub.php` ("Section hub", variant `hub` of `template-parts/page.php`,
+      in `mbc_page_templates()` so no GeneratePress banner); pattern `mbc/section-hub`.
+      **`[mbc_section_index]`** (`inc/section-index.php`, styles in `css/patterns.css`, tokens
+      `--mbc-card-ratio` and `--mbc-banner-ratio`): the cards for a page are the submenu items under
+      the Primary-menu item that points to it; if that item is itself a child (the Overview item),
+      its siblings, leaving out the page's own item and any `#` toggle. Card: menu label, one line
+      (the page's excerpt, else its first 20 words via `mbc_nl_excerpt()`; a page-less link uses the
+      menu item's description, e.g. Services on YouTube: "Watch our Sunday services on YouTube.",
+      set by `bin/scaffold_site.py` `EXTERNAL_DESCRIPTION`), featured image (else a neutral
+      placeholder from `--mbc-border`), one stretched link per card, 44px title links, focus ring on
+      the card. A link to another site opens in a new tab (`noopener noreferrer`), shows an arrow
+      (`aria-hidden`) and the hidden text "(opens YouTube)" (or the host name for other sites).
+      Attributes: `heading_text` (an h2, dropped with the cards), `limit`, `page` (ID, for previews).
+      A hub's block draft (slug `<slug>-block-draft`) shows the cards of the page it will replace, so
+      no attribute is needed in the content. An empty section outputs nothing to visitors and a dashed
+      note to editors. **Cache:** one transient per menu (`mbc_si_1_<menu id>`, 12 h safety TTL),
+      cleared when a menu, menu item or page is saved, trashed or deleted, or a page's featured image
+      changes. **Page excerpts are enabled** (`add_post_type_support`); none of the pages has one yet,
+      so the cards show the fallback text: the list for John S is in `docs/content-todo.md`.
+      **State of the four parents before this work:** About Us (341): empty, template
+      `page-section-index.php` (not in the theme); Resources (623): empty, no template; Mission (374)
+      and What's On (327): Elementor. **Now:** Mission (374) is published on the hub template (John's
+      text kept; its first paragraph is the lead; banner is the old `Mission-Banner-selection.png`
+      1600x600, 724 kB, a stopgap: see `docs/image-wishlist.md`). **Drafts, awaiting John's review
+      (not published):** What's On 1094 (cards, then Coming up, timetable; waits for John S), About Us
+      1168 (banner: the page's existing photo 308) and Resources 1169 (no banner); the last two carry a
+      two-sentence introduction written by Claude and marked "Needs confirming: introduction (John S)"
+      (the placeholder scan catches the marker). Backups: `341-about-us-pre-hub.json`,
+      `623-resources-pre-hub.json`, `374-mission.json`, `327-whats-on-pre-rework.json`. The old
+      hand-kept list CSS (`.mbc-section-index` list) is gone. Check:
+      `~/src/mbc-tests/section_index_check.py [menu|fixture|external|looks]` (cards equal the menu;
+      adding and removing a fixture menu item and changing a fixture page's excerpt update the hub;
+      external marker; five looks at 360 and 1280px) and `contrast_check.py` with `CC_PAGES=/mission/`
+      (all five looks pass). Cards were not width-measured for `sizes`; re-run `measure_slots.py` and
+      add a slot if the grid changes.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -706,21 +744,20 @@ Pages, menus and settings are managed via the WordPress REST API.
          heading_text="Coming up" hide_empty="yes"]`; `links="no"` was added so no
          Subscribe links appear under the cards); the weekly timetable; "Ongoing
          support and groups" and the special-services line; "Groups and activities"
-         index cards (`mbc/section-index`, a hand-kept list in menu order: Sunday
-         Mornings, Events, Beacon Café, Rock Solid, Stepping Stones, Lunch Club,
-         Craft Group, House Groups); a "Full calendar" link to the Events page; "Get in
-         touch" with a `mailto:` link. "Sunday School" is mentioned in the timetable
+         index cards (now the dynamic `[mbc_section_index]`, see "Section hubs" in Status);
+         the "Full calendar" link was dropped (the strip's "See all events" and the Events card
+         cover it); "Get in with a `mailto:` link. "Sunday School" is mentioned in the timetable
          as text only: nothing links to the old Sunday School page (the only
          reference is an item in the old unassigned "Menu 1", which is not shown
          anywhere and goes when that menu is deleted). **The weekly timetable is
          maintained by hand and duplicates the calendar's recurring events (raise with
-         Andy)**; the section index list is also hand-kept and must follow the menu.
-         **Drafts 1093 (Mission) and 1094 (What's On) approved by John, 17 Oct 2026,
-         subject to changes coming soon; NOT published yet** (wait for John's go-ahead, then
-         `elementor_exit.py publish` with the backup-first step).
+         Andy)**.
+         **Mission (374) PUBLISHED 17 Oct 2026** (John's instruction) from draft 1093 with
+         the backup-first step (`374-mission.json`; all checks pass), same URL, now on the
+         Section hub template. **What's On draft 1094 is NOT published:** waiting for John S to
+         confirm the timetable (John, 17 Oct 2026).
          **Legacy (Elementor) pages remaining:** Rock Solid (60, held), the
-         parents Mission (374) and What's On (327) (drafts 1093 and 1094
-         approved, unpublished), and the unlinked drafts Welcome (8), Baptism (54) and
+         parent What's On (327; draft 1094 held for the timetable), and the unlinked drafts Welcome (8), Baptism (54) and
          Sunday School (556): none is in Andy's menu, so they are **not
          converted**; redirects approved by John (17 Oct 2026) for the cutover map:
          Welcome → Who we are, Baptism → What we believe, Sunday School →
@@ -890,14 +927,6 @@ Pages, menus and settings are managed via the WordPress REST API.
         one (above); John may supply a new one later. Editor how-to:
         `docs/newsletter/editor-guide.md`.
 
-## Pending (section hubs: in progress, 17 Oct 2026)
-
-- **Section hub pages** (About Us 341, What's On 327/draft 1094, Mission 374/draft 1093,
-  Resources 623): consistent layout (banner, title, two-sentence intro, section cards, then
-  section-specific content), the cards coming from a dynamic `[mbc_section_index]` built from
-  the Primary menu. John decided on 17 Oct 2026 that the "Overview" menu items are wanted, so
-  the item is unblocked; see Status for what is done.
-
 ## Parked / possible later
 
 - **Events month view (PARKED, John 17 Oct 2026; not planned):** `view="month"` for the Events
@@ -919,8 +948,9 @@ Pages, menus and settings are managed via the WordPress REST API.
 ## Questions for Andy
 
 **Raise with Andy:** the What's On weekly timetable is maintained by hand and duplicates the
-calendar's recurring events (two places to keep current); and the section index cards are a
-hand-kept list that must follow the menu.
+calendar's recurring events (two places to keep current); and (solved) the section index cards were a
+hand-kept list that must follow the menu. (The second is solved: the cards are now built
+from the menu, 17 Oct 2026.)
 
 **For Andy (information, 17 Oct 2026):** a new full-width **"Coming up" strip** (the next
 three one-off events as cards, each linking to its day on the Events page) has been added to
@@ -1116,7 +1146,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.7). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.8). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
@@ -1136,12 +1166,13 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
 | `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
-| `section-index.php` | `mbc/section-index` | Grid of link cards to a section's child pages (a hand-kept list; What's On draft 1094 uses it) |
+| `section-index.php` | `mbc/section-index` | Heading plus `[mbc_section_index]`: cards for a section's pages, built from the menu |
+| `section-hub.php` | `mbc/section-hub` | A section hub page: lead (two sentences) plus the section cards; used by the About Us and Resources drafts |
 | `events-cards.php` | `mbc/events-cards` | "Coming up" as cards: `[mbc_calendar view="cards" weeks="8" limit="3" recurring="no" more="/whats-on/events/" ...]`; placed on the Home page between Sunday Mornings and More at Moortown with `hide_empty="yes" strip="yes"` (17 Oct 2026) |
 | `this-week.php` | `mbc/this-week` | "Coming up": `[mbc_calendar weeks="1" limit="5" links="no" more="/whats-on/events/" empty="..."]`; slug kept, title renamed; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
-`slideshow-band` (editor inserts only). Pattern file count is now twelve (nine when audited, plus `this-week`, `events-cards` and `section-index`; `events-placeholder` became `events-calendar`).
+`slideshow-band` (editor inserts only). Pattern file count is now thirteen (nine when audited, plus `this-week`, `events-cards`, `section-index` and `section-hub`; `events-placeholder` became `events-calendar`).
 
 **Images rule:** the new templates place their own image; GeneratePress's
 featured-image banner is **never** output on them (`mbc_take_over_layout()`

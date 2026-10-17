@@ -67,3 +67,33 @@ Page IDs are in brackets. Re-run the scan after each batch of fixes.
 ## Not placeholders, but still to resolve
 - Run the Mailchimp test (your address only) before the newsletter cutover.
 - Photo consent (John S) for any new photos of identifiable people.
+
+
+## Section hubs (17 Oct 2026)
+
+### Introductions to approve (John S)
+Two-sentence introductions, written by Claude from what the pages contain, are on the drafts and
+marked "Needs confirming: introduction (John S)". Approve or reword, then remove the marker.
+| Draft | Introduction |
+|---|---|
+| About Us (draft 1168, for page 341) | "Moortown Baptist Church is a Baptist church in Moortown, Leeds. Here you can find out who we are, what we believe, who is on our team and the answers to some common questions." |
+| Resources (draft 1169, for page 623) | "Useful links and information for church members and visitors. Here you will find the Baptist Union and Yorkshire Baptist Association, our services on YouTube, room hire, our policies and documents, and ways to give." |
+
+What's On (draft 1094) and Mission (published) keep their existing text as the lead.
+
+### One-line descriptions for the section cards (John S)
+Each section card shows the page's **excerpt** (page editor > Excerpt box, one sentence, about 20
+words). None of the pages below has one yet, so the cards show the first 20 words of the page,
+which is often a heading or a label. Services on YouTube already has one (set in the menu item).
+| Section | Pages without an excerpt (ID) |
+|---|---|
+| About Us | Who we are (343), What we believe (345), Meet the team (42), FAQs (626) |
+| What's On | Sunday Mornings (44), Events (628), Beacon Café (251), Rock Solid (60), Stepping Stones (48), Lunch Club (56), Craft Group (565), House Groups (46) |
+| Mission | Mission Group (631), BMS (467), Leeds Furniture Mission (452), Mission Aviation Fellowship (455), Romania (525), Moortown Emergency Relief Fund (633), Pathways (634) |
+| Resources | BU & YBA (635), Room Hire (391), Policies & Documents (276), Giving (637) |
+
+Cards also show each page's featured image; where there is none they show a plain grey block. Pages
+with a featured image today: Craft Group, Romania, BMS, MAF, Leeds Furniture Mission, Room Hire,
+What we believe, Who we are, Meet the team, Policies & Documents, Beacon Café, Rock Solid, Lunch
+Club, Stepping Stones, Sunday Mornings. Rock Solid and Sunday Mornings' images are the old wide
+banners and will crop in the 3:2 card picture.
