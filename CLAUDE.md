@@ -453,6 +453,16 @@ Pages, menus and settings are managed via the WordPress REST API.
       one link (stretched `::after`); a multi-day event under way uses today's date.
       Columns by container query: 1, 2 from 30rem, 3 from 48rem. Pattern
       `mbc/events-cards` (`recurring="no"`, `limit="3"`, `weeks="8"`).
+      **Placed on the Home page (17 Oct 2026, John's decision):** between the Sunday
+      Mornings band and the More at Moortown slideshow, as a full-width "Coming up"
+      strip (`strip="yes"`: alternate surface, top border, tokens only). Page 182 uses
+      `hide_empty="yes"`: with no one-off events in the next 8 weeks, or the calendar
+      unavailable (still logged by `fetch.php`), the shortcode outputs nothing and its
+      heading (`heading_text`, an h2 inside the output) goes with it: no orphan heading,
+      no gap (tested). The general `mbc/events-cards` pattern keeps `hide_empty="no"`.
+      New attributes: `hide_empty`, `heading_text`, `strip`. Backup:
+      `182-home-pre-coming-up.json`. In the high-contrast look the strip and band
+      surfaces are both white, so only the border separates them.
       Google Calendar API v3 `events.list` server side (singleEvents, orderBy startTime,
       timeMin now, timeMax +weeks, timeZone Europe/London; `mbc_calendar_weeks` filter).
       Key and calendar ID are options `mbc_gcal_api_key` / `mbc_gcal_calendar_id` (not
@@ -846,6 +856,11 @@ Pages, menus and settings are managed via the WordPress REST API.
 
 ## Questions for Andy
 
+**For Andy (information, 17 Oct 2026):** a new full-width **"Coming up" strip** (the next
+three one-off events as cards, each linking to its day on the Events page) has been added to
+his front-page layout, between the Sunday Mornings and More at Moortown bands. It appears only
+when there are events and is invisible otherwise. Ask whether he wants it, and where.
+
 Open design questions to put to Andy Berry (John to ask):
 1. **Tagline wording:** "Loving God. Living Generously. Following Jesus."
    (his wireframe, used for now) or "Loving God, living generously,
@@ -1055,7 +1070,7 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
 | `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
-| `events-cards.php` | `mbc/events-cards` | "Coming up" as cards: `[mbc_calendar view="cards" weeks="8" limit="3" recurring="no" more="/whats-on/events/" ...]`; not placed yet (front page placement is John's decision) |
+| `events-cards.php` | `mbc/events-cards` | "Coming up" as cards: `[mbc_calendar view="cards" weeks="8" limit="3" recurring="no" more="/whats-on/events/" ...]`; placed on the Home page between Sunday Mornings and More at Moortown with `hide_empty="yes" strip="yes"` (17 Oct 2026) |
 | `this-week.php` | `mbc/this-week` | "Coming up": `[mbc_calendar weeks="1" limit="5" links="no" more="/whats-on/events/" empty="..."]`; slug kept, title renamed; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
