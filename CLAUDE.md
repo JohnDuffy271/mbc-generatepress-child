@@ -333,8 +333,12 @@ Pages, menus and settings are managed via the WordPress REST API.
       (16 Oct 2026): a photo of a service from the balcony sound desk (media
       1024, `sunday-service-20261016.jpg`, `band`, widest 4:3 crop, kept the
       sound desk at John's request; John S approved it for publication;
-      content backup `182-home-pre-sunday-image.json`). The other two bands
-      still use the placeholder. John approved the front page; the block editor opens
+      content backup `182-home-pre-sunday-image.json`). **Get in touch** (17 Oct
+      2026): a photo of the church foyer (media 1131, `mbc-foyer-20261017.jpg`,
+      `band`, crop 120,0,2297,1723 of `MBC_Foyer.jpg`, no people; **a placeholder
+      until a better photo is supplied**; content backup
+      `182-home-pre-foyer.json`). The remaining band (More at Moortown) is the
+      slideshow with placeholder library photos. John approved the front page; the block editor opens
       page 182 cleanly (no invalid blocks).
 - [x] Activity template (15 Oct 2026): `page-templates/activity.php`,
       `patterns/activity-details.php` (image, When, Where, Who it's for,
