@@ -33,6 +33,8 @@ MENU_NAME = "Primary"
 MENU_LOCATION = "primary"
 TOGGLE_CLASS = "mbc-menu-toggle"
 OVERVIEW_TITLE = "Overview"
+# The one-line text on an external link's section card (a page-less link has no excerpt to use).
+EXTERNAL_DESCRIPTION = "Watch our Sunday services on YouTube."
 
 # Template group -> theme file. Applied only if the file exists in the theme.
 TEMPLATES = {
@@ -426,7 +428,8 @@ def main():
             kslug, _kid, ktitle, _kg = kid[:4]
             if len(kid) > 4:
                 want_item(ktitle, top_item or -1, corder, "external", type="custom",
-                          url=YOUTUBE_SERVICES_URL, classes=[], target="_blank")
+                          url=YOUTUBE_SERVICES_URL, classes=[], target="_blank",
+                          description=EXTERNAL_DESCRIPTION)
             else:
                 want_item(ktitle, top_item or -1, corder, "page", type="post_type",
                           object="page", object_id=ids[kslug] or 0, classes=[], target="")

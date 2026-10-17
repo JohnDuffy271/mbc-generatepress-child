@@ -51,6 +51,7 @@ function mbc_page_templates() {
         'page-templates/info.php',
         'page-templates/mission-partner.php',
         'page-templates/listing.php',
+        'page-templates/hub.php',
     );
 }
 
