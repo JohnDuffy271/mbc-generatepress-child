@@ -580,8 +580,8 @@ Pages, menus and settings are managed via the WordPress REST API.
          "compare with live" will find nothing to compare.
          **Banner decision (John, 15 Oct 2026):** Craft Group now uses its
          crochet photo (the page's featured image, media 566, with alt text)
-         as the activity image; the tiger picture (media 568) stays in the
-         media library, unused. When converting a page, use its featured
+         as the activity image; the tiger picture (media 568) was kept in the
+         media library, unused, until John had it deleted on 17 Oct 2026. When converting a page, use its featured
          image as the activity image if the page has no image of its own,
          and describe it in the alt text. Very wide banner-shaped images
          (Sunday Mornings 8:3, Beacon Café about 4:1) crop heavily in the
@@ -1201,8 +1201,9 @@ pattern uses the same markup with placeholder images). Editor guide:
   2005 (date stamp cropped out; slightly soft). Not used, still in the inbox:
   Connections.JPG, Paint_Pots.JPG. The old placeholder slides (566 Craft Group, 299
   Beacon Café, 684 demo "2026", 568 tiger) are **not deleted**: 566, 299 and 684 are
-  used on other pages (Craft Group, Beacon Café, demo post 685); 568 is used only by
-  the trashed Craft Group draft 720 (delete on John's say-so). Page 182 content backup
+  used on other pages (Craft Group, Beacon Café, demo post 685); 568 (the tiger) was
+  **deleted on John's instruction, 17 Oct 2026** (it was used only by the trashed Craft Group
+  draft 720, which would now show a broken image if restored). Page 182 content backup
   before this change: `182-home-pre-slideshow-photos.json` (earlier ones:
   `182-home-pre-slideshow.json`, `182-home-pre-tiger-removal.json`).
 - **Tests:** `~/src/mbc-tests/slideshow_check.py` (all five looks at 360 and
