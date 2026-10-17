@@ -893,6 +893,12 @@ Pages, menus and settings are managed via the WordPress REST API.
 
 ## Parked / possible later
 
+- **Events month view (OUTSTANDING, noted 17 Oct 2026):** `view="month"` for the Events page is
+  planned but not built. Plan and John's decisions (Monday start, may go back 1 month, bounded to
+  +12 months, `?month=YYYY-MM` validated, per-month cache keys, List | Month toggle, grid at
+  container width 768px or more with the agenda below that) are in `docs/calendar-views-plan.md`
+  (about 3 days of work). Cards are built; month view is not.
+
 - **Contact form (PARKED 17 Oct 2026, not cancelled):** live has no form, so
   Contact Us has details only. Plan and John's decisions (Fluent Forms free,
   `website@` Rockhost SMTP, 90-day retention, no Turnstile unless spam
