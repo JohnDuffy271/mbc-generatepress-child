@@ -2,7 +2,7 @@
 /**
  * Events calendar: the [mbc_calendar] shortcode, an agenda grouped by day.
  *
- *   [mbc_calendar weeks="8" limit="0" heading="3" links="yes" recurring="yes"
+ *   [mbc_calendar weeks="8" limit="0" heading="3" links="yes" recurring="yes" view="list|cards"
  *                 more="/whats-on/events/" more_label="See all events" empty="Nothing planned."]
  *
  * links="no" hides the Subscribe/.ics links. recurring="no" leaves out instances of repeating events.
@@ -58,6 +58,7 @@ function mbc_calendar_shortcode( $atts ) {
         'more'       => '',
         'more_label' => '',
         'empty'      => '',
+        'view'       => 'list',
     ), $atts, 'mbc_calendar' );
     $h_day   = max( 2, min( 5, (int) $atts['heading'] ) );
     $h_event = min( 6, $h_day + 1 );
@@ -85,8 +86,9 @@ function mbc_calendar_shortcode( $atts ) {
     $more_label = '' !== trim( (string) $atts['more_label'] ) ? trim( (string) $atts['more_label'] ) : __( 'See all events', 'generatepress-child' );
     $empty_text = '' !== trim( (string) $atts['empty'] ) ? trim( (string) $atts['empty'] ) : __( 'There are no events in the diary just now. Please check again soon.', 'generatepress-child' );
 
+    $cards  = 'cards' === strtolower( (string) $atts['view'] );
     $source = 'fresh' === $data['source'] ? 'fresh' : ( 'last-good' === $data['source'] ? 'last-good' : 'fallback' );
-    $out    = '<div class="mbc-cal" data-source="' . esc_attr( $source ) . '">';
+    $out    = '<div class="mbc-cal' . ( $cards ? ' mbc-cal--cards' : '' ) . '" data-source="' . esc_attr( $source ) . '">';
 
     if ( 'none' === $data['source'] ) {
         $out .= '<p class="mbc-cal__empty">' . esc_html__( 'Our events calendar is not available just now.', 'generatepress-child' );
@@ -96,6 +98,8 @@ function mbc_calendar_shortcode( $atts ) {
         $out .= '</p>';
     } elseif ( ! $events ) {
         $out .= '<p class="mbc-cal__empty">' . esc_html( $empty_text ) . '</p>';
+    } elseif ( $cards ) {
+        $out .= mbc_calendar_cards_html( $events, $h_day, $now, $more_url );
     } else {
         $days = array();
         foreach ( $events as $e ) {
@@ -105,7 +109,7 @@ function mbc_calendar_shortcode( $atts ) {
         $out .= '<ol class="mbc-cal__days">';
         foreach ( $days as $date => $list ) {
             $d    = new DateTimeImmutable( $date, $tz );
-            $out .= '<li class="mbc-cal__day"><h' . $h_day . ' class="mbc-cal__date"><time datetime="' . esc_attr( $date ) . '">'
+            $out .= '<li class="mbc-cal__day"><h' . $h_day . ' class="mbc-cal__date" id="d-' . esc_attr( $date ) . '"><time datetime="' . esc_attr( $date ) . '">'
                 . esc_html( mbc_calendar_day_label( $d, $now ) ) . '</time></h' . $h_day . '><ul class="mbc-cal__events">';
             foreach ( $list as $e ) {
                 $out .= mbc_calendar_event_html( $e, $h_event, $now );
@@ -126,7 +130,8 @@ function mbc_calendar_shortcode( $atts ) {
     return $out . '</div>';
 }
 
-function mbc_calendar_event_html( array $e, $h, DateTimeInterface $now ) {
+/** The "10am – 12pm" / "All day, until ..." line for an event, as safe HTML. */
+function mbc_calendar_when_html( array $e, DateTimeInterface $now ) {
     $tz   = mbc_calendar_tz();
     $when = '';
     if ( $e['all_day'] ) {
@@ -148,7 +153,11 @@ function mbc_calendar_event_html( array $e, $h, DateTimeInterface $now ) {
             }
         }
     }
+    return $when;
+}
 
+function mbc_calendar_event_html( array $e, $h, DateTimeInterface $now ) {
+    $when = mbc_calendar_when_html( $e, $now );
     $out  = '<li class="mbc-cal__event"><p class="mbc-cal__when">' . $when . '</p>';
     $out .= '<h' . (int) $h . ' class="mbc-cal__title">' . esc_html( $e['title'] ) . '</h' . (int) $h . '>';
     if ( '' !== $e['location'] ) {
@@ -167,4 +176,36 @@ function mbc_calendar_event_html( array $e, $h, DateTimeInterface $now ) {
         }
     }
     return $out . '</li>';
+}
+
+/**
+ * view="cards": the next events as cards (date badge, title, time, place). With a `more` URL each title
+ * links to that page at the event's day (id="d-YYYY-MM-DD" on the agenda's day headings); the whole card
+ * is clickable through the title link (CSS), so there is one link per card and the place is plain text.
+ */
+function mbc_calendar_cards_html( array $events, $h, DateTimeInterface $now, $more_url ) {
+    $tz    = mbc_calendar_tz();
+    $today = $now->format( 'Y-m-d' );
+    $out   = '<ul class="mbc-cal__cards">';
+    foreach ( $events as $e ) {
+        $date  = max( $e['start_date'], $today ); // The same rule as the agenda: under way means today.
+        $d     = new DateTimeImmutable( $date, $tz );
+        $title = esc_html( $e['title'] );
+        if ( '' !== $more_url ) {
+            $title = '<a href="' . esc_url( $more_url . '#d-' . $date ) . '">' . $title . '</a>';
+        }
+        $out .= '<li class="mbc-card mbc-cal__card">'
+            . '<time class="mbc-cal__badge" datetime="' . esc_attr( $date ) . '" aria-hidden="true">'
+            . '<span class="mbc-cal__badge-day">' . esc_html( $d->format( 'D' ) ) . '</span>'
+            . '<span class="mbc-cal__badge-num">' . esc_html( $d->format( 'j' ) ) . '</span>'
+            . '<span class="mbc-cal__badge-month">' . esc_html( $d->format( 'M' ) ) . '</span></time>'
+            . '<div class="mbc-cal__card-body"><h' . (int) $h . ' class="mbc-cal__title">' . $title . '</h' . (int) $h . '>'
+            . '<p class="mbc-cal__when"><span class="screen-reader-text">' . esc_html( $d->format( 'l j F' ) ) . ', </span>'
+            . mbc_calendar_when_html( $e, $now ) . '</p>';
+        if ( '' !== $e['location'] ) {
+            $out .= '<p class="mbc-cal__where">' . esc_html( $e['location'] ) . '</p>';
+        }
+        $out .= '</div></li>';
+    }
+    return $out . '</ul>';
 }

@@ -18,6 +18,7 @@
 }
 
 .mbc-cal__date {
+	scroll-margin-top: var(--mbc-space-xl);
 	margin: 0 0 var(--mbc-space-xs);
 	padding-block-end: var(--mbc-space-xs);
 	border-bottom: var(--mbc-border-width) solid var(--mbc-border);
@@ -99,4 +100,91 @@
 .mbc-cal__all a {
 	display: inline-block;
 	padding-block: var(--mbc-space-xs);
+}
+
+/* view="cards": columns follow the width of the column the cards sit in, not the viewport. */
+.mbc-cal--cards {
+	max-width: none;
+	container-type: inline-size;
+}
+
+.mbc-cal__cards {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--mbc-space-m);
+}
+
+.mbc-cal__card {
+	position: relative;
+	flex-direction: row;
+	align-items: flex-start;
+	gap: var(--mbc-space-s);
+	height: auto;
+	padding: var(--mbc-space-m);
+}
+
+.mbc-cal__badge {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	align-items: center;
+	min-width: 3.5rem;
+	padding: var(--mbc-space-2xs) var(--mbc-space-xs);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-button-bg);
+	color: var(--mbc-button-text);
+	line-height: 1.1;
+	text-align: center;
+}
+
+.mbc-cal__badge-day,
+.mbc-cal__badge-month {
+	font-size: var(--mbc-step--1);
+	text-transform: uppercase;
+}
+
+.mbc-cal__badge-num {
+	font-size: var(--mbc-step-2);
+	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-cal__card-body {
+	min-width: 0;
+}
+
+.mbc-cal__card .mbc-cal__title {
+	margin-top: 0;
+	overflow-wrap: anywhere;
+}
+
+.mbc-cal__card .mbc-cal__title a {
+	color: var(--mbc-text);
+}
+
+/* One link per card: the title link stretches over the whole card. */
+.mbc-cal__card .mbc-cal__title a::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+
+.mbc-cal__card:focus-within {
+	outline: var(--mbc-focus-width) solid var(--mbc-focus);
+	outline-offset: var(--mbc-space-3xs);
+}
+
+.mbc-cal__card .mbc-cal__title a:focus-visible {
+	outline: none;
+}
+
+@container (min-width: 30rem) {
+	.mbc-cal__cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@container (min-width: 48rem) {
+	.mbc-cal__cards {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
