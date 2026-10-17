@@ -98,7 +98,7 @@ a paragraph that opens with a bold label, or any placeholder text ("Add the ..."
 | Craft Group (565) | A relaxed Thursday afternoon craft group and warm space. No experience needed. |
 | House Groups (46) | Small groups meeting through the week to read the Bible, pray and share life. |
 
-**Drafted by Claude, NOT set yet (from each page's own text; John S to confirm or reword, then they are set):**
+**Drafted by Claude from each page's own text and SET on 17 Oct 2026 (John S to confirm or reword; the four marked "Wait" are deliberately empty):**
 | Section | Page (ID) | Draft excerpt |
 |---|---|---|
 | About Us | Who we are (343) | A local church of individuals and families who seek to love God and live generously. |
@@ -117,8 +117,7 @@ a paragraph that opens with a bold label, or any placeholder text ("Add the ..."
 | Resources | Policies & Documents (276) | Legal and governance documents for the church, as PDFs you can read or download. |
 | Resources | Giving (637) | How to give to the work of the church. (Page text not written yet.) |
 Services on YouTube has its description on the menu item ("Watch our Sunday services on YouTube.").
-Until these are set, the cards on the published Mission page and the About Us and Resources drafts show the page's
-first clean sentence (cut at 20 words) or nothing.
+The four "Wait" pages have no excerpt, so their cards show no description until the pages are written.
 
 ### Photos: consent and replacements (John S)
 - **Stepping Stones photo (media 443):** shows an identifiable child. Consent check needed.
