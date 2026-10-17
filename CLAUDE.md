@@ -1068,8 +1068,11 @@ pattern uses the same markup with placeholder images). Editor guide:
   comment attributes as `\u002d\u002d` (match that when editing page content
   by script); core's gallery CSS needs `:not(#id)` to be out-weighed; a mouse
   swipe needs `draggable=false` on the images.
-- **Content now:** placeholder photos from the media library (566, 299, 684,
-  568, captions on the first two) until John supplies real ones via the inbox
+- **Content now:** placeholder photos from the media library (566, 299, 684;
+  the tiger, 568, was removed on 17 Oct 2026, so three slides; backup
+  `~/src/mbc-elementor-backups/182-home-pre-tiger-removal.json`; captions on
+  the first two). Note 684 is demo media deleted at cutover, so real photos
+  must replace it first until John supplies real ones via the inbox
   (`image_prep.py ... band`). Page 182 content backups before this work:
   `~/src/mbc-elementor-backups/182-home-pre-slideshow.json`.
 - **Tests:** `~/src/mbc-tests/slideshow_check.py` (all five looks at 360 and
