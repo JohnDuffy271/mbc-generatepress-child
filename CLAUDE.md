@@ -612,7 +612,8 @@ Pages, menus and settings are managed via the WordPress REST API.
          1093 (text kept, "less then" fixed, no CTA); What's On draft 1094
          (hand-built blocks: weekly timetable by day, the calendar iframe
          dropped because the Events page (628) owns the calendar, the link to
-         a live-only post replaced by a link to Events, the self-link to the
+         the demo post "Who, what, where and when?" (deleted at cutover)
+         replaced by a link to Events, the self-link to the
          live domain dropped). Neither is published. Both pages stay menu
          toggles in the new design, so these are reachable-by-URL content
          pages (see Questions for Andy 5). Live comparison: live Mission is a
