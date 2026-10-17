@@ -29,7 +29,7 @@ Page IDs are in brackets. Re-run the scan after each batch of fixes.
 |---|---|
 | Mission Group (631) | Summary, website, how to support, logo or image |
 | Moortown Emergency Relief Fund (633) | Summary, website or details, how to support, logo or image |
-| Pathways (634) | Summary, website, how to support, logo or image |
+| Pathways (634) | Summary, how to support (Pray/Give/Get involved) and a logo or image; the website button is done (17 Oct 2026, https://pathwaysleeds.org/) |
 | Leeds Furniture Mission (452) | Nothing now (support text published 17 Oct 2026); waits for the organisation's new name, then update the name, title, menu label and slug with a redirect, and confirm an email address before adding one |
 | Romania (525) | The year the links began (the sources disagree: "mid 70s" versus 1991), the support lines, a photo (placeholder now) |
 | BMS, MAF, Leeds Furniture Mission | Official logos with permission (illustrations or a photo of the van stand in) |

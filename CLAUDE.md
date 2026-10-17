@@ -659,6 +659,7 @@ Pages, menus and settings are managed via the WordPress REST API.
          support lines, placeholder image, because the Google Maps
          screenshot was dropped). Review notes:
          `~/src/mbc-tests/review/elementor-batch-3-review.md`.
+         **Pathways website (17 Oct 2026):** page 634's partner button now reads "Visit the Pathways website" and links to `https://pathwaysleeds.org/` in the same tab (no `target`, unlike the BMS/MAF buttons); backup `634-pathways-pre-website.json`. The rest of the page is still the unfilled template (summary, support text, image).
          **Verification fails loudly:** `elementor_exit.py publish` runs its
          post-publish checks itself and exits non-zero on any failure;
          `publish-batch PAGE:DRAFT ...` stops at the first failure; `verify
