@@ -871,6 +871,23 @@ Pages, menus and settings are managed via the WordPress REST API.
         one (above); John may supply a new one later. Editor how-to:
         `docs/newsletter/editor-guide.md`.
 
+## Pending (written 17 Oct 2026, not started)
+
+- **Section hub pages** (About Us 341, What's On 327/draft 1094, Mission 374/draft 1093,
+  Resources 623): make them consistent (banner, title, two-sentence intro, section cards, then
+  section-specific content). The brief: replace the hand-kept `mbc/section-index` list with a
+  dynamic `[mbc_section_index]` built from the Primary menu (submenu items under the menu item
+  that points to the current page, skipping an "Overview" item; card = title, excerpt or first
+  ~20 words, featured image or a token-based placeholder; external links marked "(opens
+  YouTube)"; cached per menu, invalidated on menu or page save); report each parent's state;
+  convert Resources and About Us to blocks as drafts (backup first) with two-sentence intros
+  marked for John S in `docs/content-todo.md`; list child pages lacking an excerpt (John S) and
+  enable page excerpts; tests (fixture menu add/remove, external marker, all looks, 360/1280);
+  note for Andy. **Blocked on a prerequisite:** John's brief says to do it after "Overview"
+  menu items from an earlier prompt that never reached this session. The Primary menu has no
+  Overview items (the four parents are `#` toggles), so ask John whether to add them (first
+  child under each parent, pointing at the hub pages) or to match a hub's submenu another way.
+
 ## Parked / possible later
 
 - **Contact form (PARKED 17 Oct 2026, not cancelled):** live has no form, so
