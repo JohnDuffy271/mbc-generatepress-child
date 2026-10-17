@@ -95,5 +95,4 @@ which is often a heading or a label. Services on YouTube already has one (set in
 Cards also show each page's featured image; where there is none they show a plain grey block. Pages
 with a featured image today: Craft Group, Romania, BMS, MAF, Leeds Furniture Mission, Room Hire,
 What we believe, Who we are, Meet the team, Policies & Documents, Beacon Café, Rock Solid, Lunch
-Club, Stepping Stones, Sunday Mornings. Rock Solid and Sunday Mornings' images are the old wide
-banners and will crop in the 3:2 card picture.
+Club, Stepping Stones, Sunday Mornings. Sunday Mornings (8:3) and Beacon Café (about 4:1) have very wide images that will crop heavily in the 3:2 card picture.
