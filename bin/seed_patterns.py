@@ -56,7 +56,7 @@ SEEDS = [
     ("pathways", 634, "mission-partner", "page-templates/mission-partner.php"),
     # Listing pages
     ("news", 624, "news-listing", "page-templates/listing.php"),
-    ("events", 628, "events-placeholder", "page-templates/listing.php"),
+    ("events", 628, "events-calendar", "page-templates/listing.php"),
     ("contact-us", 211, "contact-placeholder", "page-templates/listing.php"),
 ]
 

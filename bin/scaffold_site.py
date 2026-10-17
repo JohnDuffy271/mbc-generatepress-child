@@ -156,7 +156,7 @@ class WP:
         self._conn = None
 
     def call(self, method, route, params=None, body=None):
-        path = f"/wp-json/wp/v2/{route}"
+        path = route if route.startswith("/wp-json/") else f"/wp-json/wp/v2/{route}"
         if params:
             path += "?" + urllib.parse.urlencode(params)
         data = json.dumps(body).encode() if body is not None else None

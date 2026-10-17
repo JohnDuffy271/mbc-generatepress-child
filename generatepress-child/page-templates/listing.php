@@ -5,7 +5,7 @@
  *
  * Listing pages: News (a Query Loop of posts), Events and Contact. The
  * content is a block pattern (patterns/news-listing.php,
- * events-placeholder.php, contact-placeholder.php), edited in the block
+ * events-calendar.php, contact-placeholder.php), edited in the block
  * editor.
  */
 

@@ -16,6 +16,9 @@ require_once get_stylesheet_directory() . '/inc/looks.php';
 require_once get_stylesheet_directory() . '/inc/post-helpers.php';
 require_once get_stylesheet_directory() . '/inc/slideshow.php';
 require_once get_stylesheet_directory() . '/inc/image-sizes.php';
+require_once get_stylesheet_directory() . '/inc/calendar/config.php';
+require_once get_stylesheet_directory() . '/inc/calendar/fetch.php';
+require_once get_stylesheet_directory() . '/inc/calendar/render.php';
 require_once get_stylesheet_directory() . '/inc/newsletter/cpt.php';
 require_once get_stylesheet_directory() . '/inc/demo-import.php'; // TEMPORARY: remove before launch.
 
