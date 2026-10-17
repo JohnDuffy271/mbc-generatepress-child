@@ -57,18 +57,75 @@ function mbc_section_index_is_external( $url ) {
 }
 
 /**
- * One-line description of a page: its excerpt, else its first words as plain prose.
+ * Text that must never reach a card: the block patterns' prompts and the "needs confirming" markers. Keep in step with
+ * MARKERS in bin/scan_placeholders.py.
+ */
+function mbc_section_index_is_placeholder( $text ) {
+    $patterns = array(
+        '/needs?\s+confirm(?:ing|ation)|to be confirmed|\bTBC\b/i',
+        '/needs?\s+local\s+copy/i',
+        '/\[describe\]|\bTODO\b|\bFIXME\b|lorem ipsum/i',
+        '/Add the day and time|Add the room or address|Add who is welcome|Add a name and an email/i',
+        '/Describe what happens|Add a short introduction|Add a heading|Add the main text of the page/i',
+        '/Add a short summary of this partner|Add how people|Add a sentence or two about how this partnership/i',
+        '/Write a short introduction|Write the main text here|Delete this box if the page/i',
+        '/will appear here|will be listed here|coming soon/i',
+        '/^\s*Add\s/i',
+    );
+    foreach ( $patterns as $pattern ) {
+        if ( preg_match( $pattern, $text ) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * First clean paragraph of body text from parsed blocks. Skips the key-facts block (class mbc-facts), call-to-action
+ * boxes, shortcodes, paragraphs that open with a bold label ("When ...") and anything that is a placeholder.
+ */
+function mbc_section_index_first_paragraph( array $blocks ) {
+    foreach ( $blocks as $block ) {
+        $class = isset( $block['attrs']['className'] ) ? (string) $block['attrs']['className'] : '';
+        if ( preg_match( '/\bmbc-(?:facts|cta)\b/', $class ) ) {
+            continue;
+        }
+        if ( 'core/paragraph' === $block['blockName'] ) {
+            $html = (string) $block['innerHTML'];
+            if ( preg_match( '/^\s*<p[^>]*>\s*<(?:strong|b)>/i', $html ) ) {
+                continue;
+            }
+            $text = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) );
+            if ( str_word_count( $text ) >= 5 && ! mbc_section_index_is_placeholder( $text ) ) {
+                return $text;
+            }
+            continue;
+        }
+        if ( ! empty( $block['innerBlocks'] ) && in_array( $block['blockName'], array( 'core/group', 'core/media-text', 'core/column', 'core/columns' ), true ) ) {
+            $found = mbc_section_index_first_paragraph( $block['innerBlocks'] );
+            if ( '' !== $found ) {
+                return $found;
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * One-line description of a page: its excerpt, else its first clean paragraph, else nothing. Never text that looks
+ * like a placeholder or comes from the key-facts block.
  */
 function mbc_section_index_description( $page_id ) {
-    if ( function_exists( 'mbc_nl_excerpt' ) ) {
-        return mbc_nl_excerpt( $page_id, MBC_SI_WORDS );
-    }
     $post = get_post( $page_id );
     if ( ! $post ) {
         return '';
     }
     $manual = trim( wp_strip_all_tags( (string) $post->post_excerpt ) );
-    return '' !== $manual ? $manual : wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ), MBC_SI_WORDS, '…' );
+    if ( '' !== $manual ) {
+        return mbc_section_index_is_placeholder( $manual ) ? '' : $manual;
+    }
+    $text = mbc_section_index_first_paragraph( parse_blocks( (string) $post->post_content ) );
+    return '' === $text ? '' : wp_trim_words( $text, MBC_SI_WORDS, '…' );
 }
 
 /**
