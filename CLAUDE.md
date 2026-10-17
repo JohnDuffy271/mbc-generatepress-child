@@ -605,9 +605,24 @@ Pages, menus and settings are managed via the WordPress REST API.
          post-publish checks itself and exits non-zero on any failure;
          `publish-batch PAGE:DRAFT ...` stops at the first failure; `verify
          PAGE DRAFT` runs the checks alone.
+         **Batch 4 (parents), 17 Oct 2026: drafts only, awaiting John's
+         review.** Mission (374) and What's On (327) backed up
+         (`~/src/mbc-elementor-backups/374-mission.json`, `327-whats-on.json`)
+         and converted to block drafts on the Info template: Mission draft
+         1093 (text kept, "less then" fixed, no CTA); What's On draft 1094
+         (hand-built blocks: weekly timetable by day, the calendar iframe
+         dropped because the Events page (628) owns the calendar, the link to
+         a live-only post replaced by a link to Events, the self-link to the
+         live domain dropped). Neither is published. Both pages stay menu
+         toggles in the new design, so these are reachable-by-URL content
+         pages (see Questions for Andy 5). Live comparison: live Mission is a
+         2020 text, live What's On has no body, so the sandbox text is the
+         more current. The timetable's times and venues need John S's check.
          **Legacy (Elementor) pages remaining:** Rock Solid (60, held), the
-         parents Mission (374) and What's On (327), and the drafts Welcome
-         (8), Baptism (54) and Sunday School (556) (see Questions for Andy).
+         parents Mission (374) and What's On (327) (drafts 1093 and 1094
+         await review), and the unlinked drafts Welcome (8), Baptism (54) and
+         Sunday School (556): none is in Andy's menu, so they are **not
+         converted**; proposed redirect targets are in `docs/url-changes.md`.
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and

@@ -26,3 +26,22 @@ show what the old URL does today: a 404 needs a redirect before launch.
 | `/mission/furniture-store` | `/mission/leeds-furniture-mission` | 404 |  |
 | `/mission/baptist-missionary-society` | `/mission/bms` | 404 |  |
 | `/church-life/craft-group-2` | `/whats-on/craft-group` | 404 |  |
+
+## Pages with no place in Andy's menu (proposed redirects, 17 Oct 2026)
+
+Andy's page menu (see CLAUDE.md) has no Welcome, Baptism or Sunday School
+page. All three are unlinked Elementor **drafts** on the sandbox, so they
+have no public sandbox URL. They are not converted and nothing is unpublished
+or deleted yet. The live old paths are not known until the live-old map is
+built (read-only, with the hook exception); add them here then. Proposed
+targets, for John and Andy to confirm (written by hand, not by the
+scaffold script):
+
+| Draft (id) | What it says | Proposed target | Why |
+|---|---|---|---|
+| Welcome (8) | Two paragraphs of welcome ("join us this Sunday") | `/about-us/who-we-are/` | Same message as the front page hero and Who we are; nothing to keep |
+| Baptism (54) | Believer's baptism, how to ask | `/about-us/what-we-believe/` | That page already mentions baptism five times; the page's text (and how to ask) could be folded in |
+| Sunday School (556) | Children learn the sermon theme next door; three photos (media 557, 559, 560) | `/whats-on/sunday-mornings/` | That page does not mention Sunday School yet; fold in a short paragraph and keep the photos if wanted |
+
+If Andy wants Baptism as its own page, make it an Info page under About Us
+and redirect nothing. Open question 6 in CLAUDE.md stays until he answers.
