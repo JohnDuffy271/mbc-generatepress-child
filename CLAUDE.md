@@ -461,7 +461,14 @@ Pages, menus and settings are managed via the WordPress REST API.
       heading (`heading_text`, an h2 inside the output) goes with it: no orphan heading,
       no gap (tested). The general `mbc/events-cards` pattern keeps `hide_empty="no"`.
       New attributes: `hide_empty`, `heading_text`, `strip`. Backup:
-      `182-home-pre-coming-up.json`. In the high-contrast look the strip and band
+      `182-home-pre-coming-up.json`. **Strip refinements (17 Oct 2026):** with `heading_text` and
+      `more`, the "See all events" link sits on the right of the heading row (flex, baseline-aligned,
+      under the heading below 30rem of container width; real link named "See all events", arrow is
+      `aria-hidden`) and the link paragraph below the cards is gone; cards keep their 3-column
+      width whatever the count; a card shows the venue name only (text before the first comma),
+      then the first 15 words of the description (plain text, ellipsis, omitted if none); the
+      Events page agenda keeps the full address, map link and description; the gap below the
+      cards equals the band padding; links are at least `--mbc-tap-target` tall. In the high-contrast look the strip and band
       surfaces are both white, so only the border separates them.
       Google Calendar API v3 `events.list` server side (singleEvents, orderBy startTime,
       timeMin now, timeMax +weeks, timeZone Europe/London; `mbc_calendar_weeks` filter).
@@ -670,6 +677,23 @@ Pages, menus and settings are managed via the WordPress REST API.
          pages (see Questions for Andy 5). Live comparison: live Mission is a
          2020 text, live What's On has no body, so the sandbox text is the
          more current. The timetable's times and venues need John S's check.
+         **Draft 1094 reworked 17 Oct 2026 (still a draft, awaiting John's
+         review; backup of the published Elementor page
+         `327-whats-on-pre-rework.json`):** two-sentence intro (no mention of
+         Google Calendar); a "Coming up" cards strip (`[mbc_calendar view="cards"
+         recurring="no" limit="3" links="no" more="/whats-on/events/"
+         heading_text="Coming up" hide_empty="yes"]`; `links="no"` was added so no
+         Subscribe links appear under the cards); the weekly timetable; "Ongoing
+         support and groups" and the special-services line; "Groups and activities"
+         index cards (`mbc/section-index`, a hand-kept list in menu order: Sunday
+         Mornings, Events, Beacon Café, Rock Solid, Stepping Stones, Lunch Club,
+         Craft Group, House Groups); a "Full calendar" link to the Events page; "Get in
+         touch" with a `mailto:` link. "Sunday School" is mentioned in the timetable
+         as text only: nothing links to the old Sunday School page (the only
+         reference is an item in the old unassigned "Menu 1", which is not shown
+         anywhere and goes when that menu is deleted). **The weekly timetable is
+         maintained by hand and duplicates the calendar's recurring events (raise with
+         Andy)**; the section index list is also hand-kept and must follow the menu.
          **Legacy (Elementor) pages remaining:** Rock Solid (60, held), the
          parents Mission (374) and What's On (327) (drafts 1093 and 1094
          await review), and the unlinked drafts Welcome (8), Baptism (54) and
@@ -855,6 +879,10 @@ Pages, menus and settings are managed via the WordPress REST API.
   cutover.
 
 ## Questions for Andy
+
+**Raise with Andy:** the What's On weekly timetable is maintained by hand and duplicates the
+calendar's recurring events (two places to keep current); and the section index cards are a
+hand-kept list that must follow the menu.
 
 **For Andy (information, 17 Oct 2026):** a new full-width **"Coming up" strip** (the next
 three one-off events as cards, each linking to its day on the Events page) has been added to
@@ -1050,7 +1078,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.6). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.7). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
@@ -1070,11 +1098,12 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
 | `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
+| `section-index.php` | `mbc/section-index` | Grid of link cards to a section's child pages (a hand-kept list; What's On draft 1094 uses it) |
 | `events-cards.php` | `mbc/events-cards` | "Coming up" as cards: `[mbc_calendar view="cards" weeks="8" limit="3" recurring="no" more="/whats-on/events/" ...]`; placed on the Home page between Sunday Mornings and More at Moortown with `hide_empty="yes" strip="yes"` (17 Oct 2026) |
 | `this-week.php` | `mbc/this-week` | "Coming up": `[mbc_calendar weeks="1" limit="5" links="no" more="/whats-on/events/" empty="..."]`; slug kept, title renamed; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
-`slideshow-band` (editor inserts only). Pattern file count is now eleven (nine when audited, plus `this-week` and `events-cards`; `events-placeholder` became `events-calendar`).
+`slideshow-band` (editor inserts only). Pattern file count is now twelve (nine when audited, plus `this-week`, `events-cards` and `section-index`; `events-placeholder` became `events-calendar`).
 
 **Images rule:** the new templates place their own image; GeneratePress's
 featured-image banner is **never** output on them (`mbc_take_over_layout()`
