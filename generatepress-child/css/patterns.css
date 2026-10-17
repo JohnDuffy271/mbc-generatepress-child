@@ -467,3 +467,43 @@ html body .mbc-band__social .wp-social-link a {
 .mbc-nl-issue__email {
 	margin: var(--mbc-space-xl) 0 0;
 }
+
+/* ---- Section index (pattern mbc/section-index): a grid of link cards ---- */
+.wp-block-list.mbc-section-index {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+	gap: var(--mbc-space-s);
+	margin: var(--mbc-space-m) 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mbc-section-index li {
+	margin: 0;
+}
+
+.mbc-section-index a {
+	display: flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+	height: 100%;
+	padding: var(--mbc-space-s) var(--mbc-space-m);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-surface-alt);
+	color: var(--mbc-text);
+	font-size: var(--mbc-step-1);
+	font-weight: var(--mbc-weight-strong);
+	text-decoration: none;
+}
+
+.mbc-section-index a:hover {
+	background: var(--mbc-hover-bg);
+	text-decoration: underline;
+}
+
+/* A paragraph that holds one "more" link ends in an arrow (decorative: not read out). */
+.mbc-link-more a::after {
+	content: " \2192";
+	content: " \2192" / "";
+}
