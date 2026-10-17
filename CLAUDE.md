@@ -365,12 +365,14 @@ Pages, menus and settings are managed via the WordPress REST API.
       `mbc-menu-toggle` (the four parents, URL `#`) render as
       `<button aria-expanded aria-controls>`, never links. See "Header and
       footer architecture" below.
-- [ ] Header/footer pending fixes (16 Oct 2026):
-      - Keep the brand name on one line at 1024px and above (it wraps at
-        1280px).
-      - Remove the sidebar site-wide via the `generate_sidebar_layout`
-        filter (old pages still show GP's Search/Recent Posts/Recent
-        Comments widgets).
+- [ ] Header/footer pending fixes (16 Oct 2026; only Cookies is still open):
+      - [x] Brand name on one line at 1024px and above: `.mbc-header__name`
+        `white-space: nowrap` and `.mbc-header__brand` `flex-shrink: 0`
+        inside the 1024px media query in `css/header.css`; menu links and
+        toggles are `nowrap` too, with padding eased by `clamp()`. Verified
+        in the code on 17 Oct 2026; `header_check.py` covers 1024/1280px.
+      - [x] Sidebar removed site-wide: `mbc_no_sidebar()` on the
+        `generate_sidebar_layout` filter (`inc/layout.php:59`).
       - The `footer` menu location now has the "Footer" menu (id 15, made
         by `bin/setup_footer_menu.py`, idempotent) with one link, Privacy
         Notice, to the sandbox copy of the PDF (media 766). Cookies is
@@ -576,14 +578,7 @@ Pages, menus and settings are managed via the WordPress REST API.
          S's approval. Contact Us has no form (plugin undecided): details,
          office-hours note, a "View on Google Maps" button instead of the
          Google iframe, social links; the `contact-placeholder` pattern
-         holds the same content (theme version 1.0.3).
-         **Legacy (Elementor) pages remaining, 11:** Mission partners BMS
-         (467), Leeds Furniture Mission (452), Mission Aviation Fellowship
-         (455), Romania (525); Rock Solid (60, held: draft 727 waits for
-         John S's copy); Services on YouTube (350, holds the
-         `[mbc_youtube_feed]` shortcode); the parent pages Mission (374,
-         section index template) and What's On (327); and the unlinked
-         drafts Welcome (8), Baptism (54) and Sunday School (556).
+         holds the same content (theme version 1.0.3 at the time; now 1.0.4).
          **Batch 3 (Mission partner pages), 15 Oct 2026: PUBLISHED** with
          `publish-batch` (backup first, fail-fast, every check passed): BMS
          (page 467), Mission Aviation Fellowship (455), Leeds Furniture
@@ -960,11 +955,30 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.3). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.4). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
 direct request to the file returns nothing).
+
+Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
+`ABSPATH` guard, none with PHP after the header):
+
+| File | Slug | Used by |
+|---|---|---|
+| `front-page.php` | `mbc/front-page` | Front page (182), seeded |
+| `activity-details.php` | `mbc/activity-details` | Activity template pages |
+| `info-page.php` | `mbc/info-page` | Info template pages |
+| `mission-partner.php` | `mbc/mission-partner` | Mission partner pages |
+| `news-listing.php` | `mbc/news-listing` | News (624), Listing template |
+| `news-post.php` | `mbc/news-post` | Editors' starting point for posts (Post Types: post) |
+| `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
+| `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
+| `events-placeholder.php` | `mbc/events-placeholder` | Events (628) until the calendar feed exists |
+
+`bin/seed_patterns.py` seeds every row except `news-post` and
+`slideshow-band` (editor inserts only). Pattern file count is nine, not the
+ten first assumed.
 
 **Images rule:** the new templates place their own image; GeneratePress's
 featured-image banner is **never** output on them (`mbc_take_over_layout()`
