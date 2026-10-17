@@ -361,7 +361,13 @@ Pages, menus and settings are managed via the WordPress REST API.
 - [ ] Header and footer (built 15 Oct 2026; Playwright suite passes at
       360/768/1024/1280px; John's phone checks 1, 2 and 4 pass, check 3
       (links work, Services on YouTube opens in a new tab) not yet
-      confirmed, so leave unticked until it is). The
+      confirmed, so leave unticked until it is; the list of four checks is not written down
+      anywhere in the repo, only check 3's description. **Check 3, as I understand it:** on
+      your phone open the sandbox front page, open the menu (burger), and tap every link in
+      the header and footer: each opens its page (none shows a 404 or the old site); **Resources >
+      Services on YouTube** opens `youtube.com/@MoortownBaptistChurch/streams` in a *new tab*
+      (the YouTube app may take it), as do the footer Facebook and YouTube icons; the
+      Privacy Notice opens the PDF. Then close the new tab and you are back on the site.) The
       suite is `~/src/mbc-tests/header_check.py`, run with
       `~/.venvs/mbc-test/bin/python header_check.py <screenshot-dir>`
       (outside the repo; sandbox only). Drill-down mobile menu, dropdowns,
@@ -1349,6 +1355,9 @@ scale. Every value is traced to the original in the file's comments. Layout
       mention the US data transfer, now that names are collected. Raise
       with the church's data protection lead.**
 - [ ] Live-old → new redirect map (see Status).
+- [ ] Revisit Leeds Furniture Mission page (452): final name, support text, email address.
+      (The charity is mid name-change; the page is deliberately unchanged until it is announced.
+      See "Content items (waiting on an announcement)".)
 - [ ] Remove the E2E test page 620 (ask first).
 - [ ] **Live:** if live shows the same symptom (Elementor assets and the `elementorFrontendConfig`
       error on non-Elementor pages), the same fix applies (remove template #208's "Entire site"
