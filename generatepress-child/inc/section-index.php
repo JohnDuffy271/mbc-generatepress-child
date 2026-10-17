@@ -57,21 +57,43 @@ function mbc_section_index_is_external( $url ) {
 }
 
 /**
- * Text that must never reach a card: the block patterns' prompts and the "needs confirming" markers. Keep in step with
- * MARKERS in bin/scan_placeholders.py.
+ * The placeholder patterns, from inc/placeholder-patterns.json (shared with bin/scan_placeholders.py), as ready-to-use
+ * regular expressions. Empty if the file cannot be read; mbc_section_index_is_placeholder() then treats all text as
+ * a placeholder, so nothing unchecked reaches a card.
+ *
+ * @return string[]
+ */
+function mbc_section_index_placeholder_patterns() {
+    static $patterns = null;
+    if ( null !== $patterns ) {
+        return $patterns;
+    }
+    $patterns = array();
+    $json     = is_readable( __DIR__ . '/placeholder-patterns.json' ) ? file_get_contents( __DIR__ . '/placeholder-patterns.json' ) : false;
+    $data     = $json ? json_decode( $json, true ) : null;
+    if ( is_array( $data ) && ! empty( $data['patterns'] ) ) {
+        foreach ( $data['patterns'] as $item ) {
+            if ( ! empty( $item['pattern'] ) ) {
+                $patterns[] = '~' . str_replace( '~', '\~', $item['pattern'] ) . '~i';
+            }
+        }
+    }
+    if ( ! $patterns ) {
+        error_log( 'MBC: inc/placeholder-patterns.json is missing or invalid; section card descriptions are switched off.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+    }
+    return $patterns;
+}
+
+/**
+ * Text that must never reach a card: the block patterns' prompts and the "needs confirming" markers (the shared list),
+ * and any paragraph that is itself a prompt ("Add ...").
  */
 function mbc_section_index_is_placeholder( $text ) {
-    $patterns = array(
-        '/needs?\s+confirm(?:ing|ation)|to be confirmed|\bTBC\b/i',
-        '/needs?\s+local\s+copy/i',
-        '/\[describe\]|\bTODO\b|\bFIXME\b|lorem ipsum/i',
-        '/Add the day and time|Add the room or address|Add who is welcome|Add a name and an email/i',
-        '/Describe what happens|Add a short introduction|Add a heading|Add the main text of the page/i',
-        '/Add a short summary of this partner|Add how people|Add a sentence or two about how this partnership/i',
-        '/Write a short introduction|Write the main text here|Delete this box if the page/i',
-        '/will appear here|will be listed here|coming soon/i',
-        '/^\s*Add\s/i',
-    );
+    $patterns = mbc_section_index_placeholder_patterns();
+    if ( ! $patterns ) {
+        return true;
+    }
+    $patterns[] = '/^\s*Add\s/i';
     foreach ( $patterns as $pattern ) {
         if ( preg_match( $pattern, $text ) ) {
             return true;

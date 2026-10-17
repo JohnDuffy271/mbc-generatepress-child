@@ -1,0 +1,50 @@
+{
+  "_comment": "Text that must never reach a visitor-facing summary, and that bin/scan_placeholders.py reports at cutover. One source: read by inc/section-index.php and bin/scan_placeholders.py. Each pattern is a regular expression valid in both PCRE (PHP) and Python, matched case-insensitively; 'example' must match (checked by ~/src/mbc-tests/section_index_check.py patterns).",
+  "patterns": [
+    {
+      "pattern": "needs?\\s+confirming|needs?\\s+confirmation|to be confirmed|\\bTBC\\b",
+      "label": "needs confirming",
+      "example": "The venue Needs confirming"
+    },
+    {
+      "pattern": "needs?\\s+local\\s+copy",
+      "label": "needs local copy",
+      "example": "Needs local copy"
+    },
+    {
+      "pattern": "\\[describe\\]|\\bTODO\\b|\\bFIXME\\b|lorem ipsum",
+      "label": "draft marker",
+      "example": "Lorem ipsum dolor"
+    },
+    {
+      "pattern": "Add the day and time|Add the room or address|Add who is welcome|Add a name and an email",
+      "label": "activity prompt",
+      "example": "Add the day and time, for example Sundays"
+    },
+    {
+      "pattern": "Describe what happens|Add a short introduction|Add a heading|Add the main text of the page",
+      "label": "info prompt",
+      "example": "Describe what happens here"
+    },
+    {
+      "pattern": "Add a short summary of this partner|Add how people|Add a sentence or two about how this partnership",
+      "label": "partner prompt",
+      "example": "Add a short summary of this partner"
+    },
+    {
+      "pattern": "Write a short introduction|Write the main text here|Delete this box if the page",
+      "label": "post/info prompt",
+      "example": "Delete this box if the page does not need it"
+    },
+    {
+      "pattern": "will appear here|will be listed here|coming soon",
+      "label": "placeholder text",
+      "example": "The list will appear here"
+    },
+    {
+      "pattern": "images/placeholder\\.svg",
+      "label": "placeholder image",
+      "example": "/themes/generatepress-child/images/placeholder.svg"
+    }
+  ]
+}

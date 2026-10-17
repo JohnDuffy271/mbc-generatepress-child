@@ -14,6 +14,7 @@ the CLAUDE.md cutover checklist. Read-only.
 """
 import argparse
 import html
+import json
 import re
 import sys
 from pathlib import Path
@@ -21,20 +22,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scaffold_site as ss  # noqa: E402
 
-MARKERS = [
-    # explicit flags
-    (r"needs?\s+confirming|needs?\s+confirmation|to be confirmed|\bTBC\b", "needs confirming"),
-    (r"needs?\s+local\s+copy", "needs local copy"),
-    (r"\[describe\]|\bTODO\b|\bFIXME\b|lorem ipsum", "draft marker"),
-    # prompts from the block patterns (patterns/*.php)
-    (r"Add the day and time|Add the room or address|Add who is welcome|Add a name and an email", "activity prompt"),
-    (r"Describe what happens|Add a short introduction|Add a heading|Add the main text of the page", "info prompt"),
-    (r"Add a short summary of this partner|Add how people|Add a sentence or two about how this partnership", "partner prompt"),
-    (r"Write a short introduction|Write the main text here|Delete this box if the page", "post/info prompt"),
-    (r"will appear here|will be listed here|coming soon", "placeholder text"),
-    # the neutral placeholder image
-    (r"images/placeholder\.svg", "placeholder image"),
-]
+PATTERNS_FILE = Path(__file__).resolve().parent.parent / "generatepress-child" / "inc" / "placeholder-patterns.json"
+# One source for the placeholder patterns, shared with the theme (inc/section-index.php).
+MARKERS = [(item["pattern"], item["label"]) for item in json.loads(PATTERNS_FILE.read_text(encoding="utf-8"))["patterns"]]
 COMPILED = [(re.compile(p, re.I), label) for p, label in MARKERS]
 
 
