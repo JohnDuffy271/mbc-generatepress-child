@@ -32,6 +32,7 @@ READ_TIMEOUT = 240           # sandbox writes can be slow
 MENU_NAME = "Primary"
 MENU_LOCATION = "primary"
 TOGGLE_CLASS = "mbc-menu-toggle"
+OVERVIEW_TITLE = "Overview"
 
 # Template group -> theme file. Applied only if the file exists in the theme.
 TEMPLATES = {
@@ -417,7 +418,11 @@ def main():
             top_item = want_item(title, 0, order, "page", type="post_type", object="page",
                                  object_id=pid or 0, classes=[], target="")
             continue
-        for corder, kid in enumerate(CHILDREN[slug], 1):
+        # First submenu item: "Overview", the parent's own page (parents are
+        # toggles, so this is how a visitor reaches the hub page).
+        want_item(OVERVIEW_TITLE, top_item or -1, 1, "overview", type="post_type",
+                  object="page", object_id=pid or 0, classes=[], target="")
+        for corder, kid in enumerate(CHILDREN[slug], 2):
             kslug, _kid, ktitle, _kg = kid[:4]
             if len(kid) > 4:
                 want_item(ktitle, top_item or -1, corder, "external", type="custom",

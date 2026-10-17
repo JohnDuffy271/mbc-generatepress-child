@@ -10,41 +10,19 @@ show what the old URL does today: a 404 needs a redirect before launch.
 
 | Old path | New path | Old URL now | Redirects to |
 |---|---|---|---|
-| `/administration/leadership-team` | `/about-us/meet-the-team` | 404 |  |
-| `/sundays` | `/whats-on/sunday-mornings` | 404 |  |
-| `/housegroups` | `/whats-on/house-groups` | 404 |  |
-| `/church-life/stepping-stones` | `/whats-on/stepping-stones` | 301 | `/whats-on/stepping-stones` |
-| `/church-life/lunch-club` | `/whats-on/lunch-club` | 301 | `/whats-on/lunch-club` |
-| `/church-life/rock-solid` | `/whats-on/rock-solid` | 301 | `/whats-on/rock-solid` |
-| `/about-us/contact-us` | `/contact-us` | 301 | `/contact-us` |
+| `/administration/leadership-team` | `/about-us/meet-the-team/` | 404 |  |
+| `/sundays` | `/whats-on/sunday-mornings/` | 404 |  |
+| `/housegroups` | `/whats-on/house-groups/` | 404 |  |
+| `/church-life/stepping-stones` | `/whats-on/stepping-stones/` | 301 | `/whats-on/stepping-stones/` |
+| `/church-life/lunch-club` | `/whats-on/lunch-club/` | 301 | `/whats-on/lunch-club/` |
+| `/church-life/rock-solid` | `/whats-on/rock-solid/` | 301 | `/whats-on/rock-solid/` |
+| `/about-us/contact-us` | `/contact-us/` | 301 | `/contact-us/` |
 | `/church-life` | `(trashed)` | 404 |  |
-| `/church-life/beacon` | `/whats-on/beacon-cafe` | 301 | `/whats-on/beacon-cafe` |
+| `/church-life/beacon` | `/whats-on/beacon-cafe/` | 301 | `/whats-on/beacon-cafe/` |
 | `/administration` | `(trashed)` | 404 |  |
-| `/administration/documents` | `/resources/policies-and-documents` | 404 |  |
-| `/church-life/services-on-youtube` | `/resources/services-on-youtube` | 301 | `/resources/services-on-youtube` |
-| `/administration/room-hire` | `/resources/room-hire` | 301 | `/resources/room-hire` |
-| `/mission/furniture-store` | `/mission/leeds-furniture-mission` | 404 |  |
-| `/mission/baptist-missionary-society` | `/mission/bms` | 404 |  |
-| `/church-life/craft-group-2` | `/whats-on/craft-group` | 404 |  |
-
-## Pages with no place in Andy's menu (proposed redirects, 17 Oct 2026)
-
-Andy's page menu (see CLAUDE.md) has no Welcome, Baptism or Sunday School
-page. All three are unlinked Elementor **drafts** on the sandbox, so they
-have no public sandbox URL. They are not converted and nothing is unpublished
-or deleted yet. The live old paths are not known until the live-old map is
-built (read-only, with the hook exception); add them here then. Proposed
-targets, **approved by John on 17 Oct 2026 for the cutover redirect map**
-(written by hand, not by the scaffold script):
-
-| Draft (id) | What it says | Target (approved) | Why |
-|---|---|---|---|
-| Welcome (8) | Two paragraphs of welcome ("join us this Sunday") | `/about-us/who-we-are/` | Same message as the front page hero and Who we are; nothing to keep |
-| Baptism (54) | Believer's baptism, how to ask | `/about-us/what-we-believe/` | That page already mentions baptism five times; the page's text (and how to ask) could be folded in |
-| Sunday School (556) | Children learn the sermon theme next door; three photos (media 557, 559, 560) | `/whats-on/sunday-mornings/` | That page does not mention Sunday School yet; fold in a short paragraph and keep the photos if wanted |
-
-The redirects are approved, but the page content (Baptism's text, Sunday
-School's paragraph and photos) is still to be folded into the target pages
-if wanted. If Andy instead wants Baptism as its own page, make it an Info
-page under About Us and drop that redirect. Open question 6 in CLAUDE.md
-stays until he answers.
+| `/administration/documents` | `/resources/policies-and-documents/` | 404 |  |
+| `/church-life/services-on-youtube` | `(trashed)` | 404 |  |
+| `/administration/room-hire` | `/resources/room-hire/` | 301 | `/resources/room-hire/` |
+| `/mission/furniture-store` | `/mission/leeds-furniture-mission/` | 404 |  |
+| `/mission/baptist-missionary-society` | `/mission/bms/` | 404 |  |
+| `/church-life/craft-group-2` | `/whats-on/craft-group/` | 404 |  |

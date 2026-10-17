@@ -493,6 +493,22 @@ Pages, menus and settings are managed via the WordPress REST API.
       probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
       attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
+- [x] **Overview menu items (17 Oct 2026, John's decision):** each of the four parents
+      (About Us, What's On, Mission, Resources) has a first submenu item "Overview" that links
+      to the parent's own page, in the Primary menu itself (made by `bin/scaffold_site.py`,
+      constant `OVERVIEW_TITLE`, idempotent; nothing hard-coded in the theme). The parents stay
+      `<button>` toggles on desktop and mobile. On the parent's own page Overview carries
+      `aria-current="page"` (the toggle buttons never do). Keyboard: Tab from a toggle reaches
+      Overview first (on mobile the order is Back, burger, then the items). Checked by
+      `~/src/mbc-tests/header_check.py` (114 checks; the new section covers all four parents at
+      360 and 1280px: toggle is a button, Overview first, links to the parent, opens it,
+      `aria-current`). **Effect on the open "mobile menu back-out" question: none.** Back, X,
+      Esc and Android's system Back behave as before; Overview is a normal link, so following
+      it loads a fresh page with the menu closed. It does mean a visitor can now reach a hub
+      from inside its submenu without backing out. **Note for Andy:** the wireframe menu has no
+      "Overview" entries; they were added so the four section pages are reachable from the
+      menu (the parents are toggles only). Until the hub drafts are published, About Us (341)
+      and Resources (623) are still blank pages behind their Overview links.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -874,30 +890,21 @@ Pages, menus and settings are managed via the WordPress REST API.
         one (above); John may supply a new one later. Editor how-to:
         `docs/newsletter/editor-guide.md`.
 
-## Pending (written 17 Oct 2026, not started)
+## Pending (section hubs: in progress, 17 Oct 2026)
 
 - **Section hub pages** (About Us 341, What's On 327/draft 1094, Mission 374/draft 1093,
-  Resources 623): make them consistent (banner, title, two-sentence intro, section cards, then
-  section-specific content). The brief: replace the hand-kept `mbc/section-index` list with a
-  dynamic `[mbc_section_index]` built from the Primary menu (submenu items under the menu item
-  that points to the current page, skipping an "Overview" item; card = title, excerpt or first
-  ~20 words, featured image or a token-based placeholder; external links marked "(opens
-  YouTube)"; cached per menu, invalidated on menu or page save); report each parent's state;
-  convert Resources and About Us to blocks as drafts (backup first) with two-sentence intros
-  marked for John S in `docs/content-todo.md`; list child pages lacking an excerpt (John S) and
-  enable page excerpts; tests (fixture menu add/remove, external marker, all looks, 360/1280);
-  note for Andy. **Blocked on a prerequisite:** John's brief says to do it after "Overview"
-  menu items from an earlier prompt that never reached this session. The Primary menu has no
-  Overview items (the four parents are `#` toggles), so ask John whether to add them (first
-  child under each parent, pointing at the hub pages) or to match a hub's submenu another way.
+  Resources 623): consistent layout (banner, title, two-sentence intro, section cards, then
+  section-specific content), the cards coming from a dynamic `[mbc_section_index]` built from
+  the Primary menu. John decided on 17 Oct 2026 that the "Overview" menu items are wanted, so
+  the item is unblocked; see Status for what is done.
 
 ## Parked / possible later
 
-- **Events month view (OUTSTANDING, noted 17 Oct 2026):** `view="month"` for the Events page is
-  planned but not built. Plan and John's decisions (Monday start, may go back 1 month, bounded to
-  +12 months, `?month=YYYY-MM` validated, per-month cache keys, List | Month toggle, grid at
-  container width 768px or more with the agenda below that) are in `docs/calendar-views-plan.md`
-  (about 3 days of work). Cards are built; month view is not.
+- **Events month view (PARKED, John 17 Oct 2026; not planned):** `view="month"` for the Events
+  page is not scheduled. The plan and John's earlier decisions (Monday start, may go back 1
+  month, bounded to +12 months, `?month=YYYY-MM` validated, per-month cache keys, List | Month
+  toggle, grid at container width 768px or more with the agenda below that) are kept in
+  `docs/calendar-views-plan.md` (about 3 days of work). Cards are built; month view is not.
 
 - **Contact form (PARKED 17 Oct 2026, not cancelled):** live has no form, so
   Contact Us has details only. Plan and John's decisions (Fluent Forms free,
