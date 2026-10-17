@@ -1165,13 +1165,20 @@ pattern uses the same markup with placeholder images). Editor guide:
   comment attributes as `\u002d\u002d` (match that when editing page content
   by script); core's gallery CSS needs `:not(#id)` to be out-weighed; a mouse
   swipe needs `draggable=false` on the images.
-- **Content now:** placeholder photos from the media library (566, 299, 684;
-  the tiger, 568, was removed on 17 Oct 2026, so three slides; backup
-  `~/src/mbc-elementor-backups/182-home-pre-tiger-removal.json`; captions on
-  the first two). Note 684 is demo media deleted at cutover, so real photos
-  must replace it first until John supplies real ones via the inbox
-  (`image_prep.py ... band`). Page 182 content backups before this work:
-  `~/src/mbc-elementor-backups/182-home-pre-slideshow.json`.
+- **Content now (17 Oct 2026): five real photos**, in this order, all `band` preset
+  (1200x900, 166-200 kB), each with alt text and a caption: Easter egg giveaway (media
+  1153), Litter picking (1154), Church buffet (1155), Sports hall mural (1157), Church
+  camping (1156). Crops from the originals (now in `~/src/mbc-images/done/`):
+  see `~/src/mbc-images/logs/image_prep.log`. **Photo consent:** the Easter, Buffet,
+  Sports hall and Camping photos show identifiable people including children; **John S
+  must approve them for publication** (flagged, not removed). The Camping photo is from
+  2005 (date stamp cropped out; slightly soft). Not used, still in the inbox:
+  Connections.JPG, Paint_Pots.JPG. The old placeholder slides (566 Craft Group, 299
+  Beacon Café, 684 demo "2026", 568 tiger) are **not deleted**: 566, 299 and 684 are
+  used on other pages (Craft Group, Beacon Café, demo post 685); 568 is used only by
+  the trashed Craft Group draft 720 (delete on John's say-so). Page 182 content backup
+  before this change: `182-home-pre-slideshow-photos.json` (earlier ones:
+  `182-home-pre-slideshow.json`, `182-home-pre-tiger-removal.json`).
 - **Tests:** `~/src/mbc-tests/slideshow_check.py` (all five looks at 360 and
   1280px for layout, controls, focus ring and contrast; autoplay, pause, hover,
   focus, keys, swipe (mouse drag and real touch events, incl. that a vertical
