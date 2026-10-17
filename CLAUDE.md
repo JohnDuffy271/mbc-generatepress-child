@@ -1170,8 +1170,9 @@ pattern uses the same markup with placeholder images). Editor guide:
   1153), Litter picking (1154), Church buffet (1155), Sports hall mural (1157), Church
   camping (1156). Crops from the originals (now in `~/src/mbc-images/done/`):
   see `~/src/mbc-images/logs/image_prep.log`. **Photo consent:** the Easter, Buffet,
-  Sports hall and Camping photos show identifiable people including children; **John S
-  must approve them for publication** (flagged, not removed). The Camping photo is from
+  Sports hall and Camping photos show identifiable people including children;
+  **John S pre-approved all the photos in use** (John, 17 Oct 2026; he supplied most of
+  them), so nothing is outstanding. Still flag any *new* photos of identifiable people. The Camping photo is from
   2005 (date stamp cropped out; slightly soft). Not used, still in the inbox:
   Connections.JPG, Paint_Pots.JPG. The old placeholder slides (566 Craft Group, 299
   Beacon Café, 684 demo "2026", 568 tiger) are **not deleted**: 566, 299 and 684 are
