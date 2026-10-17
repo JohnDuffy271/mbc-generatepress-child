@@ -431,6 +431,29 @@ Pages, menus and settings are managed via the WordPress REST API.
       `docs/image-standards.md`. Weights, 360px: Room Hire 277 to 74 kB, Sunday
       Mornings 279 to 73 kB; at 1280px the News listing 4327 to 1672 kB (still
       mostly demo PNGs).
+- [x] **Events agenda (17 Oct 2026)** replaces the placeholder text on Events (628;
+      it held no iframe, only the placeholder; backup
+      `~/src/mbc-elementor-backups/628-events-pre-calendar.json`). `inc/calendar/`
+      (`config.php`, `fetch.php`, `render.php`), `css/calendar.css` (tokens only, no new
+      tokens), shortcode `[mbc_calendar weeks="8" limit="0" heading="3" links="yes"]`.
+      Google Calendar API v3 `events.list` server side (singleEvents, orderBy startTime,
+      timeMin now, timeMax +weeks, timeZone Europe/London; `mbc_calendar_weeks` filter).
+      Key and calendar ID are options `mbc_gcal_api_key` / `mbc_gcal_calendar_id` (not
+      registered settings, so not in public REST; not in git), set by
+      `bin/set_gcal_options.py --apply` from `~/.config/mbc/gcal.env` over the admin-only
+      route `/wp-json/mbc/v1/calendar-config` (never returns the key). Cache: 15 min
+      transient (`mbc_calendar_cache_seconds`) + a last-good copy option; on failure the last
+      good copy is shown silently (logged to the PHP error log, key redacted), else a
+      friendly "see the calendar on Google" link; a 2 min "failed recently" back-off avoids
+      retrying every page view. Events that have finished are filtered at render. Multi-day
+      events sit under their first day (or today if under way) with "until ...". Descriptions
+      are sanitised (links with `rel="noopener"`, `<br>`, bold, italic only). The calendar
+      must be public for the Subscribe/.ics links. **Test hook:** option
+      `mbc_gcal_fixture` (token, fixed "now", items, `fail`) is honoured only with the token in
+      `?mbc_cal_fixture=`; set and cleared over the same route. **Outbound IP of the sandbox
+      server (for the key restriction): 45.145.100.121.** Live will differ (same Plesk server
+      probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (213 checks).
+      Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -994,7 +1017,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.4). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.5). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
@@ -1013,11 +1036,11 @@ Audited 17 Oct 2026 (nine files, all in category `mbc`, all with the
 | `news-post.php` | `mbc/news-post` | Editors' starting point for posts (Post Types: post) |
 | `slideshow-band.php` | `mbc/slideshow-band` | Editor insert for the slideshow band (front page carries the same markup) |
 | `contact-placeholder.php` | `mbc/contact-placeholder` | Contact Us (211) content; same text as the page |
-| `events-placeholder.php` | `mbc/events-placeholder` | Events (628) until the calendar feed exists |
+| `events-calendar.php` | `mbc/events-calendar` | Events (628): lead plus `[mbc_calendar weeks="8"]` |
+| `this-week.php` | `mbc/this-week` | Compact `[mbc_calendar weeks="1" limit="5" links="no"]`; not placed yet (front page, if wanted) |
 
 `bin/seed_patterns.py` seeds every row except `news-post` and
-`slideshow-band` (editor inserts only). Pattern file count is nine, not the
-ten first assumed.
+`slideshow-band` (editor inserts only). Pattern file count is now ten (nine when audited, plus `this-week`; `events-placeholder` became `events-calendar`).
 
 **Images rule:** the new templates place their own image; GeneratePress's
 featured-image banner is **never** output on them (`mbc_take_over_layout()`
