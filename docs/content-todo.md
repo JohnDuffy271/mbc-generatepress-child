@@ -1,6 +1,6 @@
 # Content to-do (from `bin/scan_placeholders.py --drafts`, 17 Oct 2026)
 
-The scan found 16 pages and posts with placeholder markers (31 hits). Cutover
+The scan found 16 pages and posts with placeholder markers (31 hits); after the Furniture Mission text went in on 17 Oct it finds 15 (30 hits). Cutover
 needs `python3 bin/scan_placeholders.py` to exit 0. Items are grouped by who
 supplies the missing content, then page by page. "John" means John Duffy.
 Page IDs are in brackets. Re-run the scan after each batch of fixes.
@@ -30,7 +30,7 @@ Page IDs are in brackets. Re-run the scan after each batch of fixes.
 | Mission Group (631) | Summary, website, how to support, logo or image |
 | Moortown Emergency Relief Fund (633) | Summary, website or details, how to support, logo or image |
 | Pathways (634) | Summary, website, how to support, logo or image |
-| Leeds Furniture Mission (452) | "How you can support": Pray, Give, Get involved (all "Needs confirming") |
+| Leeds Furniture Mission (452) | Nothing now (support text published 17 Oct 2026); waits for the organisation's new name, then update the name, title, menu label and slug with a redirect, and confirm an email address before adding one |
 | Romania (525) | The year the links began (the sources disagree: "mid 70s" versus 1991), the support lines, a photo (placeholder now) |
 | BMS, MAF, Leeds Furniture Mission | Official logos with permission (illustrations or a photo of the van stand in) |
 
@@ -51,7 +51,7 @@ Page IDs are in brackets. Re-run the scan after each batch of fixes.
 4. Left-aligned band text on the front page, or right-aligned headings as in the wireframe?
 5. About Us (341) and Resources (623): overview content or a redirect to the first child?
 6. Welcome (8), Baptism (54), Sunday School (556): drop, fold in or make real pages (proposed redirects are in `docs/url-changes.md`).
-7. Furniture Mission name: "Leeds Furniture Mission" or "Leeds and Moortown Furniture Store".
+7. Furniture Mission name: settled for now (the Leeds & Moortown Furniture Store is renaming itself; wait for the announcement).
 8. Whether Mission (374) and What's On (327) stay as reachable content pages even though the menu treats them as toggles.
 
 ## John (decisions, review and things only you can do)

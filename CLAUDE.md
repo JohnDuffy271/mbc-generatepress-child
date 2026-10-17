@@ -816,8 +816,18 @@ Open design questions to put to Andy Berry (John to ask):
    pages.
 7. **Furniture Mission name:** the page is titled "Leeds Furniture Mission"
    (and the charity's van says so), but its text says "Leeds and Moortown
-   Furniture Store". Which name should the page use? (Both are left as
-   they are for now.)
+   Furniture Store". John (17 Oct 2026): the organisation is the **Leeds &
+   Moortown Furniture Store** and is changing its name (new name not yet
+   known), so this waits for the announcement (see Content items below).
+
+## Content items (waiting on an announcement)
+
+- **Leeds Furniture Mission page:** update organisation name, page title,
+  menu label and slug (+ redirect) when the new name is announced; confirm
+  email address before adding it. (The page now has pray/give/get-involved
+  text, with the Store's collection number as a `tel:+441132739727` link;
+  content backup before the change:
+  `~/src/mbc-elementor-backups/452-leeds-furniture-mission-pre-support-text.json`.)
 
 ## Content questions for John S
 
@@ -832,9 +842,9 @@ Open design questions to put to Andy Berry (John to ask):
    rewritten in the draft as "We’re led by our full-time minister, and
    you’ll find us by the big roundabout where King Lane and Stonegate Road
    cross." John S to approve or reword.
-5. **Mission partners (Leeds Furniture Mission, Romania):** the "How you
-   can support" lines (pray, give, get involved) for both, still "Needs
-   confirming" on the live pages.
+5. **Romania:** the "How you can support" lines (pray, give, get involved),
+   still "Needs confirming". (Leeds Furniture Mission's were supplied by John
+   and published on 17 Oct 2026.)
 6. **Romania start date:** the page needs the year the Romanian links began;
    the sources disagree: the sandbox text said "since the mid 70's", the
    2011 page on the live site says 1991 (Paul Hicks, the Monastur Baptist
