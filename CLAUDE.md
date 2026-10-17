@@ -533,12 +533,28 @@ Pages, menus and settings are managed via the WordPress REST API.
       2026):** the excerpt, else the first clean paragraph of the page (a `core/paragraph` outside the
       key-facts block `mbc-facts` and call-to-action boxes, not opening with a bold label, at least five
       words, cut at 20 words), else no description. Any text (excerpt included) that matches the placeholder
-      markers (the list mirrors `MARKERS` in `bin/scan_placeholders.py`; keep them in step) is dropped.
-      The eight What's On excerpts were set on 17 Oct 2026 (Sunday Mornings 44, Events 628, Beacon Café 251,
+      markers (one source, `generatepress-child/inc/placeholder-patterns.json`, read by `inc/section-index.php` and by
+      `bin/scan_placeholders.py`; each entry has an `example` that `section_index_check.py patterns` proves
+      matches in both PCRE and Python; the file is 403 on the server, in `exposure_check.py`) is dropped; if the
+      file cannot be read, no fallback description is shown.
+      Excerpts set on 17 Oct 2026 (John S to confirm): the eight What's On ones and, drafted by Claude, eleven
+      for the Mission, About Us and Resources children (FAQs, Mission Group, Moortown Emergency Relief Fund and
+      Pathways are deliberately empty until their pages are written). The eight What's On ones were set (Sunday Mornings 44, Events 628, Beacon Café 251,
       Rock Solid 60, Stepping Stones 48, Lunch Club 56, Craft Group 565, House Groups 46) and Sunday Mornings'
       featured image is now the home-page congregation photo (media 1024; was the graphic 362). Drafted
       excerpts for the other hubs' pages, the consent flags (Stepping Stones, Rock Solid) and the image
-      audit are in `docs/content-todo.md`; photo requests in `docs/image-wishlist.md`.
+      audit are in `docs/content-todo.md`; photo requests in `docs/image-wishlist.md`. Alt text added to Meet the
+      team's banner (media 306) and the Policies & Documents picture (271, a crate of paperback books: looks
+      unrelated, queried with John S). **Everything waiting on John S, in plain English, is in
+      `docs/for-john-s.md`** (keep it current when items are settled).
+      **Logo flag (17 Oct 2026):** a media item can be marked "This is a logo" (checkbox on the attachment
+      screen and in the media dialog; post meta `_mbc_is_logo`, in REST for admins; `inc/logo-flag.php`).
+      Flagged images printed by cards, Image blocks and Media & Text blocks get the class `mbc-is-logo`, shown
+      whole (`object-fit: contain`, padding `--mbc-logo-padding`, background `--mbc-logo-bg`, white in every
+      look because logos are drawn for white); photos keep cover. Tested by `section_index_check.py logo`
+      (fixture uploads, deleted afterwards). **No media is flagged yet:** the library holds no partner logos
+      (BMS and MAF are illustrations, Furniture Mission a photo of the van); flag them as they arrive. The
+      admin checkbox itself is untested (no wp-admin login in the tests).
       **State of the four parents before this work:** About Us (341): empty, template
       `page-section-index.php` (not in the theme); Resources (623): empty, no template; Mission (374)
       and What's On (327): Elementor. **Now:** Mission (374) is published on the hub template (John's
@@ -1154,7 +1170,7 @@ Title, Slug, Categories `mbc`, ...). **WordPress caches a theme's pattern
 list in a transient keyed on the theme `Version`** (`style.css`), so a new
 or renamed pattern file is not registered until the cache expires or the
 version changes. **When you add a pattern or change a pattern header, bump
-`Version` in `generatepress-child/style.css`** (currently 1.0.8). Edits to a
+`Version` in `generatepress-child/style.css`** (currently 1.0.9). Edits to a
 pattern's body markup need no bump. A pattern used for seeding
 (`bin/seed_patterns.py`) must contain no PHP after its header. Every pattern
 file has `defined( 'ABSPATH' ) || exit;` after its header comment (so a
