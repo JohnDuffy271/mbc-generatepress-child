@@ -54,7 +54,7 @@ function mbc_calendar_get( $weeks = 8 ) {
     $weeks = (int) apply_filters( 'mbc_calendar_weeks', $weeks );
     $weeks = max( 1, min( 52, $weeks ) );
     $fx    = mbc_calendar_fixture();
-    $hash  = $fx ? 'fx' : substr( md5( get_option( MBC_GCAL_ID_OPTION, '' ) . '|' . $weeks ), 0, 12 );
+    $hash  = $fx ? 'fx' : substr( md5( get_option( MBC_GCAL_ID_OPTION, '' ) . '|' . $weeks . '|v2' ), 0, 12 );
     $tkey  = 'mbc_gcal_' . $hash;
     $lkey  = 'mbc_gcal_last_' . $hash;
     $fkey  = 'mbc_gcal_failed_' . $hash;
@@ -108,7 +108,7 @@ function mbc_calendar_request( $weeks, $fx = null ) {
         'timeMax'      => $now->modify( '+' . (int) $weeks . ' weeks' )->format( DATE_ATOM ),
         'timeZone'     => MBC_GCAL_TZ,
         'maxResults'   => 250,
-        'fields'       => 'items(id,status,summary,description,location,start,end)',
+        'fields'       => 'items(id,status,summary,description,location,start,end,recurringEventId)',
     ) );
     $res = wp_remote_get( $url, array( 'timeout' => 6, 'redirection' => 0 ) );
     if ( is_wp_error( $res ) ) {
@@ -127,6 +127,7 @@ function mbc_calendar_request( $weeks, $fx = null ) {
  * Raw Google items to plain arrays (safe to store), sorted. Times are Europe/London.
  * Timed: start_ts/end_ts, start_date/end_date (Y-m-d, the last day it touches), start_iso/end_iso.
  * All-day: the same dates (Google's end date is exclusive; ours is the last day), no times.
+ * `recurring` is true for an instance of a repeating event (Google sets recurringEventId on those).
  */
 function mbc_calendar_normalise( array $items ) {
     $tz     = mbc_calendar_tz();
@@ -140,6 +141,7 @@ function mbc_calendar_normalise( array $items ) {
                 'title'       => isset( $item['summary'] ) ? trim( wp_strip_all_tags( (string) $item['summary'] ) ) : '',
                 'location'    => isset( $item['location'] ) ? trim( wp_strip_all_tags( (string) $item['location'] ) ) : '',
                 'description' => isset( $item['description'] ) ? mbc_calendar_clean_description( (string) $item['description'] ) : '',
+                'recurring'   => ! empty( $item['recurringEventId'] ),
             );
             if ( '' === $e['title'] ) {
                 $e['title'] = __( '(Untitled event)', 'generatepress-child' );

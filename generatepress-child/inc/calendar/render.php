@@ -2,7 +2,12 @@
 /**
  * Events calendar: the [mbc_calendar] shortcode, an agenda grouped by day.
  *
- *   [mbc_calendar weeks="8" limit="0" heading="3" links="yes"]
+ *   [mbc_calendar weeks="8" limit="0" heading="3" links="yes" recurring="yes"
+ *                 more="/whats-on/events/" more_label="See all events" empty="Nothing planned."]
+ *
+ * links="no" hides the Subscribe/.ics links. recurring="no" leaves out instances of repeating events.
+ * more="URL" adds a "See all events" link (also when the list is empty or the calendar is unavailable)
+ * and then never links out to Google. empty="..." replaces the "no events" line.
  *
  * Server-rendered from cached data (see fetch.php), so nothing loads or shifts in the browser.
  * Styled by css/calendar.css (tokens only); that file loads on pages whose content has the shortcode.
@@ -49,6 +54,10 @@ function mbc_calendar_shortcode( $atts ) {
         'limit'   => 0,
         'heading' => 3,
         'links'   => 'yes',
+        'recurring'  => 'yes',
+        'more'       => '',
+        'more_label' => '',
+        'empty'      => '',
     ), $atts, 'mbc_calendar' );
     $h_day   = max( 2, min( 5, (int) $atts['heading'] ) );
     $h_event = min( 6, $h_day + 1 );
@@ -61,24 +70,32 @@ function mbc_calendar_shortcode( $atts ) {
     $tz    = mbc_calendar_tz();
 
     // Drop what has already finished (a last-good copy may be hours old), then apply the limit.
-    $events = array_values( array_filter( $data['events'], static function ( $e ) use ( $now, $today ) {
+    $no_recurring = 'no' === strtolower( (string) $atts['recurring'] );
+    $events       = array_values( array_filter( $data['events'], static function ( $e ) use ( $now, $today, $no_recurring ) {
+        if ( $no_recurring && ! empty( $e['recurring'] ) ) {
+            return false;
+        }
         return $e['all_day'] ? $e['end_date'] >= $today : $e['end_ts'] >= $now->getTimestamp();
     } ) );
     if ( $limit > 0 ) {
         $events = array_slice( $events, 0, $limit );
     }
 
+    $more_url   = trim( (string) $atts['more'] );
+    $more_label = '' !== trim( (string) $atts['more_label'] ) ? trim( (string) $atts['more_label'] ) : __( 'See all events', 'generatepress-child' );
+    $empty_text = '' !== trim( (string) $atts['empty'] ) ? trim( (string) $atts['empty'] ) : __( 'There are no events in the diary just now. Please check again soon.', 'generatepress-child' );
+
     $source = 'fresh' === $data['source'] ? 'fresh' : ( 'last-good' === $data['source'] ? 'last-good' : 'fallback' );
     $out    = '<div class="mbc-cal" data-source="' . esc_attr( $source ) . '">';
 
     if ( 'none' === $data['source'] ) {
         $out .= '<p class="mbc-cal__empty">' . esc_html__( 'Our events calendar is not available just now.', 'generatepress-child' );
-        if ( $links ) {
+        if ( $links && '' === $more_url ) {
             $out .= ' <a href="' . esc_url( $links['view'] ) . '" rel="noopener">' . esc_html__( 'See the calendar on Google', 'generatepress-child' ) . '</a>.';
         }
         $out .= '</p>';
     } elseif ( ! $events ) {
-        $out .= '<p class="mbc-cal__empty">' . esc_html__( 'There are no events in the diary just now. Please check again soon.', 'generatepress-child' ) . '</p>';
+        $out .= '<p class="mbc-cal__empty">' . esc_html( $empty_text ) . '</p>';
     } else {
         $days = array();
         foreach ( $events as $e ) {
@@ -96,6 +113,10 @@ function mbc_calendar_shortcode( $atts ) {
             $out .= '</ul></li>';
         }
         $out .= '</ol>';
+    }
+
+    if ( '' !== $more_url ) {
+        $out .= '<p class="mbc-cal__all"><a href="' . esc_url( $more_url ) . '">' . esc_html( $more_label ) . '</a></p>';
     }
 
     if ( $links && 'no' !== strtolower( (string) $atts['links'] ) && 'none' !== $data['source'] ) {

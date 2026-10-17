@@ -90,3 +90,13 @@
 	display: inline-block;
 	padding-block: var(--mbc-space-xs);
 }
+
+.mbc-cal__all {
+	margin: var(--mbc-space-l) 0 0;
+	font-size: var(--mbc-step--1);
+}
+
+.mbc-cal__all a {
+	display: inline-block;
+	padding-block: var(--mbc-space-xs);
+}
