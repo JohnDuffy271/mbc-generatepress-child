@@ -16,6 +16,20 @@ $mbc_variant = isset( $args['variant'] ) ? sanitize_html_class( $args['variant']
         the_post();
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'mbc-page__article' ); ?>>
+            <?php if ( 'hub' === $mbc_variant && has_post_thumbnail() ) : ?>
+                <?php // Section hub banner: the page's featured image, in a fixed frame (--mbc-banner-ratio). ?>
+                <div class="mbc-page__banner">
+                    <?php
+                    the_post_thumbnail(
+                        'large',
+                        array(
+                            'sizes'   => '(max-width: 1184px) calc(100vw - 2rem), 1152px',
+                            'loading' => 'eager',
+                        )
+                    );
+                    ?>
+                </div>
+            <?php endif; ?>
             <header class="mbc-page__header">
                 <h1 class="mbc-page__title"><?php the_title(); ?></h1>
             </header>

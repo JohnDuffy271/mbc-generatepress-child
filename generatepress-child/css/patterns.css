@@ -468,38 +468,109 @@ html body .mbc-band__social .wp-social-link a {
 	margin: var(--mbc-space-xl) 0 0;
 }
 
-/* ---- Section index (pattern mbc/section-index): a grid of link cards ---- */
-.wp-block-list.mbc-section-index {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-	gap: var(--mbc-space-s);
+/* ---- Section index ([mbc_section_index]): cards built from the menu ---- */
+.mbc-section-index {
 	margin: var(--mbc-space-m) 0;
+}
+
+.mbc-section-index__heading {
+	margin-bottom: var(--mbc-space-m);
+}
+
+.mbc-section-index__notice {
+	padding: var(--mbc-space-s) var(--mbc-space-m);
+	border: var(--mbc-border-width) dashed var(--mbc-border);
+	color: var(--mbc-text-muted);
+	font-size: var(--mbc-step--1);
+}
+
+.mbc-section-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+	gap: var(--mbc-space-m);
+	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-.mbc-section-index li {
-	margin: 0;
-}
-
-.mbc-section-index a {
+.mbc-section-card {
+	position: relative;
 	display: flex;
-	align-items: center;
-	min-height: var(--mbc-tap-target);
-	height: 100%;
-	padding: var(--mbc-space-s) var(--mbc-space-m);
+	flex-direction: column;
+	margin: 0;
+	overflow: hidden;
 	border: var(--mbc-border-width) solid var(--mbc-border);
 	border-radius: var(--mbc-radius-md);
 	background: var(--mbc-surface-alt);
-	color: var(--mbc-text);
+}
+
+.mbc-section-card__media {
+	aspect-ratio: var(--mbc-card-ratio);
+	overflow: hidden;
+	background: var(--mbc-border);
+}
+
+.mbc-section-card__media img,
+.mbc-section-card__placeholder {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.mbc-section-card__body {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var(--mbc-space-xs);
+	padding: var(--mbc-space-m);
+}
+
+.mbc-section-card__title {
+	margin: 0;
 	font-size: var(--mbc-step-1);
-	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-section-card__title a {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--mbc-space-xs);
+	min-height: var(--mbc-tap-target);
+	color: var(--mbc-text);
 	text-decoration: none;
 }
 
-.mbc-section-index a:hover {
+/* One link per card: the title link stretches over the whole card. */
+.mbc-section-card__title a::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+
+.mbc-section-card:hover {
 	background: var(--mbc-hover-bg);
+}
+
+.mbc-section-card:hover .mbc-section-card__title a {
 	text-decoration: underline;
+}
+
+.mbc-section-card:focus-within {
+	outline: var(--mbc-focus-width) solid var(--mbc-focus);
+	outline-offset: var(--mbc-space-3xs);
+}
+
+.mbc-section-card__title a:focus-visible {
+	outline: none;
+}
+
+.mbc-section-card__external {
+	flex: 0 0 auto;
+}
+
+.mbc-section-card__desc {
+	margin: 0;
+	color: var(--mbc-text-muted);
 }
 
 /* A paragraph that holds one "more" link ends in an arrow (decorative: not read out). */

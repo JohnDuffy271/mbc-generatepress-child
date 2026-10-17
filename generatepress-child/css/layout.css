@@ -92,3 +92,19 @@
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 }
+
+/* ---- Section hub banner (page-templates/hub.php): the featured image in a fixed frame ---- */
+.mbc-page__banner {
+	margin: 0 0 var(--mbc-space-l);
+	overflow: hidden;
+	border-radius: var(--mbc-radius-md);
+	aspect-ratio: var(--mbc-banner-ratio);
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-page__banner img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
