@@ -623,7 +623,9 @@ Pages, menus and settings are managed via the WordPress REST API.
          parents Mission (374) and What's On (327) (drafts 1093 and 1094
          await review), and the unlinked drafts Welcome (8), Baptism (54) and
          Sunday School (556): none is in Andy's menu, so they are **not
-         converted**; proposed redirect targets are in `docs/url-changes.md`.
+         converted**; redirects approved by John (17 Oct 2026) for the cutover map:
+         Welcome → Who we are, Baptism → What we believe, Sunday School →
+         Sunday Mornings (`docs/url-changes.md`).
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and

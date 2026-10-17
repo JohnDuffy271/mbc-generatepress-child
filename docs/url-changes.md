@@ -34,14 +34,17 @@ page. All three are unlinked Elementor **drafts** on the sandbox, so they
 have no public sandbox URL. They are not converted and nothing is unpublished
 or deleted yet. The live old paths are not known until the live-old map is
 built (read-only, with the hook exception); add them here then. Proposed
-targets, for John and Andy to confirm (written by hand, not by the
-scaffold script):
+targets, **approved by John on 17 Oct 2026 for the cutover redirect map**
+(written by hand, not by the scaffold script):
 
-| Draft (id) | What it says | Proposed target | Why |
+| Draft (id) | What it says | Target (approved) | Why |
 |---|---|---|---|
 | Welcome (8) | Two paragraphs of welcome ("join us this Sunday") | `/about-us/who-we-are/` | Same message as the front page hero and Who we are; nothing to keep |
 | Baptism (54) | Believer's baptism, how to ask | `/about-us/what-we-believe/` | That page already mentions baptism five times; the page's text (and how to ask) could be folded in |
 | Sunday School (556) | Children learn the sermon theme next door; three photos (media 557, 559, 560) | `/whats-on/sunday-mornings/` | That page does not mention Sunday School yet; fold in a short paragraph and keep the photos if wanted |
 
-If Andy wants Baptism as its own page, make it an Info page under About Us
-and redirect nothing. Open question 6 in CLAUDE.md stays until he answers.
+The redirects are approved, but the page content (Baptism's text, Sunday
+School's paragraph and photos) is still to be folded into the target pages
+if wanted. If Andy instead wants Baptism as its own page, make it an Info
+page under About Us and drop that redirect. Open question 6 in CLAUDE.md
+stays until he answers.
