@@ -98,8 +98,9 @@
 }
 
 .mbc-cal__all a {
-	display: inline-block;
-	padding-block: var(--mbc-space-xs);
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
 }
 
 /* view="cards": columns follow the width of the column the cards sit in, not the viewport. */
@@ -204,8 +205,9 @@
 }
 
 .mbc-cal__all-link {
-	display: inline-block;
-	padding-block: var(--mbc-space-xs);
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
 	font-size: var(--mbc-step--1);
 }
 
