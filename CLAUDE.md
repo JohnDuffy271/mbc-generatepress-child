@@ -358,16 +358,14 @@ Pages, menus and settings are managed via the WordPress REST API.
       only). Real brand tokens follow the branding exercise.
 - [x] `php-cli` + composer + phpcs/PHPCompatibilityWP for 8.2 linting
       (`bin/lint.sh`)
-- [ ] Header and footer (built 15 Oct 2026; Playwright suite passes at
-      360/768/1024/1280px; John's phone checks 1, 2 and 4 pass, check 3
-      (links work, Services on YouTube opens in a new tab) not yet
-      confirmed, so leave unticked until it is; the list of four checks is not written down
-      anywhere in the repo, only check 3's description. **Check 3, as I understand it:** on
-      your phone open the sandbox front page, open the menu (burger), and tap every link in
-      the header and footer: each opens its page (none shows a 404 or the old site); **Resources >
-      Services on YouTube** opens `youtube.com/@MoortownBaptistChurch/streams` in a *new tab*
-      (the YouTube app may take it), as do the footer Facebook and YouTube icons; the
-      Privacy Notice opens the PDF. Then close the new tab and you are back on the site.) The
+- [x] Header and footer (built 15 Oct 2026; Playwright suite passes at
+      360/768/1024/1280px; **all of John's phone checks pass: 1, 2 and 4 earlier,
+      and check 3 (links work, Services on YouTube opens in a new tab; footer social
+      icons too) confirmed by John, 17 Oct 2026**, which was the only blocker). How check 3
+      was run: on the phone, open the sandbox front page and the menu, tap every header and
+      footer link (each opens its page, no 404); Resources > Services on YouTube opens
+      `youtube.com/@MoortownBaptistChurch/streams` in a new tab (the YouTube app may take it),
+      as do the footer Facebook and YouTube icons; the Privacy Notice opens the PDF. The
       suite is `~/src/mbc-tests/header_check.py`, run with
       `~/.venvs/mbc-test/bin/python header_check.py <screenshot-dir>`
       (outside the repo; sandbox only). Drill-down mobile menu, dropdowns,
@@ -1355,6 +1353,7 @@ scale. Every value is traced to the original in the file's comments. Layout
       mention the US data transfer, now that names are collected. Raise
       with the church's data protection lead.**
 - [ ] Live-old → new redirect map (see Status).
+- [ ] Final full phone review of all templates on Android before go-live.
 - [ ] Revisit Leeds Furniture Mission page (452): final name, support text, email address.
       (The charity is mid name-change; the page is deliberately unchanged until it is announced.
       See "Content items (waiting on an announcement)".)
