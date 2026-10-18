@@ -7,7 +7,7 @@ For the people with the **Newsletter editor** role. You need to be signed in to 
 1. In the left menu choose **Newsletter → Add new issue**.
 2. Give it a **title** (for example "Moortown news, 26 October"). Add a **subtitle** if you want one; leave it empty and none is shown.
 3. Write a short **intro** in the box (paragraphs, bold, italic, links and lists only).
-4. On the right, **Set header image** if you have one for this issue. If you do not, the standard "MBC News" header is used.
+4. On the right, **Set header image** if you have one for this issue. If you do not, the standard "MBC News" header is used, and the box shows a small preview of it with the line "Using the default header. Set a header image to override it for this issue."
 5. In **Posts in this issue** the list is filled in for you: the news posts published since the last issue (up to 6), with any sticky (pinned) posts first.
    - **Up / Down** change the order. **Remove** takes a post out of this issue (the post itself is not deleted).
    - **Add a post** puts another recent post in.
@@ -39,3 +39,12 @@ The link contains a secret key. Anyone who has it can see the email, even before
 - The pre-filled list only uses posts in the **News** category. **Add a post** offers any of the 60 most recent posts.
 - A post that is unpublished or deleted after the issue was saved is left out of the web version and the email automatically.
 - Nothing here sends email. Sending happens in Mailchimp.
+
+## Changing the standard header (Administrators only)
+
+The standard header is set under **Newsletter → Settings** (you need the Administrator role; the Newsletter editor role does not see this page).
+
+1. Press **Choose from the media library**, pick or upload an image, then **Use as default header**.
+2. Press **Save Changes**. **Remove** (then Save) goes back to the site logo.
+
+Issues that have their own header image keep it. Only issues without one use the standard header, in the web version and in the email. A 600 px wide image is ideal.
