@@ -325,6 +325,7 @@
 .mbc-cal__month-nav a {
 	display: inline-flex;
 	align-items: center;
+	gap: var(--mbc-space-2xs);
 	min-height: var(--mbc-tap-target);
 }
 

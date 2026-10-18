@@ -2,8 +2,8 @@
 
 **Decisions (John, 17 Oct 2026):** cards = 3, and each card links to the Events page at its
 day (`#d-YYYY-MM-DD`, relative URL); the month view may go back 1 month; weeks start Monday.
-**Cards: built 17 Oct 2026** (see CLAUDE.md, "Events agenda"). **Month view: not built**, the
-plan below stands (the (b) section below is kept as written; where it says a card is not a link,
+**Cards: built 17 Oct 2026** (see CLAUDE.md, "Events agenda"). **Month view: built 18 Oct 2026** (see CLAUDE.md; the plan below was followed, anchors are `d-YYYY-MM-DD`, the toggle is `toggle="yes"`), the
+plan below stood (the (b) section below is kept as written; where it says a card is not a link,
 the decision above wins).
 
 Written 17 Oct 2026, for John's OK. Both views read the same normalised data as

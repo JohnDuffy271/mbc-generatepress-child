@@ -492,6 +492,19 @@ Pages, menus and settings are managed via the WordPress REST API.
       probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
       attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
+- [x] **Events month view (18 Oct 2026, John's decisions: Monday start, back 1 month, forward 12, List | Month toggle with List the
+      default).** `[mbc_calendar toggle="yes"]` (Events page 628, backup `628-events-pre-month.json`; pattern `events-calendar`
+      updated, no version bump) and `view="month"`. `?view=month&month=YYYY-MM` (validated `^\d{4}-(0[1-9]|1[0-2])$`, this month -1 to +12,
+      anything else, arrays included, falls back to this month; prev/next omitted at the bounds). Uses `mbc_calendar_get_range()` with the
+      per-month cache key `YYYY-MM`; events overlapping the month are filtered at render (past ones stay). Real `<table>` (caption,
+      `th scope="col"` with abbr, Monday first, other-month cells empty and `aria-hidden`, today = outline + filled date + `aria-current="date"`),
+      shown from **48rem (768px) of container width**, otherwise only the month's agenda (below the grid at any width; agenda ids are
+      the same `d-YYYY-MM-DD`). Multi-day events appear on every day they span ("(continued)" after the first); the agenda lists them once under
+      their first day (or the 1st). Up to 3 per cell then "+N more" (to that day's agenda heading, or the first hidden event's day). Cell links
+      go to the event's agenda day. The `show=` filter applies; the weeks choice is not shown (hidden `view`/`month` inputs keep the view).
+      Toggle, nav and filters are plain server-rendered links/GET form (no JS). **Note:** at a 768px *viewport* the content column is narrower
+      than 768px, so the agenda shows, not the grid (the grid starts at about 830px viewport). Checks: `calendar_check.py month` (76) and
+      `monthbrowser` (253: five looks at 360/768/1280, contrast, keyboard, JS off, console, no Google).
 - [x] **Weekly diary (18 Oct 2026, v1, sandbox)**: the top-level Weekly diary screen (was under Tools) builds the diary part of the
       minister's weekly members' email (members and staff, not public). `inc/diary/` (`format.php` pure
       formatting, `data.php` capability, notes and build, `admin.php` screen and REST), `js/diary-admin.js`,
@@ -1012,12 +1025,6 @@ Pages, menus and settings are managed via the WordPress REST API.
         `docs/newsletter/editor-guide.md`.
 
 ## Parked / possible later
-
-- **Events month view (PARKED, John 17 Oct 2026; not planned):** `view="month"` for the Events
-  page is not scheduled. The plan and John's earlier decisions (Monday start, may go back 1
-  month, bounded to +12 months, `?month=YYYY-MM` validated, per-month cache keys, List | Month
-  toggle, grid at container width 768px or more with the agenda below that) are kept in
-  `docs/calendar-views-plan.md` (about 3 days of work). Cards are built; month view is not.
 
 - **Contact form (PARKED 17 Oct 2026, not cancelled):** live has no form, so
   Contact Us has details only. Plan and John's decisions (Fluent Forms free,
