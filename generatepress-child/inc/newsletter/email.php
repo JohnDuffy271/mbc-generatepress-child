@@ -1,6 +1,6 @@
 <?php
 /**
- * Newsletter email: /newsletter/<issue>/email/ serves a standalone, email-safe HTML document
+ * Newsletter email: /newsletter/<issue>/email/ (or /newsletter/email/<id>/ for an issue with no slug yet) serves a standalone, email-safe HTML document
  * that Mailchimp imports by URL. Access:
  *   - the issue's preview key (?key=...) works for any status, without a login;
  *   - without a key, a published issue is public, and anything else needs the capability.
@@ -17,13 +17,19 @@ function mbc_nl_serve_email() {
         return;
     }
     $slug  = sanitize_title( (string) get_query_var( MBC_NL_TYPE ) );
-    $found = '' === $slug ? array() : get_posts( array(
+    $id    = absint( get_query_var( 'mbc_nl_id' ) );
+    $args  = array(
         'post_type'      => MBC_NL_TYPE,
-        'name'           => $slug,
         'post_status'    => array( 'publish', 'future', 'draft', 'pending', 'private' ),
         'posts_per_page' => 1,
         'no_found_rows'  => true,
-    ) );
+    );
+    if ( $id ) { // /newsletter/email/<id>/ (an issue with no slug yet): same access rules as the slug form.
+        $args['p'] = $id;
+    } elseif ( '' !== $slug ) {
+        $args['name'] = $slug;
+    }
+    $found = ( $id || '' !== $slug ) ? get_posts( $args ) : array();
     $issue = $found ? $found[0] : null;
 
     $supplied = isset( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a bearer key, not a form.

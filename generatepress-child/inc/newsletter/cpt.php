@@ -15,7 +15,7 @@ const MBC_NL_SLUG    = 'newsletter';
 const MBC_NL_CAP     = 'mbc_manage_newsletter';
 const MBC_NL_ROLE    = 'mbc_newsletter_editor';
 const MBC_NL_DEFAULT_HEADER_OPTION = 'mbc_nl_default_header_id'; // Attachment ID of the default header image.
-const MBC_NL_VERSION = '1'; // Bump to re-sync the role's capabilities and flush the rewrite rules once.
+const MBC_NL_VERSION = '2'; // Bump to re-sync the role's capabilities and flush the rewrite rules once.
 
 add_action( 'init', 'mbc_nl_register_type' );
 function mbc_nl_register_type() {
@@ -96,11 +96,18 @@ function mbc_nl_register_email_rule() {
         'index.php?' . MBC_NL_TYPE . '=$matches[1]&mbc_nl_email=1',
         'top'
     );
+    // By ID, for an issue with no slug yet (a draft that has only been saved): /newsletter/email/<id>/.
+    add_rewrite_rule(
+        '^' . MBC_NL_SLUG . '/email/([0-9]+)/?$',
+        'index.php?mbc_nl_email=1&mbc_nl_id=$matches[1]',
+        'top'
+    );
 }
 
 add_filter( 'query_vars', 'mbc_nl_query_vars' );
 function mbc_nl_query_vars( $vars ) {
     $vars[] = 'mbc_nl_email';
+    $vars[] = 'mbc_nl_id';
     return $vars;
 }
 
@@ -228,10 +235,13 @@ function mbc_nl_key_matches( $issue_id, $supplied ) {
  */
 function mbc_nl_email_url( $issue_id, $with_key = false ) {
     $post = get_post( $issue_id );
-    if ( ! $post || '' === $post->post_name ) {
+    if ( ! $post || MBC_NL_TYPE !== $post->post_type || 'auto-draft' === $post->post_status ) {
         return '';
     }
-    $url = home_url( user_trailingslashit( MBC_NL_SLUG . '/' . $post->post_name . '/email' ) );
+    // Slug form once there is a slug (published issues); a draft has none until it is published, so it uses its ID.
+    $url = '' !== $post->post_name
+        ? home_url( user_trailingslashit( MBC_NL_SLUG . '/' . $post->post_name . '/email' ) )
+        : home_url( user_trailingslashit( MBC_NL_SLUG . '/email/' . (int) $post->ID ) );
     return $with_key ? add_query_arg( 'key', mbc_nl_get_key( $post->ID ), $url ) : $url;
 }
 

@@ -113,7 +113,7 @@ function mbc_nl_add_meta_boxes() {
 }
 
 function mbc_nl_render_links_box( $post ) {
-    if ( '' === $post->post_name || 'auto-draft' === $post->post_status ) {
+    if ( 'auto-draft' === $post->post_status ) {
         echo '<p>' . esc_html__( 'Give the issue a title and save the draft: its links appear here.', 'generatepress-child' ) . '</p>';
         return;
     }

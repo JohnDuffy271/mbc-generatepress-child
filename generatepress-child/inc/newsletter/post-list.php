@@ -101,17 +101,13 @@ function mbc_nl_render_post_list_box( $post ) {
             </select>
             <button type="button" class="button" id="mbc-nl-add-button"><?php esc_html_e( 'Add', 'generatepress-child' ); ?></button>
         </p>
-        <?php if ( 'auto-draft' !== $post->post_status ) : ?>
-            <p class="mbc-nl-refill">
-                <label for="mbc-nl-since"><strong><?php esc_html_e( 'Posts since', 'generatepress-child' ); ?></strong></label><br>
-                <input type="date" id="mbc-nl-since" value="<?php echo esc_attr( $default_date ); ?>" max="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" data-default="<?php echo esc_attr( $default_date ); ?>">
-                <a class="button button-secondary" id="mbc-nl-refill" href="<?php echo esc_url( $refill ); ?>" data-base="<?php echo esc_url( $refill ); ?>"><?php esc_html_e( 'Refill from recent posts', 'generatepress-child' ); ?></a>
-            </p>
-        <?php endif; ?>
+        <p class="mbc-nl-refill">
+            <label for="mbc-nl-since"><strong><?php esc_html_e( 'Posts since', 'generatepress-child' ); ?></strong></label><br>
+            <input type="date" id="mbc-nl-since" value="<?php echo esc_attr( $default_date ); ?>" max="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" data-default="<?php echo esc_attr( $default_date ); ?>">
+            <a class="button button-secondary" id="mbc-nl-refill" href="<?php echo esc_url( $refill ); ?>" data-base="<?php echo esc_url( $refill ); ?>"><?php esc_html_e( 'Refill from recent posts', 'generatepress-child' ); ?></a>
+        </p>
     </div>
-    <?php if ( 'auto-draft' !== $post->post_status ) : ?>
-        <p class="description"><?php esc_html_e( 'Refill replaces the list above with the posts published since the chosen date (the date of the last issue to start with): sticky posts first, then the newest, up to 6. Unsaved changes on this screen are lost.', 'generatepress-child' ); ?></p>
-    <?php endif; ?>
+    <p class="description"><?php esc_html_e( 'Refill replaces the list above with the posts published since the chosen date (the date of the last issue to start with): sticky posts first, then the newest, up to 6. Unsaved changes on this screen are lost.', 'generatepress-child' ); ?></p>
     <?php
 }
 

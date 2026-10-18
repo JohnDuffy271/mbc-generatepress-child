@@ -13,7 +13,7 @@ For the people with the **Newsletter editor** role. You need to be signed in to 
    - **Add a post** puts another recent post in.
    - **Refill from recent posts** (next to **Add a post**) starts the list again from the posts published since the date in the **Posts since** box, which starts as the date of the last issue. Change the date to refill from any day, for example to rebuild a test issue. Sticky posts come first, then the newest, up to 6. Anything you changed on the screen is lost.
    - If there are no posts since that date you see "No new posts since <date>. Choose an earlier date or add posts below." and your list is left as it was.
-   - Refill only appears once the issue has been saved (press **Save Draft** first on a brand-new issue; a new issue is filled in for you anyway).
+   - Refill is on every issue, including a brand-new one (a new issue is filled in for you anyway).
 6. Press **Save Draft**. You can keep editing as long as you like.
 
 The list is saved with the issue. Posts you publish later do not change an issue you have saved.
@@ -21,7 +21,7 @@ The list is saved with the issue. Posts you publish later do not change an issue
 ## Look at it
 
 - **Preview** shows the web version while it is a draft.
-- The **Email link** box (top right) holds the address Mailchimp reads. **Copy email URL**, then open it in a new tab to see the email.
+- The **Email link** box (top right) holds the address Mailchimp reads. It works from the first **Save Draft**: before the issue is published the address uses the issue's number (`/newsletter/email/123/?key=...`), after that its name; the old link keeps working after you publish. **Copy email URL**, then open it in a new tab to see the email.
 
 ## Send it
 
