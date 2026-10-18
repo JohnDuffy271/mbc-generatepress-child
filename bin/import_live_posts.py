@@ -81,6 +81,7 @@ VOID = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "embed", "a
 DROP = {"script", "style", "noscript", "template", "svg", "form", "button", "select", "textarea", "head", "title",
         "canvas", "audio", "video", "object", "embed", "iframe", "map"}
 BLOCK = {"p", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "blockquote", "hr", "table", "figure", "pre", "dl"}
+BREAKERS = {"div", "section", "article", "header", "footer", "main", "aside", "nav", "center", "address", "fieldset", "form"}
 INLINE = {"a", "strong", "em", "br", "img", "sup", "sub", "code"}
 KEEP = BLOCK | INLINE | {"li", "thead", "tbody", "tfoot", "tr", "th", "td", "figcaption", "dt", "dd"}
 MAP = {"b": "strong", "i": "em", "h1": "h2"}
@@ -176,7 +177,12 @@ def _flatten(node):
             continue
         tag = MAP.get(kid.tag, kid.tag)
         if tag not in KEEP:
+            wrapper = kid.tag in BREAKERS  # a div or section ends the paragraph before it and starts a new one after it
+            if wrapper:
+                items.append(("break", ""))
             items.extend(_flatten(kid))  # div, span, section, font, ...: keep the content, lose the wrapper
+            if wrapper:
+                items.append(("break", ""))
         else:
             rendered = _render(kid, tag)
             if rendered:
@@ -191,13 +197,17 @@ def _paragraphs(items):
     def flush():
         inner = "".join(run).strip()
         run.clear()
-        inner = re.sub(r"^(?:\s|<br>)+|(?:\s|<br>)+$", "", inner)
-        if _has_content(inner):
-            out.append(f"<p>{inner}</p>")
+        # a picture sits in its own paragraph, whatever text surrounds it in the source
+        for piece in re.split(r"(<a\b[^>]*>\s*<img\b[^>]*>\s*</a>|<img\b[^>]*>)", inner):
+            piece = re.sub(r"^(?:\s|<br>)+|(?:\s|<br>)+$", "", piece)
+            if _has_content(piece):
+                out.append(f"<p>{piece}</p>")
 
     for kind, text in items:
         if kind == "inline":
             run.append(text)
+        elif kind == "break":
+            flush()
         else:
             flush()
             out.append(text)

@@ -517,7 +517,10 @@ Pages, menus and settings are managed via the WordPress REST API.
       included) are skipped. Every imported post has `_mbc_needs_consent_review = 1` (the consent pass before cutover). Meta is
       registered in `inc/live-import.php` (kept until the migration is done; it also holds the media `mbc_live_source_url`
       registration that used to be in `demo-import.php`). **Imported so far: 5 posts (live 69271, 69191, 69036, 68996, 68875 ->
-      sandbox 1463, 1469, 1470, 1472, 1475), 16 uploaded images.** 3-month dry run (since 18 Jul 2026): 31 posts, 21 to create, 10
+      sandbox 1463, 1469, 1470, 1472, 1475); do not import more until John says.** Orphan media from re-uploads while tuning the image rules (delete
+      on John's say-so): 1467 and 1465 (and 1462 if unused). Source text is imported as written (the Leeds Furniture post is bold throughout on live).
+      The single-post template now hides the featured image when it appears anywhere in the text (`mbc_featured_repeats_content_image()`), and post
+      content images get accurate `sizes` (`inc/image-sizes.php`). 3-month dry run (since 18 Jul 2026): 31 posts, 21 to create, 10
       skipped as demo copies. Checks: `~/src/mbc-tests/import_live_check.py [clean|map|image|sandbox|idempotent]`.
       The demo importer was renamed `bin/import_live_demo_posts.py` (the shared client lives there; `elementor_exit.py`,
       `newsletter_header_image.py` and the test tooling import it under that name).
