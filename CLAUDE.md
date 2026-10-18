@@ -516,9 +516,15 @@ Pages, menus and settings are managed via the WordPress REST API.
       become relative sandbox paths, others stay on live and are listed. Slug clashes with non-imported posts (the 10 demo posts
       included) are skipped. Every imported post has `_mbc_needs_consent_review = 1` (the consent pass before cutover). Meta is
       registered in `inc/live-import.php` (kept until the migration is done; it also holds the media `mbc_live_source_url`
-      registration that used to be in `demo-import.php`). **Imported so far: 5 posts (live 69271, 69191, 69036, 68996, 68875 ->
-      sandbox 1463, 1469, 1470, 1472, 1475); do not import more until John says.** Orphan media from re-uploads while tuning the image rules (delete
-      on John's say-so): 1467 and 1465 (and 1462 if unused). Source text is imported as written (the Leeds Furniture post is bold throughout on live).
+      registration that used to be in `demo-import.php`). **Imported so far (18 Oct 2026): 21 posts, the whole 3-month window since 18 Jul (the 10 demo posts are skipped); do not import more
+      until John says.** Orphan media 1465 and 1467 were deleted on John's instruction (1462 is in use). **Authors:** the live API does not publish
+      author names, only numeric ids (12: 28 of the 31 posts, 141 and 9 the rest), so `bin/import_authors.json` (`map`: live slug or id ->
+      sandbox user id, `fallback`: user slug) is still empty and every post is by the new `mbc` user ("Moortown Baptist Church", subscriber, random
+      password, example.invalid address): John to say which live id is John Sherbourne (sandbox user 3) and add it. **Alt text:** a featured
+      image without live alt stays `alt=""` (decorative); inline images without alt get a short description drafted by a subagent from small
+      previews (`--prepare-alts` writes `~/src/mbc-images/live-cache/alt-needed.json`, the subagent writes `alt-drafts.json`, `--alt-file` applies it),
+      media meta `_mbc_alt_auto = 1`, listed in the report for the consent pass (14 images). **Bold:** a post whose text is more than 80% bold has the
+      bold removed (`bold_share()` / `unwrap_bold()`); partial bold stays. Source text is imported as written (the Leeds Furniture post is bold throughout on live).
       The single-post template now hides the featured image when it appears anywhere in the text (`mbc_featured_repeats_content_image()`), and post
       content images get accurate `sizes` (`inc/image-sizes.php`). 3-month dry run (since 18 Jul 2026): 31 posts, 21 to create, 10
       skipped as demo copies. Checks: `~/src/mbc-tests/import_live_check.py [clean|map|image|sandbox|idempotent]`.

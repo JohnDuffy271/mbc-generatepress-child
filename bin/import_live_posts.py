@@ -441,8 +441,9 @@ def map_author(live_author, users, authors=None):
     name = html.unescape((live_author or {}).get("name", "")).strip().lower()
     slug = (live_author or {}).get("slug", "").lower()
     ids = {u["id"] for u in users}
-    if slug in authors["map"] and authors["map"][slug] in ids:
-        return authors["map"][slug], "mapped"
+    for key in (slug, str((live_author or {}).get("id", ""))):  # the live API may hide names, so a numeric live ID works as a key too
+        if key and key in authors["map"] and authors["map"][key] in ids:
+            return authors["map"][key], "mapped"
     for u in users:
         if slug and u["slug"].lower() == slug:
             return u["id"], "matched"
@@ -654,6 +655,9 @@ def plan_post(p, state, force, alts=None):
     rec["cats"], rec["tags"] = c, t
     rec["unmapped"] = [x["slug"] for x in c if not map_category(x["slug"], x["name"])[2]]
     rec["author"] = ((p.get("_embedded") or {}).get("author") or [None])[0]
+    rec["author_live_id"] = p.get("author")
+    if rec["author"] and (rec["author"].get("code") or not rec["author"].get("slug")):
+        rec["author"] = {"id": p.get("author")}  # the embed is an error object: the live API does not publish authors
     if clean["empty"]:
         rec["warnings"].append("content is empty after cleaning")
     if len(clean["html"]) > OVERSIZED_CHARS:
@@ -682,8 +686,9 @@ def plan_post(p, state, force, alts=None):
     if how == "none":
         rec["warnings"].append("live author not exposed by the REST API; no fallback user: left as the importing user" if not rec["author"]
                                else "author not matched and no fallback user: left as the importing user")
-    elif how == "mbc" and rec["author"]:
-        rec["warnings"].append(f"author {rec['author'].get('slug')!r} not in import_authors.json: posted as the fallback user")
+    elif how == "mbc":
+        who = rec["author"].get("slug") or f"live user id {rec['author'].get('id', p.get('author'))}" if rec["author"] else f"live user id {p.get('author')}"
+        rec["warnings"].append(f"author {who} is not in import_authors.json: posted as the fallback user")
     # Action: by live id (ours), then by slug clash (demo or other posts).
     mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"]), None)
     demo = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
@@ -976,10 +981,10 @@ def main():
     extra["Oversized content"] = [f"live #{r['id']}: {w}" for r in recs for w in r["warnings"] if w.startswith("oversized")]
     seen = {}
     for r in recs:
-        a = r["live"].get("_embedded", {}).get("author", [{}])[0] if r["live"].get("_embedded") else {}
-        label = f"{a.get('slug', '?')} ({html.unescape(a.get('name', '?'))}) -> {r.get('author_how', '?')}"
-        seen[label] = seen.get(label, 0) + 1
-    extra["Authors (live slug (name) -> how mapped: posts)"] = [f"{k}: {v}" for k, v in sorted(seen.items())]
+        a = r["author"] or {}
+        who = f"{a['slug']} ({html.unescape(a.get('name', ''))})" if a.get("slug") else f"live user id {r.get('author_live_id')} (name not public)"
+        seen.setdefault(f"{who} -> {r.get('author_how', '?')}", []).append(r["title"][:40])
+    extra["Authors (who -> how mapped: posts, sample titles)"] = [f"{k}: {len(v)} post(s), e.g. {'; '.join(v[:3])}" for k, v in sorted(seen.items())]
     if applied:
         extra["Alt text drafted automatically: review in the consent pass (media id, live post, text)"] = [f"media {m} (live #{pid}): {txt}" for m, pid, txt in imp.auto_alts]
     extra["Posts needing the consent review"] = [f"{len(todo)} flagged now (meta _mbc_needs_consent_review)"] if applied else []

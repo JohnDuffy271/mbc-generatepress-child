@@ -137,6 +137,13 @@ The page now shows one card for each partner. Its introduction is your existing 
 
 - Nothing needed now. We will ask you to test the new newsletter once everything else is ready.
 
+## News posts copied from the old website
+
+Recent news posts are being copied across from the live site so we can test the new News pages. Before the new site goes live we will need you to check them. There is no list to read here: we will send the posts when they are ready.
+
+- **Photo consent:** 21 copied news posts are marked "needs a consent check", because their photos may show people who can be recognised. We need you to confirm, post by post, that the people in them have agreed to appear on the website. (This count goes up as more posts are copied.)
+- **Picture descriptions:** 14 pictures had no description for people who cannot see them. We wrote a short one for each so that you can read and correct it. These are marked so we can find them. (The count goes up as more posts are copied.)
+
 ## Photos in general
 
 For any photo, bigger is better and landscape is best (about a third wider than it is tall). Please avoid writing in the picture, because the website adds its own. If you can, put the main subject near the middle, because pictures are cropped to fit on small screens.
