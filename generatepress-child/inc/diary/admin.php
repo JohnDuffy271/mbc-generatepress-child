@@ -1,6 +1,6 @@
 <?php
 /**
- * Weekly diary: the Tools > Weekly diary screen and its REST routes (capability mbc_weekly_diary).
+ * Weekly diary: the top-level Weekly diary screen and its REST routes (capability mbc_weekly_diary).
  * The routes are what the screen's script uses to save notes and refresh the output; they are
  * admin-only and nothing here is reachable by visitors.
  */
@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'admin_menu', 'mbc_diary_menu' );
 function mbc_diary_menu() {
-    $hook = add_management_page( 'Weekly diary', 'Weekly diary', MBC_DIARY_CAP, 'mbc-weekly-diary', 'mbc_diary_screen' );
+    $hook = add_menu_page( 'Weekly diary', 'Weekly diary', MBC_DIARY_CAP, 'mbc-weekly-diary', 'mbc_diary_screen', 'dashicons-calendar-alt', 3 );
     add_action( 'admin_print_scripts-' . $hook, 'mbc_diary_assets' );
 }
 

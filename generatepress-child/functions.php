@@ -22,6 +22,7 @@ require_once get_stylesheet_directory() . '/inc/calendar/render.php';
 require_once get_stylesheet_directory() . '/inc/diary/format.php';
 require_once get_stylesheet_directory() . '/inc/diary/data.php';
 require_once get_stylesheet_directory() . '/inc/diary/admin.php';
+require_once get_stylesheet_directory() . '/inc/diary/access.php';
 require_once get_stylesheet_directory() . '/inc/newsletter/cpt.php';
 require_once get_stylesheet_directory() . '/inc/section-index.php';
 require_once get_stylesheet_directory() . '/inc/logo-flag.php';
