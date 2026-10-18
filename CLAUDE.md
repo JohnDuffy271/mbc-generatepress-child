@@ -492,7 +492,7 @@ Pages, menus and settings are managed via the WordPress REST API.
       probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
       attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
-- [x] **Weekly diary (18 Oct 2026, v1, sandbox)**: Tools > Weekly diary builds the diary part of the
+- [x] **Weekly diary (18 Oct 2026, v1, sandbox)**: the top-level Weekly diary screen (was under Tools) builds the diary part of the
       minister's weekly members' email (members and staff, not public). `inc/diary/` (`format.php` pure
       formatting, `data.php` capability, notes and build, `admin.php` screen and REST), `js/diary-admin.js`,
       `css/diary-admin.css`; guide for the minister `docs/weekly-diary-guide.md`. **Shared building block:**
