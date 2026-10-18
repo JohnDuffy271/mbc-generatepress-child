@@ -42,20 +42,18 @@ notes you add are never shown on the public website and are never sent to Google
 
 | Calendar | Diary |
 |---|---|
-| 7pm to 8pm | `7-8pm` |
-| 9am to 11am | `9-11am` |
+| 7pm to 8pm | `7.00 - 8.00pm` |
 | 10am to 11.30am | `10.00 - 11.30am` |
 | 10am to 1.30pm | `10.00 - 1.30pm` |
 | 10am to noon | `10.00 - 12.00 midday` |
-| 11am to 1pm | `11.00 - 1.00pm` |
 | 10pm to midnight | `10.00 - 12.00 midnight` |
-| Starts at 10am, no end | `10am` |
+| Starts at 7.30pm, no end | `7.30pm` |
+| Starts at 10am, no end | `10.00am` |
 | Starts at noon, no end | `midday` |
 | All day | no time |
 
-Hours-only (`7-8pm`) is used when both times are on the hour and both are am or both are pm;
-otherwise minutes are shown. An event over several days shows its start time and
-"until Sunday 1st November".
+Minutes are always shown, and am or pm is written once, after the end time. An event over
+several days shows its start time and "until Sunday 1st November".
 
 ## If something looks wrong
 

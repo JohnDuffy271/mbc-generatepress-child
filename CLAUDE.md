@@ -508,9 +508,9 @@ Pages, menus and settings are managed via the WordPress REST API.
       (every week) and `e:<event id>`, max 500 characters, plain text, saved inline over `POST /mbc/v1/diary/note`
       (an empty note deletes); orphaned notes (not in a 13-month read of the calendar) are listed with a delete
       button, and not judged when the calendar cannot be read. Routes `GET /mbc/v1/diary?from=&to=&refresh=1`,
-      `POST|DELETE /mbc/v1/diary/note`, all `mbc_weekly_diary` only. **Time rule** (`format.php`): `7-8pm` and `9-11am`
-      (both on the hour, same am/pm), else `10.00 - 11.30am`, `10.00 - 1.30pm`, `10.00 - 12.00 midday`,
-      `10.00 - 12.00 midnight`; one time `10am`, `10.30am`, `midday`; am/pm once, after the end. The
+      `POST|DELETE /mbc/v1/diary/note`, all `mbc_weekly_diary` only. **Time rule** (`format.php`, John's decision 18 Oct 2026): minutes always shown, am/pm once at the end:
+      `7.00 - 8.00pm`, `10.00 - 11.30am`, `10.00 - 1.30pm`, `10.00 - 12.00 midday` (and `midnight`); one time `7.30pm`,
+      `10.00am`, `midday`. The
       "at <venue>" is added only when the location is not the church (filter `mbc_diary_church_patterns`).
       Check: `~/src/mbc-tests/diary_check.py [format|split|notes|caps|output|browser|real]` (115 checks; temporary
       "mbc-test-diary-*" users, fixture data, notes keyed `TEST...`, all cleaned up). Not provable with fixtures:
