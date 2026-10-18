@@ -21,21 +21,24 @@ function mbc_image_identity( $url ) {
 }
 
 /**
- * True when the post's first content image is the same picture as its
- * featured image, so the featured image should not be shown again.
+ * True when any image in the post's content is the same picture as its featured image,
+ * so the featured image should not be shown again above the text.
  */
-function mbc_featured_repeats_first_content_image( $post = null ) {
+function mbc_featured_repeats_content_image( $post = null ) {
     $post     = get_post( $post );
     $thumb_id = $post ? get_post_thumbnail_id( $post ) : 0;
-    if ( ! $thumb_id || ! preg_match( '/<img\b[^>]*>/i', $post->post_content, $tag ) ) {
+    if ( ! $thumb_id || ! preg_match_all( '/<img\b[^>]*>/i', $post->post_content, $tags ) ) {
         return false;
-    }
-    if ( preg_match( '/\bwp-image-' . (int) $thumb_id . '\b/', $tag[0] ) ) {
-        return true; // Same attachment.
     }
     $featured = wp_get_attachment_url( $thumb_id );
-    if ( ! $featured || ! preg_match( '/\bsrc\s*=\s*["\']([^"\']+)["\']/i', $tag[0], $src ) ) {
-        return false;
+    $identity = $featured ? mbc_image_identity( $featured ) : '';
+    foreach ( $tags[0] as $tag ) {
+        if ( preg_match( '/\bwp-image-' . (int) $thumb_id . '\b/', $tag ) ) {
+            return true; // Same attachment.
+        }
+        if ( '' !== $identity && preg_match( '/\bsrc\s*=\s*["\']([^"\']+)["\']/i', $tag, $src ) && mbc_image_identity( html_entity_decode( $src[1] ) ) === $identity ) {
+            return true;
+        }
     }
-    return mbc_image_identity( $featured ) === mbc_image_identity( html_entity_decode( $src[1] ) );
+    return false;
 }

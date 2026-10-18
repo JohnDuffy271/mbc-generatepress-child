@@ -25,7 +25,7 @@ get_header();
                 </p>
             </header>
 
-            <?php if ( has_post_thumbnail() && ! mbc_featured_repeats_first_content_image() ) : ?>
+            <?php if ( has_post_thumbnail() && ! mbc_featured_repeats_content_image() ) : ?>
                 <figure class="mbc-post__figure">
                     <?php the_post_thumbnail( 'large', array( 'class' => 'mbc-post__image' ) ); ?>
                 </figure>

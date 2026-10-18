@@ -419,6 +419,8 @@ def process_image(data, post_date):
         return data, "." + (img.format or "gif").lower(), Image.MIME.get(img.format, "image/gif"), notes
     img = ImageOps.exif_transpose(img)
     alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+    if alpha and img.convert("RGBA").getchannel("A").getextrema()[0] == 255:
+        alpha = False  # an alpha channel that is fully opaque is just a photo or graphic: treat it as one
     w, h = img.size
     if max(w, h) > MAX_SIDE:
         scale = MAX_SIDE / max(w, h)
@@ -429,6 +431,11 @@ def process_image(data, post_date):
     if alpha:
         img.convert("RGBA").save(buf, "PNG", optimize=True)
         ext, mime = ".png", "image/png"
+        if buf.tell() > CAP_BYTES:  # real transparency, too heavy as PNG: lossy WebP keeps the alpha
+            buf = io.BytesIO()
+            img.convert("RGBA").save(buf, "WEBP", quality=80, method=6)
+            ext, mime = ".webp", "image/webp"
+            notes.append("transparent PNG over the cap saved as WebP")
     else:
         img = img.convert("RGB")
         ext, mime = ".jpg", "image/jpeg"
