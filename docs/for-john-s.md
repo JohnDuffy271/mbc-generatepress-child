@@ -6,9 +6,10 @@ Photos: please only send photos that people are happy to have on the website. Wh
 
 ## Most urgent
 
-1. **Photo consent.** Confirm that everyone we can recognise has agreed, in the five slideshow photos on the home page, the Meet the team banner, and the Stepping Stones and Rock Solid photos (details below).
-2. **Weekly timetable.** Confirm the list on the What's On page, and answer the Country Dancing and Ladies Housegroup questions.
-3. **FAQs.** Read the ten drafted questions and answers on the About Us FAQs page, and fill in the gaps marked "Needs confirming".
+1. **Photo consent on the pages.** Please confirm that everyone we can recognise has agreed, in the five slideshow photos on the home page, the Meet the team banner, and the Stepping Stones and Rock Solid photos (details below).
+2. **Photo consent on the copied news posts.** 31 news posts copied from the old website are marked "needs a consent check" (see "News posts copied from the old website" below).
+3. **Weekly timetable.** Please confirm the list that is now published on the What's On page, and answer the Country Dancing and Ladies Housegroup questions.
+4. **Three pages to read and finish.** FAQs, Pathways and BU & YBA are now on the site with the gaps marked "Needs confirming". Please read each one and fill the gaps (details under About Us, Mission and Resources below).
 
 ---
 
@@ -34,7 +35,7 @@ Photos: please only send photos that people are happy to have on the website. Wh
 
 **Who we are.** The old sentence "Led by our full-time minister, Shelley Dring, you'll find us by the big roundabout…" read oddly. We have changed it to: "We're led by our full-time minister, and you'll find us by the big roundabout where King Lane and Stonegate Road cross." Is that all right?
 
-**FAQs.** (Now on the site.) We have drafted ten questions and answers (service time and length, where to park, what to expect, children, access, Communion, dress, joining and giving, joining from home, getting involved). Please read them and correct anything wrong. The answers use only what is already on this website. Where we do not know, the draft says "Needs confirming" and we need you to fill the gap: how much parking there is, how visitors are greeted, the children's age groups and how they are kept safe, step-free access, toilets and a hearing loop, who may take Communion, and what to say about giving.
+**FAQs.** (Published on the site, with the gaps showing.) We have drafted ten questions and answers (service time and length, where to park, what to expect, children, access, Communion, dress, joining and giving, joining from home, getting involved). Please read them and correct anything wrong. The answers use only what is already on this website. Where we do not know, the draft says "Needs confirming" and we need you to fill the gap: how much parking there is, how visitors are greeted, the children's age groups and how they are kept safe, step-free access, toilets and a hearing loop, who may take Communion, and what to say about giving.
 
 **Photos and permission.**
 - Meet the team: the picture at the top shows six people sitting round a table (it looks like it was taken at a conference venue). Please confirm everyone in it has agreed to it being on the website.
@@ -42,15 +43,15 @@ Photos: please only send photos that people are happy to have on the website. Wh
 
 ## What's On
 
-**Weekly timetable.** This is the list now on the What's On page. The times for Lunch Club, the Tuesday, Wednesday, Thursday and Friday Bible studies, the Corner Room housegroup and the Parkinson's class come from the minister's weekly email. Please confirm the whole list is right, including rooms.
-- Sunday: 11:00 service (Café Church on the first Sunday, Communion on the third), the younger group alongside it, Rock Solid 7pm to 8pm.
+**Weekly timetable.** This is the list now published on the What's On page. The times for Lunch Club, the Tuesday, Wednesday, Thursday and Friday Bible studies, the Corner Room housegroup and the Parkinson's class come from the minister's weekly email. Please confirm the whole list is right, including rooms.
+- Sunday: 11:00 service (Café Church on the first Sunday, Communion on the third), Sunday School for young children alongside it, Rock Solid 7pm to 8pm.
 - Monday: Beacon Café 10 to 12.
 - Tuesday: Stepping Stones toddler group 10 to 11:30 (term time); Bible Study 12:30 to 2:30 in the Music Room.
 - Wednesday: Lunch Club 10 to 1:30; Bible Study 7:30pm in the Music Room and on Zoom; housegroup 7:30pm in the Corner Room; Country Dancing 7:30 to 9.
 - Thursday: Open Door Craft Group 2 to 4; Bible Study and Prayer 7 to 9 in the Music Room.
 - Friday: Bible Study 10 to 11:30 in church; Parkinson's Exercise Class 6:30 to 7:30pm in the Sports Hall; housegroup 8 to 10pm in a member's home.
 
-Two questions: is Country Dancing still running, and at those times? Is the Wednesday Corner Room housegroup the Ladies Housegroup (we used to say so, and the minister's email does not)? Also, the timetable here and the church calendar both list the regular activities, so tell us which one is the master.
+Three questions: is Country Dancing still running, and at those times? Is Sunday School still running alongside the service, and is "young children" the right description? Is the Wednesday Corner Room housegroup the Ladies Housegroup (we used to say so, and the minister's email does not)? Also, the timetable here and the church calendar both list the regular activities, so tell us which one is the master.
 
 **Short descriptions (these show on the page's cards).** Please check, especially days and times:
 - Sunday Mornings: "Our main service, every Sunday at 11am, in church and live on YouTube."
@@ -98,7 +99,7 @@ The page now shows one card for each partner. Its introduction is your existing 
 - Mission Group
 - Moortown Emergency Relief Fund
 
-**Pathways.** We have drafted the page from the Pathways website: what they do, how to give to them, and their self-referral page. Please read it. We need you to tell us how MBC supports Pathways (prayer requests, giving, any volunteers), because their website does not say. Their site currently says they are full and not taking self-referrals; we say so on the page, so please check that again just before it goes live.
+**Pathways.** (Published on the site, with the gaps showing.) We have drafted the page from the Pathways website: what they do, how to give to them, and their self-referral page. Please read it. We need you to tell us how MBC supports Pathways (prayer requests, giving, any volunteers), because their website does not say. Their site currently says they are full and not taking self-referrals; we say so on the page, so please check that again just before it goes live.
 
 **Romania.**
 - The year the links with Romania began. The old website text says "since the mid 70s" but a 2011 page says 1991.
@@ -124,7 +125,7 @@ The page now shows one card for each partner. Its introduction is your existing 
 - Services on YouTube: "Watch our Sunday services on YouTube."
 
 **Pages that need their text.**
-- BU & YBA: we have drafted an explanation of the Baptist Union and the Yorkshire Baptist Association from their own websites, with links to both. Please read it. We need you to confirm that MBC belongs to the Baptist Union as well as the Association, and anything you want to say about what that involves.
+- BU & YBA: (published on the site, with the gap showing) we have drafted an explanation of the Baptist Union and the Yorkshire Baptist Association from their own websites, with links to both, and a short paragraph saying that Baptist churches run their own affairs. Please read it. We need you to confirm that MBC belongs to the Baptist Union as well as the Association, and anything you want to say about what that involves.
 - Giving: how people can give. Please ask the treasurer for the bank or Stewardship details (account details, standing order, envelopes, online), and for any wording about giving, including Gift Aid. We will not put figures on the website until we have them from the treasurer.
 
 **Room Hire.** The picture is a graphic with writing on it. Photos of the rooms you hire out would be better.
@@ -141,8 +142,8 @@ The page now shows one card for each partner. Its introduction is your existing 
 
 Recent news posts are being copied across from the live site so we can test the new News pages. Before the new site goes live we will need you to check them. There is no list to read here: we will send the posts when they are ready.
 
-- **Photo consent:** 21 copied news posts are marked "needs a consent check", because their photos may show people who can be recognised. We need you to confirm, post by post, that the people in them have agreed to appear on the website. (This count goes up as more posts are copied.)
-- **Picture descriptions:** 14 pictures had no description for people who cannot see them. We wrote a short one for each so that you can read and correct it. These are marked so we can find them. (The count goes up as more posts are copied.)
+- **Photo consent:** 31 copied news posts are marked "needs a consent check", because their photos may show people who can be recognised. We need you to confirm, post by post, that the people in them have agreed to appear on the website. (This count goes up as more posts are copied.)
+- **Picture descriptions:** 23 pictures had no description for people who cannot see them. We wrote a short one for each so that you can read and correct it. These are marked so we can find them. (The count goes up as more posts are copied.)
 
 ## Photos in general
 
