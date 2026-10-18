@@ -4,12 +4,23 @@ Thank you for helping with the new website. Everything below is waiting on you, 
 
 Photos: please only send photos that people are happy to have on the website. Wherever a photo shows people we can recognise, we need you to confirm they have agreed.
 
+## Most urgent
+
+1. **Photo consent.** Confirm that everyone we can recognise has agreed, in the five slideshow photos on the home page, the Meet the team banner, and the Stepping Stones and Rock Solid photos (details below).
+2. **Weekly timetable.** Confirm the list on the What's On page, and answer the Country Dancing and Ladies Housegroup questions.
+3. **FAQs.** Read the ten drafted questions and answers on the About Us FAQs page, and fill in the gaps marked "Needs confirming".
+
 ---
 
 ## Home page
 
 - **Get in touch picture.** The photo of the church foyer is a stand-in. Is there a better one (no people, or people who have agreed)?
-- **"More at Moortown" slideshow.** The Easter egg giveaway, litter picking, church buffet, sports hall mural and camping photos are in. You have said they are all approved, so no action unless you want any changed. (The camping photo is from 2005 and a little soft.)
+- **"More at Moortown" slideshow: consent.** Please confirm that everyone we can recognise in each of these five photos has agreed to it being on the website (children need a parent or carer's agreement):
+  - Easter egg giveaway (people and children)
+  - Litter picking (people)
+  - Church buffet (a boy and other children queuing)
+  - Sports hall mural (people, including children)
+  - Church camping (people, including children; the photo is from 2005 and a little soft, so you may prefer a newer one)
 
 ## About Us
 
@@ -19,7 +30,7 @@ Photos: please only send photos that people are happy to have on the website. Wh
 **Short descriptions (these show on the page's cards).** Please check or reword:
 - Who we are: "A local church of individuals and families who seek to love God and live generously."
 - What we believe: "What we believe, how we make decisions as a Baptist church, and what membership means."
-- Meet the team: "Our minister and the nine deacons who lead the church."
+- Meet the team: "Our minister and the nine deacons who lead the church." (Please check the number of deacons.)
 
 **Who we are.** The old sentence "Led by our full-time minister, Shelley Dring, you'll find us by the big roundabout…" read oddly. We have changed it to: "We're led by our full-time minister, and you'll find us by the big roundabout where King Lane and Stonegate Road cross." Is that all right?
 
@@ -31,15 +42,15 @@ Photos: please only send photos that people are happy to have on the website. Wh
 
 ## What's On
 
-**Weekly timetable.** Please check this list is right, including the times and rooms. We are especially unsure about Country Dancing and the Ladies Housegroup.
-- Sunday: 11:00 service (Café Church on the first Sunday, Communion on the third), Sunday School alongside it, Rock Solid 7pm to 8pm.
+**Weekly timetable.** This is the list now on the What's On page. The times for Lunch Club, the Tuesday, Wednesday, Thursday and Friday Bible studies, the Corner Room housegroup and the Parkinson's class come from the minister's weekly email. Please confirm the whole list is right, including rooms.
+- Sunday: 11:00 service (Café Church on the first Sunday, Communion on the third), the younger group alongside it, Rock Solid 7pm to 8pm.
 - Monday: Beacon Café 10 to 12.
-- Tuesday: Stepping Stones toddler group 10 to 11:30 (term time), housegroup 12 to 2 in church.
-- Wednesday: Lunch Club 10:30 to 2; housegroup 7:30 to 9:30 (half in the Music Room, half online); Ladies Housegroup 7:30 to about 9:30 in the Corner Room; Country Dancing 7:30 to 9.
+- Tuesday: Stepping Stones toddler group 10 to 11:30 (term time); Bible Study 12:30 to 2:30 in the Music Room.
+- Wednesday: Lunch Club 10 to 1:30; Bible Study 7:30pm in the Music Room and on Zoom; housegroup 7:30pm in the Corner Room; Country Dancing 7:30 to 9.
 - Thursday: Open Door Craft Group 2 to 4; Bible Study and Prayer 7 to 9 in the Music Room.
-- Friday: Bible Study 10 to 11 in church; housegroup 8 to 10pm in a member's home.
+- Friday: Bible Study 10 to 11:30 in church; Parkinson's Exercise Class 6:30 to 7:30pm in the Sports Hall; housegroup 8 to 10pm in a member's home.
 
-(The page will stay as it is until you confirm this list. It also appears in the church calendar, so tell us which one is the master.)
+Two questions: is Country Dancing still running, and at those times? Is the Wednesday Corner Room housegroup the Ladies Housegroup (we used to say so, and the minister's email does not)? Also, the timetable here and the church calendar both list the regular activities, so tell us which one is the master.
 
 **Short descriptions (these show on the page's cards).** Please check, especially days and times:
 - Sunday Mornings: "Our main service, every Sunday at 11am, in church and live on YouTube."
