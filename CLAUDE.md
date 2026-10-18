@@ -1508,17 +1508,12 @@ scale. Every value is traced to the original in the file's comments. Layout
       FAQs, BU & YBA, Giving, Mission Group, Moortown Emergency Relief
       Fund, Pathways, Events, House Groups, Stepping Stones, Lunch Club.
 - [ ] Remove the `/style-guide` page (ID 668, ask first).
-- [ ] Remove the demo import: delete posts where `mbc_demo_import=1` (10
-      posts selected from live on 15 Oct 2026, all in the pre-existing
-      "News" category, so no categories were created and "News" must stay),
-      delete **exactly** the 19 media the post importer uploaded (IDs 670,
-      671, 672, 673, 675, 676, 678, 680, 681, 683, 684, 686, 688, 689, 692,
-      693, 695, 696, 697). **Do not** delete other media carrying
-      `mbc_live_source_url`: since 15 Oct 2026 the Elementor-exit tool also
-      sets it on photos and PDFs uploaded for converted pages, which are
-      real content. Then delete `inc/demo-import.php` and its `require` in
-      `functions.php` (this also drops the meta registration; the existing
-      values stay in the database, harmlessly).
+- [ ] **Demo posts:** the ten demo posts were replaced by real imports on 18 Oct 2026 (the old copies are in the trash, backups in
+      `~/src/mbc-elementor-backups/demo-posts/`; see `docs/cutover-plan.md`). At cutover: empty the trash of those copies, delete any
+      remaining demo media (the 19 listed IDs: 670, 671, 672, 673, 675, 676, 678, 680, 681, 683, 684, 686, 688, 689, 692, 693, 695,
+      696, 697) once nothing references it, and only then delete `inc/demo-import.php` and its `require` in `functions.php`. Only demo
+      content with no live equivalent is deleted outright; none is left. **Do not** delete other media carrying `mbc_live_source_url`:
+      the Elementor-exit tool and the live post importer set it on real content.
 - [ ] **Rename the minister's categories when posts are migrated:** the two
       categories named after a former minister on the live site become
       `ministers-blog` and `ministers-message`. Create or rename them with
