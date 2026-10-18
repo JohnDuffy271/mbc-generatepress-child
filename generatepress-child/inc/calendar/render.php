@@ -100,6 +100,12 @@ function mbc_calendar_shortcode( $atts ) {
         }
         return $e['all_day'] ? $e['end_date'] >= $today : $e['end_ts'] >= $now->getTimestamp();
     } ) );
+    if ( $filters ) { // The feed is asked for this range already; this also trims a stored copy.
+        $until  = $now->modify( '+' . $weeks . ' weeks' )->format( 'Y-m-d' );
+        $events = array_values( array_filter( $events, static function ( $e ) use ( $until ) {
+            return $e['start_date'] <= $until;
+        } ) );
+    }
     if ( $limit > 0 ) {
         $events = array_slice( $events, 0, $limit );
     }
