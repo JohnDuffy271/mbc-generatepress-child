@@ -309,8 +309,7 @@ Pages, menus and settings are managed via the WordPress REST API.
       lists it. Checked after deploy: the pages still return 200, page 350
       and the removed files return 404, no orphan folders on the server, the
       header and footer still link to the channel and the streams page. The
-      old unassigned "Menu 1" (id 9) still holds an item for page 350: it
-      goes when that menu is deleted.
+      old unassigned "Menu 1" (id 9) was exported to `~/src/mbc-elementor-backups/menu-9-menu-1.json` and deleted on 18 Oct 2026.
 - [x] Front page (15 Oct 2026): `page-templates/front-page.php` +
       `patterns/front-page.php` (hero, four zigzag Media & Text bands).
       Page 182 uses the template and its content was seeded from the
@@ -808,9 +807,8 @@ Pages, menus and settings are managed via the WordPress REST API.
          **Legacy (Elementor) pages remaining:** Rock Solid (60, held), the
          parent What's On (327; draft 1094 held for the timetable), and the unlinked drafts Welcome (8), Baptism (54) and
          Sunday School (556): none is in Andy's menu, so they are **not
-         converted**; redirects approved by John (17 Oct 2026) for the cutover map:
-         Welcome → Who we are, Baptism → What we believe, Sunday School →
-         Sunday Mornings (`docs/url-changes.md`).
+         converted**; Welcome and Sunday School need no redirect (checked against live, 18 Oct 2026);
+         Baptism → What we believe (`docs/url-changes.md`).
       5. When no page uses Elementor: check for remaining dependencies
          (Theme Builder templates such as footer #208, shortcodes,
          widgets), then **ask John before deactivating** Elementor and
@@ -1472,6 +1470,8 @@ scale. Every value is traced to the original in the file's comments. Layout
 - [ ] Revisit Leeds Furniture Mission page (452): final name, support text, email address.
       (The charity is mid name-change; the page is deliberately unchanged until it is announced.
       See "Content items (waiting on an announcement)".)
+- [ ] **Privacy route (decide at cutover):** either the privacy-policy page (3, a draft) links to the Privacy Notice PDF
+      (media 766) and the footer links to that page, or page 3 is deleted and the footer links straight to the PDF (as now).
 - [ ] Remove the E2E test page 620 (ask first).
 - [ ] **Live:** if live shows the same symptom (Elementor assets and the `elementorFrontendConfig`
       error on non-Elementor pages), the same fix applies (remove template #208's "Entire site"

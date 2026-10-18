@@ -30,14 +30,13 @@ show what the old URL does today: a 404 needs a redirect before launch.
 ## Redirects to set up at cutover (decided 17 Oct 2026)
 
 The old Welcome, Baptism and Sunday School pages (Elementor drafts 8, 54 and 556, trashed 18 Oct 2026,
-backups in `~/src/mbc-elementor-backups/`) are not in the menu. Their old addresses are not in the
-snapshot above (they were drafts), so confirm the exact paths on the live-old map.
+backups in `~/src/mbc-elementor-backups/`) are not in the menu. Checked against live (18 Oct 2026):
+`/baptism/` is a page there (200), so it needs a redirect; `/welcome/` is not a page on live and
+`/sunday-school/` is a 404, so neither needs one.
 
-| Old page | Likely old path | Redirect to (301) |
+| Old page | Old path | Redirect to (301) |
 |---|---|---|
-| Welcome | `/welcome/` | `/about-us/who-we-are/` |
 | Baptism | `/baptism/` | `/about-us/what-we-believe/` |
-| Sunday School | `/sunday-school/` | `/whats-on/sunday-mornings/` |
 
 ## Category redirect for cutover
 
