@@ -75,12 +75,14 @@ function mbc_calendar_shortcode( $atts ) {
     // filters="yes": server-rendered choices in the query string (?show=one-off|regular&weeks=2|4|8), validated.
     $filters = 'yes' === strtolower( (string) $atts['filters'] );
     $show    = 'all';
+    $chosen  = false; // True when the visitor picked a range.
     $weeks   = (int) $atts['weeks'];
     if ( $filters ) {
         $q_show = isset( $_GET['show'] ) ? sanitize_key( wp_unslash( $_GET['show'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view choice.
         $q_wk   = isset( $_GET['weeks'] ) ? (int) $_GET['weeks'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $show   = in_array( $q_show, array( 'one-off', 'regular' ), true ) ? $q_show : 'all';
-        $weeks  = in_array( $q_wk, array( 2, 4, 8 ), true ) ? $q_wk : $weeks;
+        $chosen = in_array( $q_wk, array( 2, 4, 8 ), true );
+        $weeks  = $chosen ? $q_wk : $weeks;
     }
 
     $data  = mbc_calendar_get( $weeks );
@@ -100,7 +102,7 @@ function mbc_calendar_shortcode( $atts ) {
         }
         return $e['all_day'] ? $e['end_date'] >= $today : $e['end_ts'] >= $now->getTimestamp();
     } ) );
-    if ( $filters ) { // The feed is asked for this range already; this also trims a stored copy.
+    if ( $chosen ) { // The feed is asked for this range already; this also trims a stored copy.
         $until  = $now->modify( '+' . $weeks . ' weeks' )->format( 'Y-m-d' );
         $events = array_values( array_filter( $events, static function ( $e ) use ( $until ) {
             return $e['start_date'] <= $until;
