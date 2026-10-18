@@ -115,6 +115,18 @@
 		} );
 	}
 
+	var since = document.getElementById( 'mbc-nl-since' );
+	if ( refill && since ) {
+		// The button is a plain link that works without this; here the chosen date is added to it.
+		var setHref = function () {
+			var base = refill.getAttribute( 'data-base' );
+			refill.href = /^\d{4}-\d{2}-\d{2}$/.test( since.value ) ? base + '&since=' + encodeURIComponent( since.value ) : base;
+		};
+		since.addEventListener( 'input', setHref );
+		since.addEventListener( 'change', setHref );
+		setHref();
+	}
+
 	if ( refill ) {
 		refill.addEventListener( 'click', function ( event ) {
 			if ( ! window.confirm( strings.refill || 'Replace the list? Unsaved changes will be lost.' ) ) {

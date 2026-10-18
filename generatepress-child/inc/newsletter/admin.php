@@ -166,7 +166,7 @@ function mbc_nl_admin_assets( $hook ) {
         'copied'  => __( 'Copied.', 'generatepress-child' ),
         'failed'  => __( 'Could not copy: select the link and copy it by hand.', 'generatepress-child' ),
         'confirm' => __( 'Make a new key? The old email link will stop working.', 'generatepress-child' ),
-        'refill'  => __( 'Replace the list with the posts since the last issue? Changes you have not saved on this screen will be lost.', 'generatepress-child' ),
+        'refill'  => __( 'Replace the list with the posts since the chosen date? Changes you have not saved on this screen will be lost.', 'generatepress-child' ),
         /* translators: %d: number of posts in the list */
         'count'   => __( '%d posts in this issue.', 'generatepress-child' ),
         'one'     => __( '1 post in this issue.', 'generatepress-child' ),

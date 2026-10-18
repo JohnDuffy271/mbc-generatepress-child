@@ -11,7 +11,9 @@ For the people with the **Newsletter editor** role. You need to be signed in to 
 5. In **Posts in this issue** the list is filled in for you: the news posts published since the last issue (up to 6), with any sticky (pinned) posts first.
    - **Up / Down** change the order. **Remove** takes a post out of this issue (the post itself is not deleted).
    - **Add a post** puts another recent post in.
-   - **Refill from posts since the last issue** starts the list again (anything you changed on the screen is lost).
+   - **Refill from recent posts** (next to **Add a post**) starts the list again from the posts published since the date in the **Posts since** box, which starts as the date of the last issue. Change the date to refill from any day, for example to rebuild a test issue. Sticky posts come first, then the newest, up to 6. Anything you changed on the screen is lost.
+   - If there are no posts since that date you see "No new posts since <date>. Choose an earlier date or add posts below." and your list is left as it was.
+   - Refill only appears once the issue has been saved (press **Save Draft** first on a brand-new issue; a new issue is filled in for you anyway).
 6. Press **Save Draft**. You can keep editing as long as you like.
 
 The list is saved with the issue. Posts you publish later do not change an issue you have saved.

@@ -86,17 +86,34 @@ function mbc_nl_previous_issue_gmt( $issue_id = 0 ) {
     return $found ? (string) get_post_field( 'post_date_gmt', $found[0] ) : '';
 }
 
+/** The pre-fill start (GMT datetime): the previous issue's publish date, else MBC_NL_FIRST_WINDOW days ago. */
+function mbc_nl_default_since( $issue_id = 0 ) {
+    $since = mbc_nl_previous_issue_gmt( $issue_id );
+    return '' !== $since ? $since : gmdate( 'Y-m-d H:i:s', time() - MBC_NL_FIRST_WINDOW * DAY_IN_SECONDS );
+}
+
+/**
+ * A "since" date (YYYY-MM-DD, site time zone) from the Refill control, as a GMT datetime for the
+ * start of that day. '' means "use the default" (missing, invalid, or the default's own date, which keeps the exact time).
+ */
+function mbc_nl_since_from_date( $date, $issue_id = 0 ) {
+    if ( 1 !== preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/D', (string) $date, $m ) || ! checkdate( (int) $m[2], (int) $m[3], (int) $m[1] ) ) {
+        return '';
+    }
+    if ( $date === get_date_from_gmt( mbc_nl_default_since( $issue_id ), 'Y-m-d' ) ) {
+        return '';
+    }
+    return get_gmt_from_date( $date . ' 00:00:00' );
+}
+
 /**
  * Posts for an issue: sticky posts first (whatever their age, as they are pinned), then
- * everything published since the previous issue, newest first. Capped.
+ * everything published since the previous issue (or `$since_override`, a GMT datetime, inclusive), newest first. Capped.
  *
  * @return array{ids:int[],since:string} since is a GMT datetime.
  */
-function mbc_nl_prefill( $issue_id = 0 ) {
-    $since = mbc_nl_previous_issue_gmt( $issue_id );
-    if ( '' === $since ) {
-        $since = gmdate( 'Y-m-d H:i:s', time() - MBC_NL_FIRST_WINDOW * DAY_IN_SECONDS );
-    }
+function mbc_nl_prefill( $issue_id = 0, $since_override = '' ) {
+    $since = '' !== $since_override ? $since_override : mbc_nl_default_since( $issue_id );
     $base = mbc_nl_post_query_args();
     if ( null === $base ) {
         return array( 'ids' => array(), 'since' => $since );
@@ -111,7 +128,7 @@ function mbc_nl_prefill( $issue_id = 0 ) {
     $recent = get_posts( array_merge( $base, array(
         'posts_per_page' => $max,
         'post__not_in'   => $sticky_ids,
-        'date_query'     => array( array( 'column' => 'post_date_gmt', 'after' => $since, 'inclusive' => false ) ),
+        'date_query'     => array( array( 'column' => 'post_date_gmt', 'after' => $since, 'inclusive' => '' !== $since_override ) ),
     ) ) );
 
     $ids = array_slice( array_merge( array_map( 'intval', $sticky_ids ), array_map( 'intval', $recent ) ), 0, $max );
