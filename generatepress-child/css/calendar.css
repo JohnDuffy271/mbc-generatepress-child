@@ -231,3 +231,56 @@
 .mbc-cal--strip .mbc-cal__card {
 	background: var(--mbc-surface);
 }
+
+/* ---- Filters (filters="yes"): a plain GET form ---- */
+.mbc-cal__filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--mbc-space-m) var(--mbc-space-xl);
+	margin-block-end: var(--mbc-space-l);
+	padding: var(--mbc-space-m);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+}
+
+.mbc-cal__filter {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.mbc-cal__filter legend {
+	padding: 0;
+	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-cal__choice {
+	display: flex;
+	align-items: center;
+	gap: var(--mbc-space-xs);
+	min-height: var(--mbc-tap-target);
+}
+
+.mbc-cal__choice input {
+	flex: none;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin: 0;
+	accent-color: var(--mbc-accent);
+}
+
+.mbc-cal__filter-actions {
+	display: flex;
+	flex: 1 1 100%;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--mbc-space-m);
+	margin: 0;
+}
+
+.mbc-cal__filter-actions a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+}

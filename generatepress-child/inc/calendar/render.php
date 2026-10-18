@@ -8,6 +8,7 @@
  * links="no" hides the Subscribe/.ics links. recurring="no" leaves out instances of repeating events.
  * more="URL" adds a "See all events" link (also when the list is empty or the calendar is unavailable)
  * and then never links out to Google. empty="..." replaces the "no events" line.
+ * filters="yes" adds a no-JavaScript form: ?show=one-off|regular and ?weeks=2|4|8 (anything else is ignored).
  * hide_empty="yes" outputs nothing at all (no wrapper, no heading) when there is nothing to show or the
  * calendar is unavailable (the failure is still logged by fetch.php). heading_text="..." puts a section
  * heading (h2) inside the output so it disappears with it. strip="yes" gives a full-width section look.
@@ -65,12 +66,24 @@ function mbc_calendar_shortcode( $atts ) {
         'hide_empty' => 'no',
         'heading_text' => '',
         'strip'      => 'no',
+        'filters'    => 'no',
     ), $atts, 'mbc_calendar' );
     $h_day   = max( 2, min( 5, (int) $atts['heading'] ) );
     $h_event = min( 6, $h_day + 1 );
     $limit   = max( 0, (int) $atts['limit'] );
 
-    $data  = mbc_calendar_get( (int) $atts['weeks'] );
+    // filters="yes": server-rendered choices in the query string (?show=one-off|regular&weeks=2|4|8), validated.
+    $filters = 'yes' === strtolower( (string) $atts['filters'] );
+    $show    = 'all';
+    $weeks   = (int) $atts['weeks'];
+    if ( $filters ) {
+        $q_show = isset( $_GET['show'] ) ? sanitize_key( wp_unslash( $_GET['show'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view choice.
+        $q_wk   = isset( $_GET['weeks'] ) ? (int) $_GET['weeks'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $show   = in_array( $q_show, array( 'one-off', 'regular' ), true ) ? $q_show : 'all';
+        $weeks  = in_array( $q_wk, array( 2, 4, 8 ), true ) ? $q_wk : $weeks;
+    }
+
+    $data  = mbc_calendar_get( $weeks );
     $now   = mbc_calendar_now();
     $today = $now->format( 'Y-m-d' );
     $links = mbc_calendar_id_links();
@@ -78,8 +91,11 @@ function mbc_calendar_shortcode( $atts ) {
 
     // Drop what has already finished (a last-good copy may be hours old), then apply the limit.
     $no_recurring = 'no' === strtolower( (string) $atts['recurring'] );
-    $events       = array_values( array_filter( $data['events'], static function ( $e ) use ( $now, $today, $no_recurring ) {
-        if ( $no_recurring && ! empty( $e['recurring'] ) ) {
+    $events       = array_values( array_filter( $data['events'], static function ( $e ) use ( $now, $today, $no_recurring, $show ) {
+        if ( ( $no_recurring || 'one-off' === $show ) && ! empty( $e['recurring'] ) ) {
+            return false;
+        }
+        if ( 'regular' === $show && empty( $e['recurring'] ) ) {
             return false;
         }
         return $e['all_day'] ? $e['end_date'] >= $today : $e['end_ts'] >= $now->getTimestamp();
@@ -107,6 +123,13 @@ function mbc_calendar_shortcode( $atts ) {
             $out .= '<a class="mbc-cal__all-link" href="' . esc_url( $more_url ) . '">' . esc_html( $more_label ) . ' <span aria-hidden="true">&rarr;</span></a>';
         }
         $out .= '</div>';
+    }
+
+    if ( $filters ) {
+        $out .= mbc_calendar_filters_html( $show, $weeks );
+        if ( 'all' !== $show || (int) $atts['weeks'] !== $weeks ) {
+            $empty_text = __( 'No events match these choices.', 'generatepress-child' );
+        }
     }
 
     if ( 'none' === $data['source'] ) {
@@ -147,6 +170,34 @@ function mbc_calendar_shortcode( $atts ) {
             . ' <a href="' . esc_url( $links['ics'] ) . '" rel="noopener">' . esc_html__( 'Add to other calendars (.ics)', 'generatepress-child' ) . '</a></p>';
     }
     return $out . '</div>';
+}
+
+/**
+ * The filter form: a plain GET form (works without JavaScript). Two radio groups and a button.
+ */
+function mbc_calendar_filters_html( $show, $weeks ) {
+    $shows = array(
+        'all'     => __( 'All', 'generatepress-child' ),
+        'one-off' => __( 'One-off events', 'generatepress-child' ),
+        'regular' => __( 'Regular activities', 'generatepress-child' ),
+    );
+    $ranges = array(
+        2 => __( 'Next 2 weeks', 'generatepress-child' ),
+        4 => __( 'Next 4 weeks', 'generatepress-child' ),
+        8 => __( 'Next 8 weeks', 'generatepress-child' ),
+    );
+    $out = '<form class="mbc-cal__filters" method="get" action="' . esc_url( get_permalink() ) . '">';
+    $out .= '<fieldset class="mbc-cal__filter"><legend>' . esc_html__( 'Show', 'generatepress-child' ) . '</legend>';
+    foreach ( $shows as $value => $label ) {
+        $out .= '<label class="mbc-cal__choice"><input type="radio" name="show" value="' . esc_attr( $value ) . '"' . checked( $show, $value, false ) . '> <span>' . esc_html( $label ) . '</span></label>';
+    }
+    $out .= '</fieldset><fieldset class="mbc-cal__filter"><legend>' . esc_html__( 'How far ahead', 'generatepress-child' ) . '</legend>';
+    foreach ( $ranges as $value => $label ) {
+        $out .= '<label class="mbc-cal__choice"><input type="radio" name="weeks" value="' . (int) $value . '"' . checked( $weeks, $value, false ) . '> <span>' . esc_html( $label ) . '</span></label>';
+    }
+    $out .= '</fieldset><p class="mbc-cal__filter-actions"><input type="submit" value="' . esc_attr__( 'Update list', 'generatepress-child' ) . '"> '
+        . '<a href="' . esc_url( get_permalink() ) . '">' . esc_html__( 'Reset', 'generatepress-child' ) . '</a></p></form>';
+    return $out;
 }
 
 /** The "10am – 12pm" / "All day, until ..." line for an event, as safe HTML. */
