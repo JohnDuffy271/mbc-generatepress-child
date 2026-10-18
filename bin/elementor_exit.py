@@ -28,7 +28,7 @@ of Elementor-built pages. Never destroys the Elementor version before approval.
       Read live pages (public REST API, GET only, paced) to compare with a sandbox page.
 
   elementor_exit.py self-test
-      Static checks that this file can only reach live through import_live_posts.LiveReader.
+      Static checks that this file can only reach live through import_live_demo_posts.LiveReader.
 
   elementor_exit.py publish PAGE_ID DRAFT_ID [--apply]
       On approval: back up, copy the draft's content and template into the
@@ -55,7 +55,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import import_live_posts as lp  # noqa: E402  (its LiveReader is the only live client)
+import import_live_demo_posts as lp  # noqa: E402  (its LiveReader is the only live client)
 import scaffold_site as ss  # noqa: E402
 import seed_patterns as sp  # noqa: E402
 
@@ -565,7 +565,7 @@ def self_test():
     calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
     raw = [n for n in calls if n.func.attr in ("request", "putrequest", "urlopen", "build_opener", "create_connection",
                                                "send", "sendall", "connect", "getresponse")]
-    check(not raw, "this file makes no network calls of its own (everything goes through import_live_posts)")
+    check(not raw, "this file makes no network calls of its own (everything goes through import_live_demo_posts)")
     live_calls = [n for n in calls if isinstance(n.func.value, ast.Name) and n.func.value.id == "live"]
     allowed = {"get_bytes": "cmd_assets", "get_json": "cmd_live_read"}
     check(bool(live_calls) and all(allowed.get(n.func.attr) == func_of(n) for n in live_calls),

@@ -414,7 +414,7 @@ def process_image(data, post_date):
         sys.exit("Pillow is needed to process images: run with ~/.venvs/mbc-test/bin/python")
     notes = []
     img = Image.open(io.BytesIO(data))
-    if getattr(img, "is_animated", False):
+    if img.format in ("GIF", "WEBP", "PNG") and getattr(img, "is_animated", False):  # (an MPO camera JPEG also has "frames": only the first is used)
         notes.append("animated image kept as it is")
         return data, "." + (img.format or "gif").lower(), Image.MIME.get(img.format, "image/gif"), notes
     img = ImageOps.exif_transpose(img)
@@ -487,8 +487,12 @@ class Importer:
             self.broken.append((post_id, src, str(exc)[:120]))
             return None
         name = media_filename(key, ext, post_date)
-        made, _ = self.sb.call("POST", "media", raw=out, headers={"Content-Type": mime, "Content-Disposition": f'attachment; filename="{name}"'})
-        self.sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": {"mbc_live_source_url": key}})
+        try:
+            made, _ = self.sb.call("POST", "media", raw=out, headers={"Content-Type": mime, "Content-Disposition": f'attachment; filename="{name}"'})
+            self.sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": {"mbc_live_source_url": key}})
+        except SystemExit as exc:  # the sandbox refused the file: report it and carry on with the post
+            self.broken.append((post_id, src, f"sandbox refused the upload: {exc}"[:160]))
+            return None
         detail = made.get("media_details", {})
         self.media[key] = {"id": made["id"], "url": made["source_url"], "width": detail.get("width"), "height": detail.get("height")}
         self.image_notes.append(f"{name}: {len(out) // 1000} kB" + (f" ({'; '.join(notes)})" if notes else ""))
@@ -584,7 +588,8 @@ def plan_post(p, state, force):
     uid, how = map_author(rec["author"], users)
     rec["author_id"] = uid
     if how == "none":
-        rec["warnings"].append("author not matched and no 'MBC' user: left as the importing user")
+        rec["warnings"].append("live author not exposed by the REST API; no 'MBC' user: left as the importing user" if not rec["author"]
+                               else "author not matched and no 'MBC' user: left as the importing user")
     # Action: by live id (ours), then by slug clash (demo or other posts).
     mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"]), None)
     demo = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
@@ -648,6 +653,15 @@ def tag_ids(sb, recs, state, apply):
             tags[x["slug"]] = made
             out[x["slug"]] = made["id"]
     return out, created
+
+
+def link_targets(state, todo):
+    """Sandbox paths a link to a live post can point at: posts already imported plus this batch."""
+    by_slug = {x["slug"]: f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
+    by_slug.update({r["slug"]: f"/{r['slug']}/" for r in todo})
+    by_id = {int(x["meta"]["mbc_live_id"]): f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
+    by_id.update({r["id"]: f"/{r['slug']}/" for r in todo})
+    return by_slug, by_id
 
 
 # ============================================================ report
@@ -761,10 +775,7 @@ def main():
         tmap, tag_new = tag_ids(sb, todo, state, True)
         imp = Importer(live, sb, True, args.force)
         # Known sandbox posts a link may point at: those already imported plus this batch.
-        by_slug = {x["slug"]: f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
-        by_slug.update({r["slug"]: f"/{r['slug']}/" for r in todo})
-        by_id = {int(x["meta"]["mbc_live_id"]): f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
-        by_id.update({r["id"]: f"/{r['slug']}/" for r in todo})
+        by_slug, by_id = link_targets(state, todo)
         for m in state[2]:  # media already uploaded from live (not the demo ones)
             key = (m.get("meta") or {}).get("mbc_live_source_url")
             if key and m["id"] not in DEMO_MEDIA:
@@ -799,8 +810,9 @@ def main():
                 r["warnings"].append(f"sandbox slug became {made['slug']}")
             print(f"  -> sandbox post {made['id']}  {made['link']}")
     else:
-        for r in todo:
-            r["left_links"] = [h for h in r["links"] if host_of(h) == LIVE_HOST]
+        by_slug, by_id = link_targets(state, todo)
+        for r in todo:  # what would still point at live after the rewrite (images and files are handled when applying)
+            r["left_links"] = [h for h in rewrite_content(r["clean"]["html"], {}, by_slug, by_id)[1] if not live_upload(h)]
         cmap, cat_new, parent_notes = category_ids(sb, todo, state, False)
         _, tag_new = tag_ids(sb, todo, state, False)
 

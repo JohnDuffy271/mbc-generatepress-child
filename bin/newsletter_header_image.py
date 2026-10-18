@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy the newsletter header image from live to the sandbox and make it the default header image.
 
-Live access: ONE read-only GET of one /wp-content/uploads/ file through import_live_posts.LiveReader
+Live access: ONE read-only GET of one /wp-content/uploads/ file through import_live_demo_posts.LiveReader
 (GET only, no credentials, uploads path only; John, 15 Oct 2026). Sandbox: uploads it to the media
 library (meta mbc_live_source_url) and stores its ID in the option mbc_nl_default_header_id
 (registered with show_in_rest, so /wp/v2/settings). Idempotent. Dry run unless --apply.
@@ -16,7 +16,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import import_live_posts as lp  # noqa: E402
+import import_live_demo_posts as lp  # noqa: E402
 
 SOF = (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF)
 

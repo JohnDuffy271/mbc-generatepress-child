@@ -248,12 +248,13 @@ Pages, menus and settings are managed via the WordPress REST API.
 
 - Sandbox only. Never call the live site's API or touch its files
   (`/httpdocs/` on the server).
-  **One exception, read-only:** `bin/import_live_posts.py` may make
+  **One exception, read-only:** `bin/import_live_demo_posts.py` (the demo importer, and the home of the shared
+  `LiveReader` and `SandboxWriter`; renamed from `import_live_posts.py` on 18 Oct 2026) may make
   unauthenticated GET requests to the live site's public REST API
   (`posts`, `categories`, `media`) and to `/wp-content/uploads/` files, to
   import demo posts into the sandbox. It has no code path that can POST,
   PUT, PATCH or DELETE to live, sends no credentials, and `--self-test`
-  checks this statically. The exception covers that one script only: any
+  checks this statically. The exception covers that one script only (plus the live post importer below, which uses its `LiveReader` unchanged): any
   other live access (including ad-hoc probes) needs John's explicit say-so
   first. Run it as a script file, never with direct curl against live.
   **Extension (John, 15 Oct 2026):** the Elementor-exit tool
@@ -270,6 +271,13 @@ Pages, menus and settings are managed via the WordPress REST API.
   same `LiveReader` (GET only, no credentials, paced), to compare a
   sandbox page with its live equivalent. It never writes anything and
   reads nothing but `pages` and the uploads above.
+  **Third extension (John, 18 Oct 2026): the live post importer `bin/import_live_posts.py`** imports posts on demand
+  (selection `--since/--until/--ids/--category/--limit`, dry run by default, `--apply`, `--force`) through the same
+  `LiveReader` (GET only, no credentials, paced; routes `posts` and `categories` only, with `_embed` for authors, terms and
+  featured image; `/wp-content/uploads/` files). Its `--self-test` checks statically that it makes no network call of its own,
+  uses only `get_json`/`get_bytes` with literal `posts`/`categories` routes, and writes to the sandbox only with GET, POST and
+  OPTIONS (never delete). Run it with `~/.venvs/mbc-test/bin/python` (Pillow). Live URLs are built inside `LiveReader`, never on a
+  command line. **Do not import more posts than John asked for** (so far 5; see Status).
 - Ask before: installing or removing plugins, changing permalinks,
   deleting pages or media, editing any `.htaccess` (site root or repo)
   or `wp-config.php`, any FTP write or delete.
@@ -492,6 +500,27 @@ Pages, menus and settings are managed via the WordPress REST API.
       probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
       attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
+- [x] **Live post importer (18 Oct 2026, John's spec)**: `bin/import_live_posts.py` (see Safety for its live-access rules). Dry run prints a
+      table (live id, date, title, categories, images, action create/update/skip, warnings) and writes
+      `~/src/mbc-tests/logs/import-<timestamp>.md` (counts, warnings, broken images, unmapped categories, external links, oversized
+      content). **Content:** cleaned HTML stored as Classic content (chosen over core blocks: it round-trips exactly and stays
+      diffable) with YouTube iframes, Elementor video widgets and bare YouTube links as `core/embed` blocks; Elementor wrappers, classes,
+      styles, data attributes, empty containers, scripts and non-YouTube iframes removed (reported); Elementor posts reduced with the demo
+      importer's unwrap. **Images:** downloaded once (cache `~/src/mbc-images/live-cache/`), original found by stripping `-scaled` and
+      `-WxH`, downscaled to 1500px long side, never upscaled, JPEG quality 80 lowered to 70 only if over 250 kB, EXIF and ICC stripped
+      and checked, transparent PNGs stay PNG, uploaded with alt text from live and meta `mbc_live_source_url`; inline images get
+      `wp-image-ID` (WordPress adds `srcset`) and width/height. **Idempotent:** post meta `mbc_live_id` and `mbc_live_modified`; a re-run
+      updates only posts live has changed (`--force` re-imports). **Mapping:** categories by slug (`grahams-blog` and `grahams-message`
+      become `ministers-blog` and `ministers-message`; unknown ones are created and listed), tags, authors by slug or name else an
+      `MBC` user, never creating users (no `MBC` user exists yet, so authors fall back to the importing user); links to imported posts
+      become relative sandbox paths, others stay on live and are listed. Slug clashes with non-imported posts (the 10 demo posts
+      included) are skipped. Every imported post has `_mbc_needs_consent_review = 1` (the consent pass before cutover). Meta is
+      registered in `inc/live-import.php` (kept until the migration is done; it also holds the media `mbc_live_source_url`
+      registration that used to be in `demo-import.php`). **Imported so far: 5 posts (live 69271, 69191, 69036, 68996, 68875 ->
+      sandbox 1463, 1469, 1470, 1472, 1475), 16 uploaded images.** 3-month dry run (since 18 Jul 2026): 31 posts, 21 to create, 10
+      skipped as demo copies. Checks: `~/src/mbc-tests/import_live_check.py [clean|map|image|sandbox|idempotent]`.
+      The demo importer was renamed `bin/import_live_demo_posts.py` (the shared client lives there; `elementor_exit.py`,
+      `newsletter_header_image.py` and the test tooling import it under that name).
 - [x] **Events month view (18 Oct 2026, John's decisions: Monday start, back 1 month, forward 12, List | Month toggle with List the
       default).** `[mbc_calendar toggle="yes"]` (Events page 628, backup `628-events-pre-month.json`; pattern `events-calendar`
       updated, no version bump) and `view="month"`. `?view=month&month=YYYY-MM` (validated `^\d{4}-(0[1-9]|1[0-2])$`, this month -1 to +12,
@@ -1506,6 +1535,8 @@ scale. Every value is traced to the original in the file's comments. Layout
       image set on live (option `mbc_nl_default_header_id`); the type adds `/newsletter/` and its rewrite
       rules are flushed once by the version option on first load (confirm
       `/newsletter/` returns 200 after deploy).
+- [ ] **Consent review of imported posts:** every post with meta `_mbc_needs_consent_review = 1` (made by the live post importer) must be
+      reviewed by John S for identifiable people before launch; clear the flag when done. Imported posts lack alt text where live had none.
 - [ ] Untick "Discourage search engines" (Settings → Reading). Currently
       set on the sandbox (`noindex, nofollow`).
 - [ ] Privacy Notice and Cookies linked in the footer menu. The Privacy
