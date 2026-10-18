@@ -110,13 +110,13 @@ function mbc_nl_since_from_date( $date, $issue_id = 0 ) {
  * Posts for an issue: sticky posts first (whatever their age, as they are pinned), then
  * everything published since the previous issue (or `$since_override`, a GMT datetime, inclusive), newest first. Capped.
  *
- * @return array{ids:int[],since:string} since is a GMT datetime.
+ * @return array{ids:int[],since:string,new:int} since is a GMT datetime; new counts the non-sticky posts found.
  */
 function mbc_nl_prefill( $issue_id = 0, $since_override = '' ) {
     $since = '' !== $since_override ? $since_override : mbc_nl_default_since( $issue_id );
     $base = mbc_nl_post_query_args();
     if ( null === $base ) {
-        return array( 'ids' => array(), 'since' => $since );
+        return array( 'ids' => array(), 'since' => $since, 'new' => 0 );
     }
 
     $max        = mbc_nl_max_posts();
@@ -132,7 +132,7 @@ function mbc_nl_prefill( $issue_id = 0, $since_override = '' ) {
     ) ) );
 
     $ids = array_slice( array_merge( array_map( 'intval', $sticky_ids ), array_map( 'intval', $recent ) ), 0, $max );
-    return array( 'ids' => $ids, 'since' => $since );
+    return array( 'ids' => $ids, 'since' => $since, 'new' => count( $recent ) );
 }
 
 /**

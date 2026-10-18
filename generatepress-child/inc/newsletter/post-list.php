@@ -151,10 +151,10 @@ function mbc_nl_handle_refill() {
     $date     = isset( $_GET['since'] ) ? sanitize_text_field( wp_unslash( $_GET['since'] ) ) : '';
     $fill     = mbc_nl_prefill( $issue_id, mbc_nl_since_from_date( $date, $issue_id ) );
     $args     = array( 'mbc_nl_notice' => 'refill', 'mbc_nl_n' => count( $fill['ids'] ) );
-    if ( $fill['ids'] ) {
+    if ( $fill['new'] > 0 ) {
         update_post_meta( $issue_id, 'mbc_nl_posts', $fill['ids'] );
         update_post_meta( $issue_id, '_mbc_nl_since', $fill['since'] );
-    } else { // Nothing found: keep the current list rather than emptying it.
+    } else { // No new posts (sticky posts alone are not new): keep the current list rather than emptying it.
         $args['mbc_nl_notice'] = 'refill-empty';
         $args['mbc_nl_since']  = rawurlencode( get_date_from_gmt( $fill['since'], 'Y-m-d' ) );
     }
