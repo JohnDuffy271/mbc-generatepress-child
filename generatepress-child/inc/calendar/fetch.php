@@ -47,18 +47,46 @@ function mbc_calendar_log( $message ) {
 }
 
 /**
- * @param int $weeks How far ahead to look (filter `mbc_calendar_weeks`).
+ * Events from now to `$weeks` weeks ahead (filter `mbc_calendar_weeks`). A wrapper over
+ * mbc_calendar_get_range(); "now" moves, so its cache is keyed by the number of weeks.
+ *
+ * @param int $weeks How far ahead to look.
  * @return array{events: array, source: string} source is fresh, last-good or none.
  */
 function mbc_calendar_get( $weeks = 8 ) {
     $weeks = (int) apply_filters( 'mbc_calendar_weeks', $weeks );
     $weeks = max( 1, min( 52, $weeks ) );
-    $fx    = mbc_calendar_fixture();
-    $hash  = $fx ? 'fx' : substr( md5( get_option( MBC_GCAL_ID_OPTION, '' ) . '|' . $weeks . '|v2' ), 0, 12 );
-    $tkey  = 'mbc_gcal_' . $hash;
-    $lkey  = 'mbc_gcal_last_' . $hash;
-    $fkey  = 'mbc_gcal_failed_' . $hash;
+    $now   = mbc_calendar_now();
+    return mbc_calendar_get_range( $now, $now->modify( '+' . $weeks . ' weeks' ), array( 'key' => (string) $weeks ) );
+}
 
+/**
+ * Events overlapping [$from, $to) (Europe/London; singleEvents, ordered by start, `recurring`
+ * set from recurringEventId, cancelled instances dropped). Own cache key per range, with the
+ * same last-good and failure handling as the agenda.
+ *
+ * @param DateTimeInterface $from Start of the range.
+ * @param DateTimeInterface $to   End of the range (exclusive).
+ * @param array             $args `key` cache identity (default: the two dates, so use a fixed
+ *                                key for ranges that start at "now"); `refresh` bypasses the cache.
+ * @return array{events: array, source: string} source is fresh, last-good or none.
+ */
+function mbc_calendar_get_range( DateTimeInterface $from, DateTimeInterface $to, array $args = array() ) {
+    $tz      = mbc_calendar_tz();
+    $from    = DateTimeImmutable::createFromInterface( $from )->setTimezone( $tz );
+    $to      = DateTimeImmutable::createFromInterface( $to )->setTimezone( $tz );
+    $refresh = ! empty( $args['refresh'] );
+    $range   = isset( $args['key'] ) ? (string) $args['key'] : $from->format( 'Y-m-d\TH:i' ) . '/' . $to->format( 'Y-m-d\TH:i' );
+    $fx      = mbc_calendar_fixture();
+    $hash    = $fx ? 'fx' : substr( md5( get_option( MBC_GCAL_ID_OPTION, '' ) . '|' . $range . '|v3' ), 0, 12 );
+    $tkey    = 'mbc_gcal_' . $hash;
+    $lkey    = 'mbc_gcal_last_' . $hash;
+    $fkey    = 'mbc_gcal_failed_' . $hash;
+
+    if ( $refresh ) {
+        delete_transient( $tkey );
+        delete_transient( $fkey );
+    }
     if ( ! $fx ) { // Fixture requests skip the transients so tests control every step.
         $cached = get_transient( $tkey );
         if ( is_array( $cached ) ) {
@@ -66,7 +94,7 @@ function mbc_calendar_get( $weeks = 8 ) {
         }
     }
 
-    $items = ( $fx || ! get_transient( $fkey ) ) ? mbc_calendar_request( $weeks, $fx ) : new WP_Error( 'mbc_gcal_backoff', 'Skipped: a request failed recently.' );
+    $items = ( $fx || ! get_transient( $fkey ) ) ? mbc_calendar_request( $from, $to, $fx ) : new WP_Error( 'mbc_gcal_backoff', 'Skipped: a request failed recently.' );
     if ( ! is_wp_error( $items ) ) {
         $events = mbc_calendar_normalise( $items );
         if ( ! $fx ) {
@@ -89,8 +117,8 @@ function mbc_calendar_get( $weeks = 8 ) {
     return array( 'events' => array(), 'source' => 'none' );
 }
 
-/** The raw `items` from events.list, or a WP_Error. */
-function mbc_calendar_request( $weeks, $fx = null ) {
+/** The raw `items` from events.list for [$from, $to), or a WP_Error. Follows up to 4 further pages. */
+function mbc_calendar_request( DateTimeInterface $from, DateTimeInterface $to, $fx = null ) {
     if ( $fx ) {
         return empty( $fx['fail'] ) ? ( isset( $fx['items'] ) && is_array( $fx['items'] ) ? $fx['items'] : array() ) : new WP_Error( 'mbc_gcal_fixture', 'Simulated failure (fixture).' );
     }
@@ -99,28 +127,43 @@ function mbc_calendar_request( $weeks, $fx = null ) {
     if ( '' === $key || '' === $id ) {
         return new WP_Error( 'mbc_gcal_unconfigured', 'API key or calendar ID is not set.' );
     }
-    $now = mbc_calendar_now();
-    $url = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $id ) . '/events?' . http_build_query( array(
-        'key'          => $key,
-        'singleEvents' => 'true',
-        'orderBy'      => 'startTime',
-        'timeMin'      => $now->format( DATE_ATOM ),
-        'timeMax'      => $now->modify( '+' . (int) $weeks . ' weeks' )->format( DATE_ATOM ),
-        'timeZone'     => MBC_GCAL_TZ,
-        'maxResults'   => 250,
-        'fields'       => 'items(id,status,summary,description,location,start,end,recurringEventId)',
-    ) );
-    $res = wp_remote_get( $url, array( 'timeout' => 6, 'redirection' => 0 ) );
-    if ( is_wp_error( $res ) ) {
-        return new WP_Error( 'mbc_gcal_http', 'Request failed: ' . $res->get_error_message() );
+    $items = array();
+    $token = '';
+    for ( $page = 0; $page < 5; $page++ ) {
+        $query = array(
+            'key'          => $key,
+            'singleEvents' => 'true',
+            'orderBy'      => 'startTime',
+            'timeMin'      => $from->format( DATE_ATOM ),
+            'timeMax'      => $to->format( DATE_ATOM ),
+            'timeZone'     => MBC_GCAL_TZ,
+            'maxResults'   => 250,
+            'fields'       => 'nextPageToken,items(id,status,summary,description,location,start,end,recurringEventId)',
+        );
+        if ( '' !== $token ) {
+            $query['pageToken'] = $token;
+        }
+        $url = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $id ) . '/events?' . http_build_query( $query );
+        $res = wp_remote_get( $url, array( 'timeout' => 6, 'redirection' => 0 ) );
+        if ( is_wp_error( $res ) ) {
+            return new WP_Error( 'mbc_gcal_http', 'Request failed: ' . $res->get_error_message() );
+        }
+        $code = (int) wp_remote_retrieve_response_code( $res );
+        $json = json_decode( wp_remote_retrieve_body( $res ), true );
+        if ( 200 !== $code || ! is_array( $json ) ) {
+            $msg = is_array( $json ) && isset( $json['error']['message'] ) ? (string) $json['error']['message'] : 'no detail';
+            return new WP_Error( 'mbc_gcal_status', "HTTP $code from Google: $msg" );
+        }
+        if ( isset( $json['items'] ) && is_array( $json['items'] ) ) {
+            $items = array_merge( $items, $json['items'] );
+        }
+        $token = isset( $json['nextPageToken'] ) ? (string) $json['nextPageToken'] : '';
+        if ( '' === $token ) {
+            return $items;
+        }
     }
-    $code = (int) wp_remote_retrieve_response_code( $res );
-    $json = json_decode( wp_remote_retrieve_body( $res ), true );
-    if ( 200 !== $code || ! is_array( $json ) ) {
-        $msg = is_array( $json ) && isset( $json['error']['message'] ) ? (string) $json['error']['message'] : 'no detail';
-        return new WP_Error( 'mbc_gcal_status', "HTTP $code from Google: $msg" );
-    }
-    return isset( $json['items'] ) && is_array( $json['items'] ) ? $json['items'] : array();
+    mbc_calendar_log( 'Range has more than five pages of events; the rest was left out.' );
+    return $items;
 }
 
 /**
@@ -142,6 +185,8 @@ function mbc_calendar_normalise( array $items ) {
                 'location'    => isset( $item['location'] ) ? trim( wp_strip_all_tags( (string) $item['location'] ) ) : '',
                 'description' => isset( $item['description'] ) ? mbc_calendar_clean_description( (string) $item['description'] ) : '',
                 'recurring'   => ! empty( $item['recurringEventId'] ),
+                'id'          => isset( $item['id'] ) ? (string) $item['id'] : '',
+                'series_id'   => ! empty( $item['recurringEventId'] ) ? (string) $item['recurringEventId'] : '',
             );
             if ( '' === $e['title'] ) {
                 $e['title'] = __( '(Untitled event)', 'generatepress-child' );
