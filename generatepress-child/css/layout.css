@@ -135,3 +135,8 @@
 	align-items: center;
 	min-height: var(--mbc-tap-target);
 }
+
+/* The header is sticky: keep focused controls and in-page targets clear of it. */
+html {
+	scroll-padding-top: calc(var(--wp-admin--admin-bar--height, 0px) + var(--mbc-header-height) + var(--mbc-space-m));
+}
