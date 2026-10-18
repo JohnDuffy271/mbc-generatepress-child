@@ -1,5 +1,8 @@
 {
-  "_comment": "Live author slug -> sandbox user ID. Authors not listed are matched by slug or name, else posted as the fallback user (slug below). The importer never creates users.",
-  "map": {},
+  "_comment": "Live author slug or numeric ID -> sandbox user ID. The live API publishes IDs, not names. 12 = John Sherbourne, 141 = Shelley Dring; 9 = Haddon Willmer has no sandbox user, so he stays on the fallback. Authors not listed are matched by slug or name, else posted as the fallback user (slug below). The importer never creates users.",
+  "map": {
+    "12": 3,
+    "141": 119
+  },
   "fallback": "mbc"
 }

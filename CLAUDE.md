@@ -517,10 +517,7 @@ Pages, menus and settings are managed via the WordPress REST API.
       included) are skipped. Every imported post has `_mbc_needs_consent_review = 1` (the consent pass before cutover). Meta is
       registered in `inc/live-import.php` (kept until the migration is done; it also holds the media `mbc_live_source_url`
       registration that used to be in `demo-import.php`). **Imported so far (18 Oct 2026): 21 posts, the whole 3-month window since 18 Jul (the 10 demo posts are skipped); do not import more
-      until John says.** Orphan media 1465 and 1467 were deleted on John's instruction (1462 is in use). **Authors:** the live API does not publish
-      author names, only numeric ids (12: 28 of the 31 posts, 141 and 9 the rest), so `bin/import_authors.json` (`map`: live slug or id ->
-      sandbox user id, `fallback`: user slug) is still empty and every post is by the new `mbc` user ("Moortown Baptist Church", subscriber, random
-      password, example.invalid address): John to say which live id is John Sherbourne (sandbox user 3) and add it. **Alt text:** a featured
+      until John says.** Orphan media 1465 and 1467 were deleted on John's instruction (1462 is in use). **Authors:** the live API publishes numeric ids, not names; `bin/import_authors.json` maps 12 (John Sherbourne) to sandbox user 3 and 141 (Shelley Dring) to 119; 9 (Haddon Willmer) has no sandbox user and stays on the fallback `mbc` user ("Moortown Baptist Church", subscriber, random password, example.invalid address). All 21 posts re-run with `--force` on 18 Oct 2026. **Alt text:** a featured
       image without live alt stays `alt=""` (decorative); inline images without alt get a short description drafted by a subagent from small
       previews (`--prepare-alts` writes `~/src/mbc-images/live-cache/alt-needed.json`, the subagent writes `alt-drafts.json`, `--alt-file` applies it),
       media meta `_mbc_alt_auto = 1`, listed in the report for the consent pass (14 images). **Bold:** a post whose text is more than 80% bold has the
