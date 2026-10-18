@@ -594,6 +594,10 @@ Pages, menus and settings are managed via the WordPress REST API.
       `?query-1-page=N`; cutover note in `docs/url-changes.md`). Other archives (`archive.php`) render the News
       listing pattern with the query set to inherit, so they have the same cards and pagination, the archive name as
       the heading and 6 per page. Tested in `breadcrumbs_check.py` (fixture post and category, deleted afterwards).
+- [x] **BU & YBA wording (18 Oct 2026):** the YBA section is a short, warm acknowledgement (MBC is a member, what the YBA is,
+      a link); "What this means for MBC" says we belong to the YBA but decisions are our own, and links to the BMS page.
+      `section_index_check.py resolve` fails if any Primary or Footer menu item points at a page that is not published
+      or does not answer 200. Breadcrumb names are entity-decoded (the data showed `&#038;`).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
