@@ -1064,6 +1064,7 @@ Pages, menus and settings are managed via the WordPress REST API.
         image always wins. Check at cutover that the image is on live
         uploads (the sandbox copy carries `mbc_live_source_url`, so it is
         not removed by the demo-import clean-up, which names its 19 media).
+      - **Default header control (18 Oct 2026):** the issue edit screen's Header image box previews the default (with "Using the default header. Set a header image to override it for this issue.") when the issue has none; **Newsletter > Settings** (`inc/newsletter/settings.php`, `js/newsletter-settings.js`, `manage_options` only) picks it from the media library (option `mbc_nl_default_header_id`; a non-image ID is stored as 0). Check: `newsletter_check.py defaultheader`.
       - **Header image and issue copy:** the default header image is the live
         one (above); John may supply a new one later. Editor how-to:
         `docs/newsletter/editor-guide.md`.
