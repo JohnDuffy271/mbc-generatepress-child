@@ -23,7 +23,7 @@ All photos: landscape, subject near the centre, no text in the image, photo cons
 - **Room Hire:** photos of the rooms for hire (the current picture is a designed graphic with writing on it).
 - **Policies & Documents:** a generic documents photo is fine (a tidy desk, folders or a noticeboard). The current crate of paperbacks looks unrelated.
 - **Contact Us:** a welcoming photo of the church from the outside (the entrance), or the foyer. Low priority.
-- **BMS and MAF:** ask each partner for its official logo or press images, and for permission to use them. Flag logos in the media library with "This is a logo" so they show whole.
+- **BMS:** ask for its official logo or press images, and for permission to use them. (MAF's official logo is in place, 18 Oct 2026.) Flag logos in the media library with "This is a logo" so they show whole.
 - **Romania:** a photo of the partner church in Cluj or of a visit.
 - **Moortown Emergency Relief Fund:** a photo of the work (a food parcel or collection), no identifiable faces unless agreed.
 - **Pathways:** their logo (ask them), or a calm, neutral photo. Do not use a stock photo of a counselling session.

@@ -551,8 +551,7 @@ Pages, menus and settings are managed via the WordPress REST API.
       Flagged images printed by cards, Image blocks and Media & Text blocks get the class `mbc-is-logo`, shown
       whole (`object-fit: contain`, padding `--mbc-logo-padding`, background `--mbc-logo-bg`, white in every
       look because logos are drawn for white); photos keep cover. Tested by `section_index_check.py logo`
-      (fixture uploads, deleted afterwards). **No media is flagged yet:** the library holds no partner logos
-      (BMS and MAF are illustrations, Furniture Mission a photo of the van); flag them as they arrive. The
+      (fixture uploads, deleted afterwards). **Flagged so far (18 Oct 2026): the MAF logo** (media 1344, uploaded as supplied, 1200x578 transparent PNG, alt "Mission Aviation Fellowship (MAF) logo"; featured and page image of Mission Aviation Fellowship, 455; backup `455-mission-aviation-fellowship-pre-logo.json`; `maf_logo_check.py`). BMS is still an illustration and Furniture Mission a photo of the van; flag logos as they arrive. The
       admin checkbox itself is untested (no wp-admin login in the tests).
       **State of the four parents before this work:** About Us (341): empty, template
       `page-section-index.php` (not in the theme); Resources (623): empty, no template; Mission (374)
@@ -1083,12 +1082,12 @@ in the image**.
 - **Contact Us map image (low priority, not now):** John may later add a
   map image on Contact Us that links to Google Maps. The old banner
   (media 607, a screenshot of Google Maps) is still in the media library.
-- **Mission partner logos:** the official logos of BMS World Mission, MAF,
+- **Mission partner logos:** the official logos of BMS World Mission,
   Leeds Furniture Mission and (if it has one) MrsG, ideally from each
   partner's own brand or press page and with their permission. The partner
   template's image slot is designed for a logo (shown whole, never
-  cropped). Until then BMS and MAF use designed illustrations (media
-  480 and 487, wide banners shown whole) and Furniture Mission a photo of
+  cropped). MAF's is in place (media 1344). Until then BMS uses a designed illustration (media
+  480, a wide banner shown whole) and Furniture Mission a photo of
   its van (which carries the logo).
 - **Romania:** a photo for the Romania partnership (the page shows the
   placeholder image; the Google Maps screenshot was dropped because of

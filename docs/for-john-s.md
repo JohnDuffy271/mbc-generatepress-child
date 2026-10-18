@@ -107,7 +107,7 @@ The page now shows one card for each partner. Its introduction is your existing 
 
 **Leeds Furniture Mission.** An email address for them, if you want one shown.
 
-**Logos.** If you can get the official logos of BMS, Mission Aviation Fellowship and the Furniture Mission (ideally from their own sites, with their permission), we can show them properly. For now two pages use illustrations and one uses a photo of their van.
+**Logos.** If you can get the official logos of BMS and the Furniture Mission (ideally from their own sites, with their permission), we can show them properly. For now BMS uses an illustration and the Furniture Mission a photo of its van. (The Mission Aviation Fellowship logo is done.)
 
 **A photo for the Mission page itself** would be good. The current picture is a stand-in. Something that says "mission" at a glance, such as a church mission day, or a group packing or sending.
 
