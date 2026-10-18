@@ -15,3 +15,22 @@ The main wishlist is in CLAUDE.md ("Image wishlist for John S"). Specs: `docs/im
   panorama) and Rock Solid (the current one is a baptism, wrong subject: replace with a youth club photo). Also
   Mission Group, Moortown Emergency Relief Fund and Pathways (logos or photos). 3:2 landscape, at least 900 x 600,
   subject near the centre, no text in the image. The full audit is in `docs/content-todo.md`.
+
+## Site review additions (18 Oct 2026)
+
+All photos: landscape, subject near the centre, no text in the image, photo consent from John S where people can be recognised. Card pictures 3:2, at least 900 x 600; banners at least 2240 x 896; Activity and band pictures 4:3, at least 1200 x 900.
+
+- **Room Hire:** photos of the rooms for hire (the current picture is a designed graphic with writing on it).
+- **Policies & Documents:** a generic documents photo is fine (a tidy desk, folders or a noticeboard). The current crate of paperbacks looks unrelated.
+- **Contact Us:** a welcoming photo of the church from the outside (the entrance), or the foyer. Low priority.
+- **BMS and MAF:** ask each partner for its official logo or press images, and for permission to use them. Flag logos in the media library with "This is a logo" so they show whole.
+- **Romania:** a photo of the partner church in Cluj or of a visit.
+- **Moortown Emergency Relief Fund:** a photo of the work (a food parcel or collection), no identifiable faces unless agreed.
+- **Pathways:** their logo (ask them), or a calm, neutral photo. Do not use a stock photo of a counselling session.
+- **House Groups:** a group chatting round a living-room table (people who have agreed).
+- **Mission Group:** the group meeting, or a map or display from a mission event.
+- **Giving:** a simple, warm picture such as the offering baskets or a hand holding a collection envelope; no people needed.
+- **BU & YBA:** the church building with its sign, or a Baptist event photo (ask the Association).
+- **Resources banner:** any attractive photo of the church or its people.
+- **FAQs:** a welcoming photo of the entrance or the foyer with a person greeting (people who have agreed).
+- **Beacon Café (updated):** on 18 Oct 2026 the 2560 x 619 panorama was cropped to 825 x 619 around the mugs (media 1275). The source cannot give more than that, and the mugs show the Beacon logo as writing. A new photo of people at the café, 4:3 and at least 1200 x 900, is still wanted.

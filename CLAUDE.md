@@ -571,6 +571,20 @@ Pages, menus and settings are managed via the WordPress REST API.
       external marker; five looks at 360 and 1280px) and `contrast_check.py` with `CC_PAGES=/mission/`
       (all five looks pass). Cards were not width-measured for `sizes`; re-run `measure_slots.py` and
       add a slot if the grid changes.
+- [x] **Site review fixes (18 Oct 2026):** What's On (327), About Us (341) and Resources (623) published
+      from their drafts (backups `327-whats-on.json`, `341-about-us-pre-publish.json`,
+      `623-resources-pre-publish.json`). **Breadcrumbs** (`inc/breadcrumbs.php`, styles in `css/layout.css`,
+      check `breadcrumbs_check.py`): `Section > Page` on child pages (also the legacy Elementor ones, through
+      `generate_before_content`) and `News > Post` on news posts; nav `aria-label="Breadcrumb"`, BreadcrumbList JSON-LD,
+      none on Home, the four hubs, News or Contact. **Events filters:** `[mbc_calendar filters="yes"]` adds a no-JS GET
+      form (`?show=one-off|regular`, `?weeks=2|4|8`; invalid values ignored); the Events page uses it; checked by
+      `calendar_check.py filters`. `html { scroll-padding-top }` keeps focused controls clear of the sticky header.
+      Sunday Mornings uses the congregation photo (1024); Lunch Club's place is "Moortown Baptist Church"; Beacon Café's
+      image is a recrop (media 1275; the source is only 619 px high); Rock Solid's "Youth for Christ" links to
+      `https://yfc.co.uk/` (YFC's site has no Rock Solid page; Elementor cache cleared over `DELETE /elementor/v1/cache`;
+      the same link is in draft 727). Drafts for John S: FAQs 1282, Pathways 1283, BU & YBA 1284 (every unknown marked
+      "Needs confirming"; preview with `preview_draft.py`). **No-JS finding:** with JavaScript off at 360px the full nav list
+      sits in the sticky header and covers the page (not fixed).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it

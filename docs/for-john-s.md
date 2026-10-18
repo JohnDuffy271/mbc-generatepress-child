@@ -23,7 +23,7 @@ Photos: please only send photos that people are happy to have on the website. Wh
 
 **Who we are.** The old sentence "Led by our full-time minister, Shelley Dring, you'll find us by the big roundabout…" read oddly. We have changed it to: "We're led by our full-time minister, and you'll find us by the big roundabout where King Lane and Stonegate Road cross." Is that all right?
 
-**FAQs.** The page is empty. We need the questions people often ask and their answers, plus a short introduction.
+**FAQs.** We have drafted ten questions and answers (service time and length, where to park, what to expect, children, access, Communion, dress, joining and giving, joining from home, getting involved). Please read them and correct anything wrong. The answers use only what is already on this website. Where we do not know, the draft says "Needs confirming" and we need you to fill the gap: how much parking there is, how visitors are greeted, the children's age groups and how they are kept safe, step-free access, toilets and a hearing loop, who may take Communion, and what to say about giving.
 
 **Photos and permission.**
 - Meet the team: the picture at the top shows six people sitting round a table (it looks like it was taken at a conference venue). Please confirm everyone in it has agreed to it being on the website.
@@ -52,21 +52,22 @@ Photos: please only send photos that people are happy to have on the website. Wh
 - House Groups: "Small groups meeting through the week to read the Bible, pray and share life."
 
 **Rock Solid.**
-- We need a few lines about what happens, who comes and who to ask. The page still uses text from Youth for Christ.
+- We need a few lines about what happens, who comes and who to ask. The page still uses text from Youth for Christ (the name now links to their website).
 - What age range is it for (school years)?
 - The photo on the page shows young people and looks like a baptism, not the youth club. Please send a youth club photo, and confirm everyone shown has agreed.
 
 **Stepping Stones.**
 - Which rooms does it use? We have "main room, Corner Room and Sports Hall" from the old text.
 - The photo shows a child we can recognise. Please confirm the family has agreed.
+- Is the child in the photo about the right age for the group (under 5)? If not, a photo of younger children would suit better.
 
 **Lunch Club.**
-- Which room does it meet in?
+- The page now says it meets at Moortown Baptist Church. Which room, if you want it shown?
 - The photo shows four older women. Please confirm they have agreed.
 
 **House Groups.** The page is almost empty. We need: when and where the groups meet, who they are for, who to contact, and a few lines about what a group is like. A photo would help (a general one, or none).
 
-**Beacon Café.** The picture is two mugs and is rather small and soft. A photo of people at the café would be much better.
+**Beacon Café.** We have cropped the picture to the two mugs so that it no longer looks like a thin strip, but it is small and soft, and the mugs carry the Beacon name as writing. A photo of people at the café would be much better.
 
 **Events.** No photo yet. Any photo of a church event would do.
 
@@ -85,7 +86,8 @@ The page now shows one card for each partner. Its introduction is your existing 
 **Pages that need their text.** Each has only a template. For each we need a short summary of the work, how people can pray, give and get involved, and a logo or photo.
 - Mission Group
 - Moortown Emergency Relief Fund
-- Pathways (the button to their website is done)
+
+**Pathways.** We have drafted the page from the Pathways website: what they do, how to give to them, and their self-referral page. Please read it. We need you to tell us how MBC supports Pathways (prayer requests, giving, any volunteers), because their website does not say. Their site currently says they are full and not taking self-referrals; we say so on the page, so please check that again just before it goes live.
 
 **Romania.**
 - The year the links with Romania began. The old website text says "since the mid 70s" but a 2011 page says 1991.
@@ -111,8 +113,8 @@ The page now shows one card for each partner. Its introduction is your existing 
 - Services on YouTube: "Watch our Sunday services on YouTube."
 
 **Pages that need their text.**
-- BU & YBA: an introduction, a few paragraphs and, if you like, a picture.
-- Giving: how people can give (bank details, standing order, envelopes, online) and any wording you want about it.
+- BU & YBA: we have drafted an explanation of the Baptist Union and the Yorkshire Baptist Association from their own websites, with links to both. Please read it. We need you to confirm that MBC belongs to the Baptist Union as well as the Association, and anything you want to say about what that involves.
+- Giving: how people can give. Please ask the treasurer for the bank or Stewardship details (account details, standing order, envelopes, online), and for any wording about giving, including Gift Aid. We will not put figures on the website until we have them from the treasurer.
 
 **Room Hire.** The picture is a graphic with writing on it. Photos of the rooms you hire out would be better.
 
