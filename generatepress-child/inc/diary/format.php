@@ -3,12 +3,10 @@
  * Weekly diary: pure formatting (no WordPress state), in the style of the minister's email.
  *
  * Time rule (applied everywhere in the diary):
- *  - 12-hour clock, a full stop between hours and minutes, am/pm written once, after the end time;
- *  - both ends on the hour and both am or both pm: no minutes ("7-8pm", "9-11am");
- *  - otherwise minutes on both, with spaces round the dash ("10.00 - 11.30am", "10.00 - 1.30pm",
- *    "11.00 - 1.00pm");
- *  - 12.00 noon is "midday" and 12.00 at night "midnight" (as the end of a range: "10.00 - 12.00 midday");
- *  - one time only: "10am", "10.30am", "midday";
+ *  - 12-hour clock, a full stop between hours and minutes, minutes always shown, am/pm written
+ *    once, after the end time: "7.00 - 8.00pm", "10.00 - 11.30am", "10.00 - 1.30pm";
+ *  - 12.00 noon is "midday" and 12.00 at night "midnight" ("10.00 - 12.00 midday");
+ *  - one time only: "7.30pm", "10.00am", "midday";
  *  - all-day events show no time; a timed event that runs over several days shows its start time
  *    and "until <date>".
  */
@@ -44,13 +42,13 @@ function mbc_diary_clock( DateTimeInterface $d ) {
     return array( 'h' => $h12, 'm' => $m, 'mer' => $h >= 12 ? 'pm' : 'am', 'special' => $sp );
 }
 
-/** "10am", "10.30am", "midday". */
+/** "10.00am", "10.30am", "midday". */
 function mbc_diary_time_single( DateTimeInterface $d ) {
     $c = mbc_diary_clock( $d );
     if ( '' !== $c['special'] ) {
         return $c['special'];
     }
-    return $c['h'] . ( $c['m'] ? sprintf( '.%02d', $c['m'] ) : '' ) . $c['mer'];
+    return sprintf( '%d.%02d', $c['h'], $c['m'] ) . $c['mer'];
 }
 
 /** The time rule above for a start and an end on the same day (end may be null or equal to start). */
@@ -61,9 +59,6 @@ function mbc_diary_time_range( DateTimeInterface $start, ?DateTimeInterface $end
     $s     = mbc_diary_clock( $start );
     $e     = mbc_diary_clock( $end );
     $label = '' !== $e['special'] ? ' ' . $e['special'] : $e['mer'];
-    if ( 0 === $s['m'] && 0 === $e['m'] && '' === $e['special'] && $s['mer'] === $e['mer'] ) {
-        return $s['h'] . '-' . $e['h'] . $label;
-    }
     return sprintf( '%d.%02d - %d.%02d', $s['h'], $s['m'], $e['h'], $e['m'] ) . $label;
 }
 
