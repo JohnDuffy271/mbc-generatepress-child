@@ -512,7 +512,16 @@ Pages, menus and settings are managed via the WordPress REST API.
       `7.00 - 8.00pm`, `10.00 - 11.30am`, `10.00 - 1.30pm`, `10.00 - 12.00 midday` (and `midnight`); one time `7.30pm`,
       `10.00am`, `midday`. The
       "at <venue>" is added only when the location is not the church (filter `mbc_diary_church_patterns`).
-      Check: `~/src/mbc-tests/diary_check.py [format|split|notes|caps|output|browser|real]` (115 checks; temporary
+      **Access (18 Oct 2026):** a top-level admin menu "Weekly diary" (dashicon calendar-alt, `admin.php?page=mbc-weekly-diary`;
+      no longer under Tools) for anyone with `mbc_weekly_diary`; role **Diary editor** (`mbc_diary_editor`: `read` +
+      `mbc_weekly_diary` only; made by `inc/diary/access.php` once per `MBC_DIARY_VERSION` option `mbc_diary_version`, caps
+      re-synced to exactly those two when the version is bumped; no user created). For a "diary-only" user (has the
+      capability but none of manage_options, edit_posts, edit_pages, upload_files, edit_theme_options, list_users,
+      moderate_comments): `login_redirect` goes to the diary, the Dashboard menu item and widgets are removed and
+      `index.php` redirects to the diary, and the admin bar keeps only the menu toggle, site name (visit site and a Dashboard
+      link re-pointed to the diary), Profile (the account `user-info` link) and Log out. Administrators are unaffected.
+      Minister's login steps are in `docs/weekly-diary-guide.md`. Check sections `diaryrole` and `browser`.
+      Check: `~/src/mbc-tests/diary_check.py [format|split|notes|caps|output|browser|diaryrole|real]` (115 checks; temporary
       "mbc-test-diary-*" users, fixture data, notes keyed `TEST...`, all cleaned up). Not provable with fixtures:
       that Refresh bypasses the real transient (fixtures skip transients); the `real` section only shows the real
       calendar answers. Limits/open: the wording "at <place>" and bold headings only are my choices to confirm with the

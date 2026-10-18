@@ -4,9 +4,22 @@ The weekly diary builds the "diary" part of your members' email from the church 
 you do not have to type it out each week. Only people you give access to can see it. The
 notes you add are never shown on the public website and are never sent to Google.
 
+## Logging in
+
+1. Go to `https://new.moortownbaptistchurch.org.uk/wp-login.php` (the address will change when the new
+   website goes live; John will tell you).
+2. Type your username and password and press **Log In**. You go straight to the Weekly diary.
+3. If you forget your password, press **Lost your password?** on the login page and follow the email.
+4. The left-hand menu shows only **Weekly diary** and **Profile**. The bar along the top has your name:
+   use it to open **Profile** (change your password there) or to **Log out**.
+5. When you have finished, log out from the top bar, especially on a shared computer.
+
+You cannot change the website's pages, posts or settings with this login; that is deliberate, so
+nothing can be broken by accident. Ask John if you need something else.
+
 ## Each week
 
-1. Log in to the website and choose **Tools > Weekly diary**.
+1. Log in (see "Logging in" below). You arrive at **Weekly diary**; if you are ever elsewhere, choose **Weekly diary** in the menu on the left.
 2. The dates are already set to the coming Sunday and the Sunday after. To use other dates,
    change **From** and **To (included)** and press **Show**. (A range can be up to 31 days.)
 3. Press **Refresh from the calendar** if someone has just changed the calendar and you want
