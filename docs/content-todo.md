@@ -150,3 +150,7 @@ The four "Wait" pages have no excerpt, so their cards show no description until 
 Cards use a 3:2 frame, so anything wider than about 2:1 crops. The old PNG graphics (Room Hire, Sundays) are still
 1.6 MB as featured images (the pages' own copies were converted to WebP); they only reach the card as a resized
 version.
+
+## BU & YBA page
+
+- YBA section: keep minimal, facts and link.

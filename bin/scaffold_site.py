@@ -490,6 +490,20 @@ def write_report(rows, bad):
     ]
     for old, new, status, loc in rows:
         lines.append(f"| `{old}` | `{new}` | {status} | {('`' + loc + '`') if loc else ''} |")
+    lines += [
+        "",
+        "## Redirects to set up at cutover (decided 17 Oct 2026)",
+        "",
+        "The old Welcome, Baptism and Sunday School pages (Elementor drafts 8, 54 and 556, trashed 18 Oct 2026,",
+        "backups in `~/src/mbc-elementor-backups/`) are not in the menu. Their old addresses are not in the",
+        "snapshot above (they were drafts), so confirm the exact paths on the live-old map.",
+        "",
+        "| Old page | Likely old path | Redirect to (301) |",
+        "|---|---|---|",
+        "| Welcome | `/welcome/` | `/about-us/who-we-are/` |",
+        "| Baptism | `/baptism/` | `/about-us/what-we-believe/` |",
+        "| Sunday School | `/sunday-school/` | `/whats-on/sunday-mornings/` |",
+    ]
     if bad:
         lines += ["", "Published pages not returning 200 after the run: " + ", ".join(f"{i} ({l})" for i, l in bad)]
     DOCS.mkdir(exist_ok=True)

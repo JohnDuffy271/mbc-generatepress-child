@@ -34,3 +34,5 @@ All photos: landscape, subject near the centre, no text in the image, photo cons
 - **Resources banner:** any attractive photo of the church or its people.
 - **FAQs:** a welcoming photo of the entrance or the foyer with a person greeting (people who have agreed).
 - **Beacon Café (updated):** on 18 Oct 2026 the 2560 x 619 panorama was cropped to 825 x 619 around the mugs (media 1275). The source cannot give more than that, and the mugs show the Beacon logo as writing. A new photo of people at the café, 4:3 and at least 1200 x 900, is still wanted.
+- **Pathways (update 18 Oct 2026):** logo or image awaiting permission from Pathways.
+- **BU & YBA (update 18 Oct 2026):** image requested from the Baptist Union.

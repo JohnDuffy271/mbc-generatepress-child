@@ -585,6 +585,11 @@ Pages, menus and settings are managed via the WordPress REST API.
       the same link is in draft 727). Drafts for John S: FAQs 1282, Pathways 1283, BU & YBA 1284 (every unknown marked
       "Needs confirming"; preview with `preview_draft.py`). **No-JS finding:** with JavaScript off at 360px the full nav list
       sits in the sticky header and covers the page (not fixed).
+- [x] **Published 18 Oct 2026 (sandbox, markers included):** FAQs (626), Pathways (634), BU & YBA (635) from drafts
+      1282-1284 (backups `*-pre-publish.json`); the BU & YBA page's YBA section is a plain statement and link. Old Elementor
+      drafts Welcome (8), Baptism (54) and Sunday School (556) are in the **trash** (nothing linked to them; backups exist; the
+      Sunday School item is out of the unassigned "Menu 1"; cutover redirects are in `docs/url-changes.md`, kept by
+      `bin/scaffold_site.py`). Outstanding markers: `docs/needs-confirming.md`.
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
@@ -1402,7 +1407,8 @@ scale. Every value is traced to the original in the file's comments. Layout
       chosen look is not `original`, also delete `generatepress-child/fonts/`;
       if it is, keep only the weights its type uses.
 - [ ] **Zero placeholder markers:** `python3 bin/scan_placeholders.py`
-      exits 0. It scans the rendered content of every published page and
+      exits 0. **This must be clean before go-live.** The current list, every hit with its sentence, is
+      `docs/needs-confirming.md` (`scan_placeholders.py --report docs/needs-confirming.md` regenerates it). It scans the rendered content of every published page and
       post (`--drafts` adds drafts) for "Needs confirming" / "need
       confirming", "Needs local copy", the block patterns' prompts ("Add
       the day and time...", "Describe what happens...", "Delete this box
