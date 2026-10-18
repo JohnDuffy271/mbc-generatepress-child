@@ -17,6 +17,7 @@ get_header();
         the_post();
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'mbc-page__article' ); ?>>
+            <?php mbc_breadcrumbs(); ?>
             <header class="mbc-post__header">
                 <p class="mbc-post__cats"><?php echo wp_kses_post( get_the_category_list( ', ' ) ); ?></p>
                 <h1 class="mbc-page__title"><?php the_title(); ?></h1>

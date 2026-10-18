@@ -30,6 +30,7 @@ $mbc_variant = isset( $args['variant'] ) ? sanitize_html_class( $args['variant']
                     ?>
                 </div>
             <?php endif; ?>
+            <?php if ( 'hub' !== $mbc_variant ) { mbc_breadcrumbs(); } ?>
             <header class="mbc-page__header">
                 <h1 class="mbc-page__title"><?php the_title(); ?></h1>
             </header>

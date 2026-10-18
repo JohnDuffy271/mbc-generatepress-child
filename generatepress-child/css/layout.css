@@ -108,3 +108,30 @@
 	height: 100%;
 	object-fit: cover;
 }
+
+/* ---- Breadcrumbs (inc/breadcrumbs.php): small, above the title ---- */
+.mbc-breadcrumbs {
+	margin: 0 0 var(--mbc-space-m);
+	font-size: var(--mbc-step--1);
+	color: var(--mbc-text-muted);
+}
+
+.mbc-breadcrumbs__list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mbc-breadcrumbs__item + .mbc-breadcrumbs__item::before {
+	content: "\203A" / "";
+	margin: 0 var(--mbc-space-xs);
+}
+
+.mbc-breadcrumbs__item a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+}

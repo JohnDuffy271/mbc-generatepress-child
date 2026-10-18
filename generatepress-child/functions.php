@@ -22,6 +22,7 @@ require_once get_stylesheet_directory() . '/inc/calendar/render.php';
 require_once get_stylesheet_directory() . '/inc/newsletter/cpt.php';
 require_once get_stylesheet_directory() . '/inc/section-index.php';
 require_once get_stylesheet_directory() . '/inc/logo-flag.php';
+require_once get_stylesheet_directory() . '/inc/breadcrumbs.php';
 require_once get_stylesheet_directory() . '/inc/demo-import.php'; // TEMPORARY: remove before launch.
 
 add_action( 'wp_enqueue_scripts', 'mbc_child_enqueue_styles' );
