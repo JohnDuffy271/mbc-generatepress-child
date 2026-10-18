@@ -906,6 +906,12 @@ Pages, menus and settings are managed via the WordPress REST API.
         saved issue; a post deleted or unpublished later is skipped. Published
         means public: `/newsletter/` (archive, linked from the News page) and
         `/newsletter/<slug>/` (web version).
+      - **Refill control (18 Oct 2026):** "Refill from recent posts" sits beside "Add a post" with a "Posts since" date input (default: the
+        last published issue's date; `mbc_nl_since_from_date()`, invalid or default-date values use the default). It was hidden on
+        draft issues before (the button required a slug, which drafts do not have) and is now shown on every saved issue (not on an unsaved new
+        one, which is pre-filled anyway). If no non-sticky post is found, the list is kept and the warning "No new posts since <date>. Choose an
+        earlier date or add posts below." shows. A plain link works without JavaScript (default date). Check: `newsletter_check.py editscreen`
+        (real edit screen via a temporary editor login; 1280 and 782px).
       - **Pre-fill** ("Refill from posts since the last issue"): sticky posts
         first (whatever their age; remove per issue), then everything published
         after the previous issue's date, newest first, capped at 6 (`mbc_newsletter_max_posts` filter; the old
