@@ -13,13 +13,14 @@ server-rendered by the existing `[mbc_calendar]` shortcode through a new
 for either; nothing loads from Google in the browser.
 
 ## Shared groundwork (both views)
-- `mbc_calendar_get( $weeks )` takes a window in weeks from now. Both views
-  need a window by dates, so add `mbc_calendar_get_range( $from, $to )`
-  (the same request with `timeMin`/`timeMax` set, the same fixture and
-  last-good handling). The existing function stays as a wrapper.
-- Cache and last-good keys already hash the window; for ranges they hash the
-  month (`YYYY-MM`) or the card window, so each month has its own transient
-  and last-good copy.
+- **Built 18 Oct 2026 (for the Weekly diary):** `mbc_calendar_get_range( $from, $to, $args )`
+  in `inc/calendar/fetch.php` fetches events between two dates (the same request with
+  `timeMin`/`timeMax` set, the same fixture and last-good handling, follows `nextPageToken`
+  for up to five pages). `$args['key']` sets the cache identity (default: the two dates),
+  `$args['refresh']` bypasses the cache. `mbc_calendar_get( $weeks )` is now a wrapper over it.
+  Normalised events also carry `id` and `series_id`. The month view needs nothing more here.
+- Cache and last-good keys hash the range; the month view passes `key` = `YYYY-MM` so each
+  month has its own transient and last-good copy.
 - `maxResults` is 250. A busy month with repeating events fits; log a warning if
   the response is truncated (`nextPageToken` present).
 - Effort for the groundwork: about half a day, included in each estimate below.

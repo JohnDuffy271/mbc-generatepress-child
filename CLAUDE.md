@@ -492,6 +492,31 @@ Pages, menus and settings are managed via the WordPress REST API.
       probably, check at cutover). Check: `~/src/mbc-tests/calendar_check.py` (sections `attrs` and `cards` cover the new
       attributes and the card view with fixture data, all five looks). Planned views (not built): `docs/calendar-views-plan.md`.
       Cutover: set the key on live the same way; restrict the key by IP and to the Calendar API.
+- [x] **Weekly diary (18 Oct 2026, v1, sandbox)**: Tools > Weekly diary builds the diary part of the
+      minister's weekly members' email (members and staff, not public). `inc/diary/` (`format.php` pure
+      formatting, `data.php` capability, notes and build, `admin.php` screen and REST), `js/diary-admin.js`,
+      `css/diary-admin.css`; guide for the minister `docs/weekly-diary-guide.md`. **Shared building block:**
+      `mbc_calendar_get_range( $from, $to, $args )` in `inc/calendar/fetch.php` (own cache key per range, `key`
+      and `refresh` args, same last-good/back-off handling, follows `nextPageToken`); `mbc_calendar_get()` is a
+      wrapper; events now carry `id` and `series_id`; cache keys are `v3`. **Capability** `mbc_weekly_diary` is
+      granted to anyone with `manage_options` by a `user_has_cap` filter (no role or user was created; give it to
+      another role later with a role editor). **Range** defaults to the Sunday *after* today (on a Sunday, the
+      next one) to the Sunday after that, inclusive; invalid or reversed dates fall back, a range is capped at 31
+      days. **This week** = events starting in the range; **Coming up** = one-off events from the day after to +6
+      weeks; cancelled instances never appear (and neither do events that started before the range). **Notes**:
+      option `mbc_diary_notes` (not autoloaded, not a registered setting, so not in REST settings), keys `r:<recurringEventId>`
+      (every week) and `e:<event id>`, max 500 characters, plain text, saved inline over `POST /mbc/v1/diary/note`
+      (an empty note deletes); orphaned notes (not in a 13-month read of the calendar) are listed with a delete
+      button, and not judged when the calendar cannot be read. Routes `GET /mbc/v1/diary?from=&to=&refresh=1`,
+      `POST|DELETE /mbc/v1/diary/note`, all `mbc_weekly_diary` only. **Time rule** (`format.php`): `7-8pm` and `9-11am`
+      (both on the hour, same am/pm), else `10.00 - 11.30am`, `10.00 - 1.30pm`, `10.00 - 12.00 midday`,
+      `10.00 - 12.00 midnight`; one time `10am`, `10.30am`, `midday`; am/pm once, after the end. The
+      "at <venue>" is added only when the location is not the church (filter `mbc_diary_church_patterns`).
+      Check: `~/src/mbc-tests/diary_check.py [format|split|notes|caps|output|browser|real]` (115 checks; temporary
+      "mbc-test-diary-*" users, fixture data, notes keyed `TEST...`, all cleaned up). Not provable with fixtures:
+      that Refresh bypasses the real transient (fixtures skip transients); the `real` section only shows the real
+      calendar answers. Limits/open: the wording "at <place>" and bold headings only are my choices to confirm with the
+      minister; the "Copy" button's rich-text copy is tested in Chromium only (Gmail/Outlook paste not tested).
 - [x] **Overview menu items (17 Oct 2026, John's decision):** each of the four parents
       (About Us, What's On, Mission, Resources) has a first submenu item "Overview" that links
       to the parent's own page, in the Primary menu itself (made by `bin/scaffold_site.py`,
