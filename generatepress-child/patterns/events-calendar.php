@@ -15,5 +15,5 @@ defined( 'ABSPATH' ) || exit;
 <!-- /wp:paragraph -->
 
 <!-- wp:shortcode -->
-[mbc_calendar weeks="8" filters="yes"]
+[mbc_calendar weeks="8" filters="yes" toggle="yes"]
 <!-- /wp:shortcode -->

@@ -284,3 +284,151 @@
 	align-items: center;
 	min-height: var(--mbc-tap-target);
 }
+
+/* ---- Month view (view="month" / ?view=month): grid from 48rem of container width, the agenda below it ---- */
+.mbc-cal--month {
+	max-width: none;
+	container-type: inline-size;
+}
+
+.mbc-cal__toggle {
+	display: inline-flex;
+	margin-block-end: var(--mbc-space-m);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	border-radius: var(--mbc-radius-md);
+	overflow: hidden;
+}
+
+.mbc-cal__toggle a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+	padding-inline: var(--mbc-space-l);
+	text-decoration: none;
+}
+
+.mbc-cal__toggle a[aria-current="true"] {
+	background: var(--mbc-button-bg);
+	color: var(--mbc-button-text);
+	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-cal__month-nav {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--mbc-space-2xs) var(--mbc-space-m);
+	margin-block-end: var(--mbc-space-m);
+}
+
+.mbc-cal__month-nav a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--mbc-tap-target);
+}
+
+.mbc-cal__month-title {
+	order: -1;
+	flex: 1 1 100%;
+	margin: 0;
+	font-size: var(--mbc-step-3);
+}
+
+.mbc-cal__month-nav > :last-child {
+	margin-inline-start: auto;
+}
+
+.mbc-cal__grid {
+	display: none;
+	width: 100%;
+	margin: 0 0 var(--mbc-space-l);
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.mbc-cal__grid th,
+.mbc-cal__grid td {
+	padding: var(--mbc-space-2xs);
+	border: var(--mbc-border-width) solid var(--mbc-border);
+	vertical-align: top;
+}
+
+.mbc-cal__grid th {
+	background: var(--mbc-surface-alt);
+	font-size: var(--mbc-step--1);
+	text-align: center;
+}
+
+.mbc-cal__grid abbr {
+	text-decoration: none;
+}
+
+.mbc-cal__cell {
+	height: 7rem;
+	overflow-wrap: anywhere;
+	font-size: var(--mbc-step--1);
+}
+
+.mbc-cal__num {
+	display: inline-block;
+	margin-block-end: var(--mbc-space-3xs);
+	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-cal__cell.is-other-month,
+.mbc-cal__cell.is-past {
+	background: var(--mbc-surface-alt);
+}
+
+.mbc-cal__cell.is-other-month .mbc-cal__num,
+.mbc-cal__cell.is-past .mbc-cal__num {
+	color: var(--mbc-text-muted);
+	font-weight: normal;
+}
+
+/* Today: an outline and a filled date, not colour alone (the date also says "today" to screen readers). */
+.mbc-cal__cell.is-today {
+	outline: calc(var(--mbc-border-width) * 2) solid var(--mbc-accent);
+	outline-offset: calc(var(--mbc-border-width) * -2);
+}
+
+.mbc-cal__cell.is-today .mbc-cal__num {
+	padding-inline: var(--mbc-space-2xs);
+	border-radius: var(--mbc-radius-md);
+	background: var(--mbc-button-bg);
+	color: var(--mbc-button-text);
+}
+
+.mbc-cal__cell-events li + li {
+	margin-top: var(--mbc-space-3xs);
+}
+
+.mbc-cal__cell-events a {
+	display: block;
+	line-height: 1.25;
+}
+
+.mbc-cal__cell-time,
+.mbc-cal__cell-cont {
+	color: var(--mbc-text-muted);
+}
+
+.mbc-cal__cell-more a {
+	font-weight: var(--mbc-weight-strong);
+}
+
+.mbc-cal__grid a:focus-visible {
+	outline: var(--mbc-focus-width) solid var(--mbc-focus);
+	outline-offset: var(--mbc-space-3xs);
+}
+
+.mbc-cal__agenda {
+	max-width: var(--mbc-measure);
+}
+
+@container (min-width: 48rem) {
+	.mbc-cal__grid {
+		display: table;
+	}
+}

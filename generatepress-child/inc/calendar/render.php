@@ -9,6 +9,9 @@
  * more="URL" adds a "See all events" link (also when the list is empty or the calendar is unavailable)
  * and then never links out to Google. empty="..." replaces the "no events" line.
  * filters="yes" adds a no-JavaScript form: ?show=one-off|regular and ?weeks=2|4|8 (anything else is ignored).
+ * view="month" (or toggle="yes" and ?view=month) shows one month as a Monday-first grid with the month's agenda
+ * below it; ?month=YYYY-MM picks the month (this month -1 to +12; anything else is this month). toggle="yes" adds
+ * the List | Month links. show= applies to both views; the weeks choice applies to the list only.
  * hide_empty="yes" outputs nothing at all (no wrapper, no heading) when there is nothing to show or the
  * calendar is unavailable (the failure is still logged by fetch.php). heading_text="..." puts a section
  * heading (h2) inside the output so it disappears with it. strip="yes" gives a full-width section look.
@@ -67,6 +70,7 @@ function mbc_calendar_shortcode( $atts ) {
         'heading_text' => '',
         'strip'      => 'no',
         'filters'    => 'no',
+        'toggle'     => 'no',
     ), $atts, 'mbc_calendar' );
     $h_day   = max( 2, min( 5, (int) $atts['heading'] ) );
     $h_event = min( 6, $h_day + 1 );
@@ -83,6 +87,12 @@ function mbc_calendar_shortcode( $atts ) {
         $show   = in_array( $q_show, array( 'one-off', 'regular' ), true ) ? $q_show : 'all';
         $chosen = in_array( $q_wk, array( 2, 4, 8 ), true );
         $weeks  = $chosen ? $q_wk : $weeks;
+    }
+
+    $toggle  = 'yes' === strtolower( (string) $atts['toggle'] );
+    $q_view  = isset( $_GET['view'] ) && is_string( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( 'month' === strtolower( (string) $atts['view'] ) || ( $toggle && 'month' === $q_view ) ) {
+        return mbc_calendar_month_view( $atts, $show, $filters, $toggle, $h_day, $h_event );
     }
 
     $data  = mbc_calendar_get( $weeks );
@@ -133,6 +143,9 @@ function mbc_calendar_shortcode( $atts ) {
         $out .= '</div>';
     }
 
+    if ( $toggle ) {
+        $out .= mbc_calendar_toggle_html( 'list', $show );
+    }
     if ( $filters ) {
         $out .= mbc_calendar_filters_html( $show, $weeks );
         if ( 'all' !== $show || (int) $atts['weeks'] !== $weeks ) {
@@ -156,17 +169,7 @@ function mbc_calendar_shortcode( $atts ) {
             // Something already under way (a multi-day event) is listed under today.
             $days[ max( $e['start_date'], $today ) ][] = $e;
         }
-        $out .= '<ol class="mbc-cal__days">';
-        foreach ( $days as $date => $list ) {
-            $d    = new DateTimeImmutable( $date, $tz );
-            $out .= '<li class="mbc-cal__day"><h' . $h_day . ' class="mbc-cal__date" id="d-' . esc_attr( $date ) . '"><time datetime="' . esc_attr( $date ) . '">'
-                . esc_html( mbc_calendar_day_label( $d, $now ) ) . '</time></h' . $h_day . '><ul class="mbc-cal__events">';
-            foreach ( $list as $e ) {
-                $out .= mbc_calendar_event_html( $e, $h_event, $now );
-            }
-            $out .= '</ul></li>';
-        }
-        $out .= '</ol>';
+        $out .= mbc_calendar_agenda_html( $days, $h_day, $h_event, $now );
     }
 
     if ( '' !== $more_url && ! $more_in_head ) {
@@ -180,10 +183,26 @@ function mbc_calendar_shortcode( $atts ) {
     return $out . '</div>';
 }
 
+/** The agenda: a list of days (date => events), each with an id="d-YYYY-MM-DD" heading. */
+function mbc_calendar_agenda_html( array $days, $h_day, $h_event, DateTimeInterface $now ) {
+    $tz  = mbc_calendar_tz();
+    $out = '<ol class="mbc-cal__days">';
+    foreach ( $days as $date => $list ) {
+        $d    = new DateTimeImmutable( $date, $tz );
+        $out .= '<li class="mbc-cal__day"><h' . $h_day . ' class="mbc-cal__date" id="d-' . esc_attr( $date ) . '"><time datetime="' . esc_attr( $date ) . '">'
+            . esc_html( mbc_calendar_day_label( $d, $now ) ) . '</time></h' . $h_day . '><ul class="mbc-cal__events">';
+        foreach ( $list as $e ) {
+            $out .= mbc_calendar_event_html( $e, $h_event, $now );
+        }
+        $out .= '</ul></li>';
+    }
+    return $out . '</ol>';
+}
+
 /**
  * The filter form: a plain GET form (works without JavaScript). Two radio groups and a button.
  */
-function mbc_calendar_filters_html( $show, $weeks ) {
+function mbc_calendar_filters_html( $show, $weeks, $month = '' ) {
     $shows = array(
         'all'     => __( 'All', 'generatepress-child' ),
         'one-off' => __( 'One-off events', 'generatepress-child' ),
@@ -199,12 +218,18 @@ function mbc_calendar_filters_html( $show, $weeks ) {
     foreach ( $shows as $value => $label ) {
         $out .= '<label class="mbc-cal__choice"><input type="radio" name="show" value="' . esc_attr( $value ) . '"' . checked( $show, $value, false ) . '> <span>' . esc_html( $label ) . '</span></label>';
     }
-    $out .= '</fieldset><fieldset class="mbc-cal__filter"><legend>' . esc_html__( 'How far ahead', 'generatepress-child' ) . '</legend>';
-    foreach ( $ranges as $value => $label ) {
-        $out .= '<label class="mbc-cal__choice"><input type="radio" name="weeks" value="' . (int) $value . '"' . checked( $weeks, $value, false ) . '> <span>' . esc_html( $label ) . '</span></label>';
+    $out .= '</fieldset>';
+    if ( '' !== $month ) { // Month view: the weeks choice does not apply; keep the view and the month.
+        $out .= '<input type="hidden" name="view" value="month"><input type="hidden" name="month" value="' . esc_attr( $month ) . '">';
+    } else {
+        $out .= '<fieldset class="mbc-cal__filter"><legend>' . esc_html__( 'How far ahead', 'generatepress-child' ) . '</legend>';
+        foreach ( $ranges as $value => $label ) {
+            $out .= '<label class="mbc-cal__choice"><input type="radio" name="weeks" value="' . (int) $value . '"' . checked( $weeks, $value, false ) . '> <span>' . esc_html( $label ) . '</span></label>';
+        }
+        $out .= '</fieldset>';
     }
-    $out .= '</fieldset><p class="mbc-cal__filter-actions"><input type="submit" value="' . esc_attr__( 'Update list', 'generatepress-child' ) . '"> '
-        . '<a href="' . esc_url( get_permalink() ) . '">' . esc_html__( 'Reset', 'generatepress-child' ) . '</a></p></form>';
+    $out .= '<p class="mbc-cal__filter-actions"><input type="submit" value="' . esc_attr( '' !== $month ? __( 'Update calendar', 'generatepress-child' ) : __( 'Update list', 'generatepress-child' ) ) . '"> '
+        . '<a href="' . esc_url( '' !== $month ? mbc_calendar_url( array( 'view' => 'month', 'month' => $month ) ) : get_permalink() ) . '">' . esc_html__( 'Reset', 'generatepress-child' ) . '</a></p></form>';
     return $out;
 }
 
@@ -292,4 +317,176 @@ function mbc_calendar_cards_html( array $events, $h, DateTimeInterface $now, $mo
         $out .= '</div></li>';
     }
     return $out . '</ul>';
+}
+
+/** The permalink with query arguments (null or empty values left out). */
+function mbc_calendar_url( array $args ) {
+    return add_query_arg( array_filter( $args, static function ( $v ) {
+        return null !== $v && '' !== $v;
+    } ), get_permalink() );
+}
+
+/** List | Month links (a plain-link segmented control). $current is 'list' or 'month'. */
+function mbc_calendar_toggle_html( $current, $show ) {
+    $keep = 'all' === $show ? null : $show;
+    $link = static function ( $view, $label ) use ( $current, $keep ) {
+        return '<a href="' . esc_url( mbc_calendar_url( array( 'view' => $view, 'show' => $keep ) ) ) . '"' . ( $view === $current ? ' aria-current="true"' : '' ) . '>' . esc_html( $label ) . '</a>';
+    };
+    return '<nav class="mbc-cal__toggle" aria-label="' . esc_attr__( 'Calendar view', 'generatepress-child' ) . '">'
+        . $link( 'list', __( 'List', 'generatepress-child' ) ) . $link( 'month', __( 'Month', 'generatepress-child' ) ) . '</nav>';
+}
+
+/**
+ * The month being shown, as its first day (00:00, Europe/London). ?month=YYYY-MM, valid and within
+ * one month back to twelve ahead of this month; anything else (missing, malformed, an array, out of range) is this month.
+ */
+function mbc_calendar_month_param( DateTimeImmutable $now ) {
+    $tz  = mbc_calendar_tz();
+    $cur = new DateTimeImmutable( $now->format( 'Y-m' ) . '-01 00:00:00', $tz );
+    $raw = isset( $_GET['month'] ) && is_string( $_GET['month'] ) ? wp_unslash( $_GET['month'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( 1 !== preg_match( '/^\d{4}-(0[1-9]|1[0-2])$/D', $raw ) ) {
+        return $cur;
+    }
+    if ( $raw < $cur->modify( '-1 month' )->format( 'Y-m' ) || $raw > $cur->modify( '+12 months' )->format( 'Y-m' ) ) {
+        return $cur;
+    }
+    return new DateTimeImmutable( $raw . '-01 00:00:00', $tz );
+}
+
+/** Where an event is listed in the agenda: the day it starts, or the first of the month if it began earlier. */
+function mbc_calendar_agenda_day( array $e, $first_d ) {
+    return max( $e['start_date'], $first_d );
+}
+
+/**
+ * view="month": a Monday-first grid (a real table; shown from 48rem of container width) with the month's
+ * agenda below it (the only view below that width). Grid links jump to the event's day in the agenda.
+ */
+function mbc_calendar_month_view( array $atts, $show, $filters, $toggle, $h_day, $h_event ) {
+    $tz      = mbc_calendar_tz();
+    $now     = mbc_calendar_now();
+    $today   = $now->format( 'Y-m-d' );
+    $first   = mbc_calendar_month_param( $now );
+    $next    = $first->modify( '+1 month' );
+    $ym      = $first->format( 'Y-m' );
+    $first_d = $first->format( 'Y-m-d' );
+    $last_d  = $next->modify( '-1 day' )->format( 'Y-m-d' );
+    $curr_ym = $now->format( 'Y-m' );
+    $data    = mbc_calendar_get_range( $first, $next, array( 'key' => $ym ) );
+    $links   = mbc_calendar_id_links();
+    $no_rec  = 'no' === strtolower( (string) $atts['recurring'] );
+
+    $events = array_values( array_filter( $data['events'], static function ( $e ) use ( $first_d, $last_d, $no_rec, $show ) {
+        if ( ( $no_rec || 'one-off' === $show ) && ! empty( $e['recurring'] ) ) {
+            return false;
+        }
+        if ( 'regular' === $show && empty( $e['recurring'] ) ) {
+            return false;
+        }
+        return $e['end_date'] >= $first_d && $e['start_date'] <= $last_d; // Overlaps the month (past events stay).
+    } ) );
+
+    // Per day (grid: every day an event touches) and the agenda (once, under its first day in the month).
+    $by_day = array();
+    $agenda = array();
+    foreach ( $events as $e ) {
+        $agenda[ mbc_calendar_agenda_day( $e, $first_d ) ][] = $e;
+        $d = new DateTimeImmutable( max( $e['start_date'], $first_d ), $tz );
+        for ( $date = $d->format( 'Y-m-d' ); $date <= min( $e['end_date'], $last_d ); $date = ( $d = $d->modify( '+1 day' ) )->format( 'Y-m-d' ) ) {
+            $by_day[ $date ][] = $e;
+        }
+    }
+    ksort( $agenda );
+
+    $source = 'fresh' === $data['source'] ? 'fresh' : ( 'last-good' === $data['source'] ? 'last-good' : 'fallback' );
+    $out    = '<div class="mbc-cal mbc-cal--month" data-source="' . esc_attr( $source ) . '" data-month="' . esc_attr( $ym ) . '">';
+    if ( $toggle ) {
+        $out .= mbc_calendar_toggle_html( 'month', $show );
+    }
+    if ( $filters ) {
+        $out .= mbc_calendar_filters_html( $show, 0, $ym );
+    }
+
+    // Previous / next month, only inside the allowed range.
+    $keep = 'all' === $show ? null : $show;
+    $nav  = static function ( $d, $rel, $word ) use ( $keep ) {
+        return '<a class="mbc-cal__month-' . $rel . '" rel="' . $rel . '" href="' . esc_url( mbc_calendar_url( array( 'view' => 'month', 'month' => $d->format( 'Y-m' ), 'show' => $keep ) ) ) . '">'
+            . ( 'prev' === $rel ? '<span aria-hidden="true">&larr;</span> ' : '' ) . '<span class="screen-reader-text">' . esc_html( $word ) . ': </span>' . esc_html( $d->format( 'F Y' ) )
+            . ( 'next' === $rel ? ' <span aria-hidden="true">&rarr;</span>' : '' ) . '</a>';
+    };
+    $prev = $first->modify( '-1 month' );
+    $out .= '<nav class="mbc-cal__month-nav" aria-label="' . esc_attr__( 'Months', 'generatepress-child' ) . '">'
+        . ( $prev->format( 'Y-m' ) >= ( new DateTimeImmutable( $curr_ym . '-01', $tz ) )->modify( '-1 month' )->format( 'Y-m' ) ? $nav( $prev, 'prev', __( 'Previous month', 'generatepress-child' ) ) : '<span></span>' )
+        . '<h' . $h_day . ' class="mbc-cal__month-title">' . esc_html( $first->format( 'F Y' ) ) . '</h' . $h_day . '>'
+        . ( $next->format( 'Y-m' ) <= ( new DateTimeImmutable( $curr_ym . '-01', $tz ) )->modify( '+12 months' )->format( 'Y-m' ) ? $nav( $next, 'next', __( 'Next month', 'generatepress-child' ) ) : '<span></span>' )
+        . '</nav>';
+
+    if ( 'none' === $data['source'] ) {
+        $out .= '<p class="mbc-cal__empty">' . esc_html__( 'Our events calendar is not available just now.', 'generatepress-child' );
+        if ( $links ) {
+            $out .= ' <a href="' . esc_url( $links['view'] ) . '" rel="noopener">' . esc_html__( 'See the calendar on Google', 'generatepress-child' ) . '</a>.';
+        }
+        return $out . '</p></div>';
+    }
+
+    // The grid: whole weeks, Monday to Sunday.
+    $start = $first->modify( '-' . ( (int) $first->format( 'N' ) - 1 ) . ' days' );
+    $weeks = (int) ceil( ( ( (int) $first->format( 'N' ) - 1 ) + (int) $first->format( 't' ) ) / 7 );
+    $out  .= '<table class="mbc-cal__grid"><caption class="screen-reader-text">' . esc_html( sprintf( /* translators: %s: month and year */ __( 'Events in %s', 'generatepress-child' ), $first->format( 'F Y' ) ) ) . '</caption><thead><tr>';
+    foreach ( array( 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ) as $name ) {
+        $out .= '<th scope="col"><abbr title="' . esc_attr( $name ) . '">' . esc_html( substr( $name, 0, 3 ) ) . '</abbr></th>';
+    }
+    $out .= '</tr></thead><tbody>';
+    $cell = $start;
+    for ( $w = 0; $w < $weeks; $w++ ) {
+        $out .= '<tr>';
+        for ( $i = 0; $i < 7; $i++, $cell = $cell->modify( '+1 day' ) ) {
+            $date = $cell->format( 'Y-m-d' );
+            if ( $date < $first_d || $date > $last_d ) {
+                $out .= '<td class="mbc-cal__cell is-other-month"><span class="mbc-cal__num" aria-hidden="true">' . esc_html( $cell->format( 'j' ) ) . '</span></td>';
+                continue;
+            }
+            $list = isset( $by_day[ $date ] ) ? $by_day[ $date ] : array();
+            usort( $list, static function ( $a, $b ) use ( $date ) { // All-day and continuing events first, then by start.
+                $ka = ( $a['all_day'] || $a['start_date'] < $date ) ? 0 : 1;
+                $kb = ( $b['all_day'] || $b['start_date'] < $date ) ? 0 : 1;
+                return array( $ka, $a['start_ts'] ) <=> array( $kb, $b['start_ts'] );
+            } );
+            $cls  = 'mbc-cal__cell' . ( $date === $today ? ' is-today' : '' ) . ( $date < $today ? ' is-past' : '' ) . ( $list ? ' has-events' : '' );
+            $out .= '<td class="' . esc_attr( $cls ) . '"><time class="mbc-cal__num" datetime="' . esc_attr( $date ) . '"' . ( $date === $today ? ' aria-current="date"' : '' ) . '>'
+                . esc_html( $cell->format( 'j' ) ) . '<span class="screen-reader-text"> ' . esc_html( $cell->format( 'l F' ) . ( $date === $today ? ', ' . __( 'today', 'generatepress-child' ) : '' ) ) . '</span></time>';
+            if ( $list ) {
+                $out .= '<ul class="mbc-cal__cell-events">';
+                foreach ( array_slice( $list, 0, 3 ) as $e ) {
+                    $label = esc_html( $e['title'] );
+                    if ( $e['start_date'] < $date ) {
+                        $label .= ' <span class="mbc-cal__cell-cont">' . esc_html__( '(continued)', 'generatepress-child' ) . '</span>';
+                    } elseif ( ! $e['all_day'] ) {
+                        $label = '<span class="mbc-cal__cell-time">' . esc_html( mbc_calendar_time( ( new DateTimeImmutable( '@' . $e['start_ts'] ) )->setTimezone( $tz ) ) ) . '</span> ' . $label;
+                    }
+                    $out .= '<li><a href="#d-' . esc_attr( mbc_calendar_agenda_day( $e, $first_d ) ) . '">' . $label . '</a></li>';
+                }
+                if ( count( $list ) > 3 ) {
+                    $hidden = count( $list ) - 3;
+                    $target = isset( $agenda[ $date ] ) ? $date : mbc_calendar_agenda_day( $list[3], $first_d );
+                    $out   .= '<li class="mbc-cal__cell-more"><a href="#d-' . esc_attr( $target ) . '">+' . (int) $hidden . ' more<span class="screen-reader-text"> on ' . esc_html( $cell->format( 'l j F' ) ) . '</span></a></li>';
+                }
+                $out .= '</ul>';
+            }
+            $out .= '</td>';
+        }
+        $out .= '</tr>';
+    }
+    $out .= '</tbody></table>';
+
+    if ( ! $events ) {
+        $out .= '<p class="mbc-cal__empty">' . esc_html( 'all' !== $show ? __( 'No events match these choices.', 'generatepress-child' ) : __( 'There are no events in the diary this month.', 'generatepress-child' ) ) . '</p>';
+    } else {
+        $out .= '<div class="mbc-cal__agenda">' . mbc_calendar_agenda_html( $agenda, min( 6, $h_day + 1 ), min( 6, $h_event + 1 ), $now ) . '</div>';
+    }
+    if ( $links && 'no' !== strtolower( (string) $atts['links'] ) ) {
+        $out .= '<p class="mbc-cal__links"><a href="' . esc_url( $links['subscribe'] ) . '" rel="noopener">' . esc_html__( 'Subscribe in Google Calendar', 'generatepress-child' ) . '</a>'
+            . ' <a href="' . esc_url( $links['ics'] ) . '" rel="noopener">' . esc_html__( 'Add to other calendars (.ics)', 'generatepress-child' ) . '</a></p>';
+    }
+    return $out . '</div>';
 }
