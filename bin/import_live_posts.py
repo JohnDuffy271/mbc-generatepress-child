@@ -54,6 +54,7 @@ EMBED = "author,wp:featuredmedia,wp:term"
 MAX_SIDE = 1500          # post preset (docs/image-standards.md): longest side, never upscaled
 CAP_BYTES = 250 * 1000   # post preset cap
 QUALITIES = (80, 77, 74, 72, 70)  # start at 80, lower only if over the cap, never below 70
+FLOOR_SIDE = 1408        # 2x the widest post column (704px): never shrink below this
 OVERSIZED_CHARS = 60000
 DEFAULT_LIMIT = 50
 
@@ -444,6 +445,17 @@ def process_image(data, post_date):
             img.save(buf, "JPEG", quality=q, optimize=True, progressive=True, subsampling=2)
             if buf.tell() <= CAP_BYTES:
                 break
+        if buf.tell() > CAP_BYTES and max(img.size) > FLOOR_SIDE:
+            # Still over the cap at quality 70: quality is never lowered further, so shrink toward the 2x floor
+            # (704px column x 2) and try the ladder again.
+            scale = FLOOR_SIDE / max(img.size)
+            img = img.resize((max(1, round(img.size[0] * scale)), max(1, round(img.size[1] * scale))), Image.LANCZOS)
+            notes.append(f"shrunk to {img.size[0]}x{img.size[1]} (the 2x floor) to get under the cap")
+            for q in QUALITIES:
+                buf = io.BytesIO()
+                img.save(buf, "JPEG", quality=q, optimize=True, progressive=True, subsampling=2)
+                if buf.tell() <= CAP_BYTES:
+                    break
     if buf.tell() > CAP_BYTES:
         notes.append(f"OVER THE CAP: {buf.tell() // 1000} kB")
     check = Image.open(io.BytesIO(buf.getvalue()))

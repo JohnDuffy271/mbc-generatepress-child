@@ -58,6 +58,16 @@ function mbc_set_img_sizes( $html, $sizes ) {
     );
 }
 
+// Images inside a post's text sit in the single-post column: 328px at 360px wide, up to 704px (docs/image-standards.md, `post`).
+// WordPress would say "(max-width: <file width>px) 100vw, <file width>px" and the browser would fetch the biggest file.
+add_filter( 'wp_calculate_image_sizes', 'mbc_post_content_image_sizes', 10, 1 );
+function mbc_post_content_image_sizes( $sizes ) {
+    if ( is_singular( 'post' ) && doing_filter( 'the_content' ) ) {
+        return '(max-width: 760px) calc(100vw - 2rem), 704px';
+    }
+    return $sizes;
+}
+
 add_filter( 'render_block', 'mbc_image_sizes_for_block', 10, 2 );
 function mbc_image_sizes_for_block( $html, $block ) {
     if ( '' === $html || empty( $block['blockName'] ) || false === stripos( $html, '<img' ) ) {
