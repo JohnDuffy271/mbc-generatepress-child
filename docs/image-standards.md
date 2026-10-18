@@ -76,7 +76,7 @@ Run it with the test venv: `~/.venvs/mbc-test/bin/python ~/src/mbc-tests/bin/ima
 Everything lives in `~/src/mbc-images/` (outside both repos): `inbox/` (originals), `preview/`,
 `output/` (finished files) and `logs/image_prep.log` (one JSON line per step).
 
-1. **Inbox.** Put the original in `~/src/mbc-images/inbox/`. The tool refuses files from anywhere else.
+1. **Inbox.** Put the original in `~/src/mbc-images/inbox/`. The tool refuses files from anywhere else. Windows download markers (`*:Zone.Identifier`) are deleted silently on every run.
 2. **Consent.** Confirm consent with John S if people can be identified.
 3. **Grid.** `image_prep.py grid FILE` writes `preview/<name>-grid.jpg`: the photo with a labelled
    10% grid in source pixels, to choose the crop from.
