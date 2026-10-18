@@ -33,6 +33,10 @@
                 library: { type: 'image' },
                 multiple: false
             } );
+            // WordPress can open on "Upload files"; people choosing an existing image want the library.
+            frame.on( 'open', function () {
+                frame.content.mode( 'browse' );
+            } );
             frame.on( 'select', function () {
                 var a = frame.state().get( 'selection' ).first().toJSON();
                 var sizes = a.sizes || {};
