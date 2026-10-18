@@ -10,6 +10,14 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Plain text for a crumb: get_the_title() returns HTML entities (&#038; for an ampersand), which the
+ * markup escapes again and the JSON-LD would show literally.
+ */
+function mbc_breadcrumb_text( $text ) {
+    return html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES, 'UTF-8' );
+}
+
+/**
  * The trail for the current page or post, ancestors first, the current page
  * last. Each item is array( 'name' => string, 'url' => string ).
  * Empty when no breadcrumb should be shown.
@@ -29,7 +37,7 @@ function mbc_breadcrumb_trail( $post = null ) {
         }
         foreach ( array_reverse( get_post_ancestors( $post ) ) as $ancestor_id ) {
             $trail[] = array(
-                'name' => wp_strip_all_tags( get_the_title( $ancestor_id ) ),
+                'name' => mbc_breadcrumb_text( get_the_title( $ancestor_id ) ),
                 'url'  => get_permalink( $ancestor_id ),
             );
         }
@@ -40,13 +48,13 @@ function mbc_breadcrumb_trail( $post = null ) {
             return array();
         }
         $trail[] = array(
-            'name' => wp_strip_all_tags( get_the_title( $news ) ),
+            'name' => mbc_breadcrumb_text( get_the_title( $news ) ),
             'url'  => get_permalink( $news ),
         );
         $category = mbc_breadcrumb_category( $post );
         if ( $category ) {
             $trail[] = array(
-                'name' => $category->name,
+                'name' => mbc_breadcrumb_text( $category->name ),
                 'url'  => get_category_link( $category ),
             );
         }
@@ -54,7 +62,7 @@ function mbc_breadcrumb_trail( $post = null ) {
         return array();
     }
     $trail[] = array(
-        'name' => wp_strip_all_tags( get_the_title( $post ) ),
+        'name' => mbc_breadcrumb_text( get_the_title( $post ) ),
         'url'  => get_permalink( $post ),
     );
     return $trail;
