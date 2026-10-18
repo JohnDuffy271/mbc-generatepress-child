@@ -590,6 +590,12 @@ Pages, menus and settings are managed via the WordPress REST API.
       drafts Welcome (8), Baptism (54) and Sunday School (556) are in the **trash** (nothing linked to them; backups exist; the
       Sunday School item is out of the unassigned "Menu 1"; cutover redirects are in `docs/url-changes.md`, kept by
       `bin/scaffold_site.py`). Outstanding markers: `docs/needs-confirming.md`.
+- [x] **Posts and archives (18 Oct 2026):** single posts no longer print a category label; the breadcrumb is
+      `News > Post`, or `News > Category > Post` when the post has a category other than News/Uncategorized (lowest ID;
+      BreadcrumbList matches). `/category/news/` 301s to `/news/` (`inc/archives.php`, also `/page/N/` to
+      `?query-1-page=N`; cutover note in `docs/url-changes.md`). Other archives (`archive.php`) render the News
+      listing pattern with the query set to inherit, so they have the same cards and pagination, the archive name as
+      the heading and 6 per page. Tested in `breadcrumbs_check.py` (fixture post and category, deleted afterwards).
 - [ ] Open question (mobile menu back-out): John finds it odd. Current
       behaviour: on-screen Back goes up one level; the X closes the whole
       menu; Android system Back is not handled (no history entries), so it
