@@ -1,0 +1,5 @@
+{
+  "_comment": "Live author slug -> sandbox user ID. Authors not listed are matched by slug or name, else posted as the fallback user (slug below). The importer never creates users.",
+  "map": {},
+  "fallback": "mbc"
+}

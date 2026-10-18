@@ -38,6 +38,14 @@ function mbc_register_live_import_meta() {
         'sanitize_callback' => 'absint',
         'auth_callback'     => $auth,
     ) );
+    // Media: alt text drafted automatically (to be reviewed in the consent pass), a protected key like the flag above.
+    register_post_meta( 'attachment', '_mbc_alt_auto', array(
+        'type'              => 'integer',
+        'single'            => true,
+        'show_in_rest'      => true,
+        'sanitize_callback' => 'absint',
+        'auth_callback'     => $auth,
+    ) );
     // Media: where the file came from on live, so it is never uploaded twice.
     register_post_meta( 'attachment', 'mbc_live_source_url', array(
         'type'              => 'string',

@@ -51,6 +51,9 @@ POST_FIELDS = ("id,date,date_gmt,modified_gmt,slug,link,status,title,excerpt,con
                "featured_media,author,_links,_embedded")
 EMBED = "author,wp:featuredmedia,wp:term"
 
+AUTHORS_FILE = Path(__file__).resolve().parent / "import_authors.json"
+PREVIEW_DIR = CACHE_DIR / "alt-previews"
+BOLD_UNWRAP_RATIO = 0.8  # more than this share of a post's text inside <strong> and the bold is dropped
 MAX_SIDE = 1500          # post preset (docs/image-standards.md): longest side, never upscaled
 CAP_BYTES = 250 * 1000   # post preset cap
 QUALITIES = (80, 77, 74, 72, 70)  # start at 80, lower only if over the cap, never below 70
@@ -305,8 +308,28 @@ def clean_content(raw):
     out = _paragraphs(_flatten(parser.root))
     out = YT_PARA_RE.sub(lambda m: "\n" + youtube_block(m.group(2)) + "\n", out)
     out = re.sub(r"\n{3,}", "\n\n", out).strip()
+    out, share = unwrap_bold(out)
     dropped = [(t, s) for t, s in parser.dropped if not (t == "iframe" and "youtube" in s)]
-    return {"html": out, "widgets": widgets, "dropped": dropped, "empty": not out}
+    return {"html": out, "widgets": widgets, "dropped": dropped, "empty": not out, "bold_unwrapped": share if share > BOLD_UNWRAP_RATIO else 0.0}
+
+
+def bold_share(clean_html):
+    """Share (0-1) of the text that sits inside <strong>. Embed blocks and tags do not count."""
+    body = re.sub(r"<!-- wp:embed.*?<!-- /wp:embed -->", "", clean_html, flags=re.S)
+
+    def length(fragment):
+        return len(re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", fragment))).strip())
+    total = length(body)
+    bold = sum(length(m) for m in re.findall(r"<strong>(.*?)</strong>", body, flags=re.S))
+    return bold / total if total else 0.0
+
+
+def unwrap_bold(clean_html):
+    """If most of the text is bold (a post pasted in bold), drop the bold; genuine partial bold stays."""
+    share = bold_share(clean_html)
+    if share > BOLD_UNWRAP_RATIO:
+        return re.sub(r"</?strong>", "", clean_html), share
+    return clean_html, share
 
 
 def normalise_media_url(url):
@@ -344,8 +367,9 @@ def content_links(clean_html):
     return [html.unescape(h) for h in HREF_RE.findall(clean_html)]
 
 
-def rewrite_content(clean_html, media, post_by_slug, post_by_id):
-    """Sandbox version of the content. media: key -> {"id","url","width","height"}; post_by_*: live slug/id -> sandbox path.
+def rewrite_content(clean_html, media, post_by_slug, post_by_id, alts=None):
+    """Sandbox version of the content. media: key -> {"id","url","width","height"}; post_by_*: live slug/id -> sandbox path;
+    alts: key -> alt text used where the live image has none.
     Returns (html, live_links_left) where live_links_left are hrefs still pointing at live."""
     def fix_img(m):
         tag = m.group(0)
@@ -355,6 +379,8 @@ def rewrite_content(clean_html, media, post_by_slug, post_by_id):
         if not item:
             return tag
         alt = (re.search(r'alt="([^"]*)"', tag) or [None, ""])[1]
+        if not alt.strip() and alts and alts.get(key):
+            alt = _esc(alts[key])
         size = f' width="{item["width"]}" height="{item["height"]}"' if item.get("width") and item.get("height") else ""
         return f'<img class="wp-image-{item["id"]}" src="{_esc(item["url"])}" alt="{alt}"{size}>'
     out = IMG_TAG_RE.sub(fix_img, clean_html)
@@ -399,10 +425,24 @@ def map_category(live_slug, live_name):
     return live_slug, html.unescape(live_name), live_slug in KNOWN_LIVE_SLUGS
 
 
-def map_author(live_author, users):
-    """Sandbox user id for a live author: slug, then name; else the single 'MBC' user; else None."""
+def load_authors(path=None):
+    """bin/import_authors.json: {"map": {live author slug: sandbox user id}, "fallback": sandbox user slug}."""
+    try:
+        data = json.loads((path or AUTHORS_FILE).read_text())
+    except (OSError, ValueError):
+        return {"map": {}, "fallback": "mbc"}
+    return {"map": {str(k).lower(): int(v) for k, v in (data.get("map") or {}).items()}, "fallback": str(data.get("fallback") or "mbc")}
+
+
+def map_author(live_author, users, authors=None):
+    """Sandbox user id for a live author: the mapping file, then slug, then name; else the fallback user; else None.
+    Returns (id, how) with how in mapped, matched, mbc, none."""
+    authors = authors or {"map": {}, "fallback": "mbc"}
     name = html.unescape((live_author or {}).get("name", "")).strip().lower()
     slug = (live_author or {}).get("slug", "").lower()
+    ids = {u["id"] for u in users}
+    if slug in authors["map"] and authors["map"][slug] in ids:
+        return authors["map"][slug], "mapped"
     for u in users:
         if slug and u["slug"].lower() == slug:
             return u["id"], "matched"
@@ -410,7 +450,7 @@ def map_author(live_author, users):
         if name and u["name"].strip().lower() == name:
             return u["id"], "matched"
     for u in users:
-        if u["slug"].lower() == "mbc" or u["name"].strip().lower() == "mbc":
+        if u["slug"].lower() == authors["fallback"].lower():
             return u["id"], "mbc"
     return None, "none"
 
@@ -487,6 +527,7 @@ class Importer:
         self.media = {}      # key -> {"id","url","width","height"}
         self.broken = []     # (post id, url, reason)
         self.image_notes = []
+        self.auto_alts = []  # (media id, live post id, drafted alt text) for review in the consent pass
 
     def download(self, key, src):
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -504,9 +545,19 @@ class Importer:
                 last = exc
         raise last
 
-    def ensure_media(self, key, src, alt, post_date, post_id):
+    def ensure_media(self, key, src, alt, post_date, post_id, auto=False):
+        """The sandbox attachment for a live image (uploaded once). `auto` marks an alt text drafted by Claude (meta _mbc_alt_auto)."""
         if key in self.media:
-            return self.media[key]
+            item = self.media[key]
+            if alt and not (item.get("alt") or "").strip():  # reused attachment with no alt yet: give it one
+                body = {"alt_text": alt}
+                if auto:
+                    body["meta"] = {"_mbc_alt_auto": 1}
+                self.sb.call("POST", f"media/{item['id']}", body=body)
+                item["alt"] = alt
+                if auto:
+                    self.auto_alts.append((item["id"], post_id, alt))
+            return item
         if not live_upload(src):
             return None
         try:
@@ -518,12 +569,17 @@ class Importer:
         name = media_filename(key, ext, post_date)
         try:
             made, _ = self.sb.call("POST", "media", raw=out, headers={"Content-Type": mime, "Content-Disposition": f'attachment; filename="{name}"'})
-            self.sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": {"mbc_live_source_url": key}})
+            meta = {"mbc_live_source_url": key}
+            if auto and alt:
+                meta["_mbc_alt_auto"] = 1
+            self.sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": meta})
         except SystemExit as exc:  # the sandbox refused the file: report it and carry on with the post
             self.broken.append((post_id, src, f"sandbox refused the upload: {exc}"[:160]))
             return None
         detail = made.get("media_details", {})
-        self.media[key] = {"id": made["id"], "url": made["source_url"], "width": detail.get("width"), "height": detail.get("height")}
+        self.media[key] = {"id": made["id"], "url": made["source_url"], "width": detail.get("width"), "height": detail.get("height"), "alt": alt}
+        if auto and alt:
+            self.auto_alts.append((made["id"], post_id, alt))
         self.image_notes.append(f"{name}: {len(out) // 1000} kB" + (f" ({'; '.join(notes)})" if notes else ""))
         print(f"  uploaded {name} -> media {made['id']} ({len(out) // 1000} kB)")
         return self.media[key]
@@ -580,7 +636,10 @@ def sandbox_state(sb):
     return posts, pages, media, cats, tags, users
 
 
-def plan_post(p, state, force):
+AUTHORS = load_authors()
+
+
+def plan_post(p, state, force, alts=None):
     posts, pages, media, cats, tags, users = state
     slug = p["slug"]
     rec = {"id": p["id"], "slug": slug, "date": p["date"], "date_gmt": p["date_gmt"], "modified_gmt": p.get("modified_gmt", ""),
@@ -604,21 +663,27 @@ def plan_post(p, state, force):
     odd = sorted(set(clean["widgets"]) - base.KNOWN_WIDGETS - {"video"})
     if odd:
         rec["warnings"].append(f"unreviewed Elementor widgets: {', '.join(odd)}")
-    noalt = [i for i in rec["images"] if not i["alt"].strip()]
+    noalt = [i for i in rec["images"] if not i["alt"].strip() and not (alts or {}).get(i["key"])]
+    rec["noalt"] = noalt
     if noalt:
-        rec["warnings"].append(f"{len(noalt)} image(s) without alt text")
-    if rec["feat"] and not (rec["feat"].get("alt_text") or "").strip():
-        rec["warnings"].append("featured image without alt text")
+        rec["warnings"].append(f"{len(noalt)} inline image(s) without alt text (needs a drafted description)")
+    drafted = [i for i in rec["images"] if not i["alt"].strip() and (alts or {}).get(i["key"])]
+    if drafted:
+        rec["warnings"].append(f"{len(drafted)} inline image alt text drafted automatically (review)")
+    if clean.get("bold_unwrapped"):
+        rec["warnings"].append(f"bold removed ({round(clean['bold_unwrapped'] * 100)}% of the text was bold)")
     ext_imgs = [i for i in rec["images"] if not i["live"]]
     if ext_imgs:
         rec["warnings"].append(f"{len(ext_imgs)} image(s) hosted elsewhere (left as they are)")
     if rec["unmapped"]:
         rec["warnings"].append("unmapped categories: " + ", ".join(rec["unmapped"]))
-    uid, how = map_author(rec["author"], users)
-    rec["author_id"] = uid
+    uid, how = map_author(rec["author"], users, AUTHORS)
+    rec["author_id"], rec["author_how"] = uid, how
     if how == "none":
-        rec["warnings"].append("live author not exposed by the REST API; no 'MBC' user: left as the importing user" if not rec["author"]
-                               else "author not matched and no 'MBC' user: left as the importing user")
+        rec["warnings"].append("live author not exposed by the REST API; no fallback user: left as the importing user" if not rec["author"]
+                               else "author not matched and no fallback user: left as the importing user")
+    elif how == "mbc" and rec["author"]:
+        rec["warnings"].append(f"author {rec['author'].get('slug')!r} not in import_authors.json: posted as the fallback user")
     # Action: by live id (ours), then by slug clash (demo or other posts).
     mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"]), None)
     demo = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
@@ -693,6 +758,43 @@ def link_targets(state, todo):
     return by_slug, by_id
 
 
+def prepare_alts(live, sb, todo, state):
+    """Download the inline images that have neither live alt text nor an alt on the sandbox attachment, write a small
+    preview of each (max 800px) and alt-needed.json for the alt-drafting step. Writes nothing to the sandbox."""
+    try:
+        from PIL import Image, ImageOps
+    except ImportError:
+        sys.exit("Pillow is needed: run with ~/.venvs/mbc-test/bin/python")
+    have = {}
+    for m in state[2]:
+        key = (m.get("meta") or {}).get("mbc_live_source_url")
+        if key and m["id"] not in DEMO_MEDIA and (m.get("alt_text") or "").strip():
+            have[normalise_media_url(key) if live_upload(key) else key] = m["alt_text"]
+    imp = Importer(live, sb, False, False)
+    PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
+    needed = {}
+    for r in todo:
+        for im in r["images"]:
+            if im["alt"].strip() or im["key"] in have or not im["live"]:
+                continue
+            entry = needed.setdefault(im["key"], {"posts": [], "post_title": r["title"], "preview": ""})
+            entry["posts"].append(r["id"])
+            if entry["preview"]:
+                continue
+            try:
+                img = ImageOps.exif_transpose(Image.open(io.BytesIO(imp.download(im["key"], im["src"]))))
+                img.thumbnail((800, 800))
+                out = PREVIEW_DIR / (hashlib.sha1(im["key"].encode()).hexdigest()[:12] + ".jpg")
+                img.convert("RGB").save(out, "JPEG", quality=70)
+                entry["preview"] = str(out)
+            except (LiveError, OSError, ValueError) as exc:
+                print(f"  could not prepare {short(im['key'])}: {exc}")
+    needed = {k: v for k, v in needed.items() if v["preview"]}
+    target = CACHE_DIR / "alt-needed.json"
+    target.write_text(json.dumps(needed, indent=1))
+    print(f"\n{len(needed)} image(s) need an alt text: {target}")
+
+
 # ============================================================ report
 
 def write_report(args, recs, summary, extra, applied):
@@ -759,6 +861,8 @@ def main():
     ap.add_argument("--category", help="live category slug(s), comma-separated")
     ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"most posts to consider (default {DEFAULT_LIMIT}; 0 = no limit)")
     ap.add_argument("--force", action="store_true", help="re-import posts even if live has not changed")
+    ap.add_argument("--alt-file", help="JSON {normalised live image URL: alt text} used where live has none (drafted for review; stored with meta _mbc_alt_auto)")
+    ap.add_argument("--prepare-alts", action="store_true", help="download the images that need alt text, write small previews and alt-needed.json, and stop (no sandbox write)")
     args = ap.parse_args()
     if args.self_test:
         sys.exit(0 if self_test() else 1)
@@ -782,7 +886,12 @@ def main():
         if args.apply:
             sys.exit("Refusing to apply: " + msg)
         print("WARNING:", msg)
-    recs = [plan_post(p, state, args.force) for p in posts]
+    alts = json.loads(Path(args.alt_file).read_text()) if args.alt_file else {}
+    if alts and args.apply:
+        mprops = sb.call("OPTIONS", "media", retries=2)[0].get("schema", {}).get("properties", {}).get("meta", {}).get("properties", {})
+        if "_mbc_alt_auto" not in mprops:
+            sys.exit("Refusing to apply: the sandbox does not expose media meta _mbc_alt_auto (deploy inc/live-import.php first)")
+    recs = [plan_post(p, state, args.force, alts) for p in posts]
     todo = [r for r in recs if r["action"] in ("create", "update")]
 
     counts = {"live posts selected": len(recs)}
@@ -795,6 +904,11 @@ def main():
         for w in r["warnings"]:
             print(f"{'':>10}! {w}")
     print(f"\nPlan: {counts['create']} create, {counts['update']} update, {counts['skip']} skip (of {len(recs)})")
+
+    if args.prepare_alts:
+        prepare_alts(live, sb, todo, state)
+        print(f"\nLive requests made: {live.request_count}")
+        return
 
     applied = False
     cat_new, tag_new, parent_notes = [], [], []
@@ -809,17 +923,20 @@ def main():
             key = (m.get("meta") or {}).get("mbc_live_source_url")
             if key and m["id"] not in DEMO_MEDIA:
                 d = m.get("media_details") or {}
-                imp.media[normalise_media_url(key) if live_upload(key) else key] = {"id": m["id"], "url": m["source_url"], "width": d.get("width"), "height": d.get("height")}
+                imp.media[normalise_media_url(key) if live_upload(key) else key] = {"id": m["id"], "url": m["source_url"], "width": d.get("width"), "height": d.get("height"), "alt": m.get("alt_text") or ""}
         for r in todo:
             print(f"\nlive #{r['id']} {r['title'][:60]!r}: {r['action']}")
             day = r["date"][:10]
             for im in r["images"]:
-                imp.ensure_media(im["key"], im["src"], im["alt"], day, r["id"])
+                draft = alts.get(im["key"], "") if not im["alt"].strip() else ""
+                imp.ensure_media(im["key"], im["src"], im["alt"].strip() or draft, day, r["id"], auto=bool(draft))
             feat_id = 0
             if r["feat"]:
-                fm = imp.ensure_media(normalise_media_url(r["feat"]["source_url"]), r["feat"]["source_url"], r["feat"].get("alt_text", ""), day, r["id"])
+                fm = imp.ensure_media(normalise_media_url(r["feat"]["source_url"]), r["feat"]["source_url"], (r["feat"].get("alt_text") or "").strip(), day, r["id"])  # no live alt: stays empty (decorative, beside the title)
                 feat_id = fm["id"] if fm else 0
-            content, left = rewrite_content(r["clean"]["html"], imp.media, by_slug, by_id)
+            alt_map = {k: v.get("alt", "") for k, v in imp.media.items() if v.get("alt")}
+            alt_map.update(alts)
+            content, left = rewrite_content(r["clean"]["html"], imp.media, by_slug, by_id, alt_map)
             r["left_links"] = left
             body = {"title": r["title"], "slug": r["slug"], "status": "publish", "date": r["date"], "date_gmt": r["date_gmt"],
                     "content": content, "excerpt": clean_excerpt(r["live"]["excerpt"]["rendered"]),
@@ -857,6 +974,15 @@ def main():
     extra["Broken images"] = [f"live #{p}: {short(u)} ({why})" for p, u, why in (imp.broken if applied else [])]
     extra["Images uploaded"] = imp.image_notes if applied else []
     extra["Oversized content"] = [f"live #{r['id']}: {w}" for r in recs for w in r["warnings"] if w.startswith("oversized")]
+    seen = {}
+    for r in recs:
+        a = r["live"].get("_embedded", {}).get("author", [{}])[0] if r["live"].get("_embedded") else {}
+        label = f"{a.get('slug', '?')} ({html.unescape(a.get('name', '?'))}) -> {r.get('author_how', '?')}"
+        seen[label] = seen.get(label, 0) + 1
+    extra["Authors (live slug (name) -> how mapped: posts)"] = [f"{k}: {v}" for k, v in sorted(seen.items())]
+    if applied:
+        extra["Alt text drafted automatically: review in the consent pass (media id, live post, text)"] = [f"media {m} (live #{pid}): {txt}" for m, pid, txt in imp.auto_alts]
+    extra["Posts needing the consent review"] = [f"{len(todo)} flagged now (meta _mbc_needs_consent_review)"] if applied else []
     if applied:
         extra["Created / updated"] = [f"live #{r['id']} -> sandbox #{r['sandbox_id']} {r['sandbox_link']}" for r in todo]
     path = write_report(args, recs, counts, extra, applied)
