@@ -993,8 +993,10 @@ Pages, menus and settings are managed via the WordPress REST API.
         The 10 days is the administrator setting `mbc_nl_legacy_days` (default
         10, 0-3650, REST `/wp/v2/settings`; filter `mbc_newsletter_legacy_days`
         still applies). It exists so the tests can force both branches.
-        **Real issues exist on the sandbox** (e.g. #895, John's test issue; never
-        delete or edit issues the tests did not create). `newsletter_check.py`
+        **The sandbox has no issues** (the five test issues, including #895, were
+        exported to `~/src/mbc-elementor-backups/newsletter-issues-20261018.json` and deleted
+        on John's instruction, 18 Oct 2026). Any real issue made later must never be deleted or
+        edited by the tests, which only touch what they created. `newsletter_check.py`
         is independent of them: the pre-fill section computes the window from
         the actual latest issue and asserts on its own fixture posts only; the
         legacy section checks the real state, then both branches with a

@@ -690,9 +690,10 @@ def plan_post(p, state, force, alts=None):
         who = rec["author"].get("slug") or f"live user id {rec['author'].get('id', p.get('author'))}" if rec["author"] else f"live user id {p.get('author')}"
         rec["warnings"].append(f"author {who} is not in import_authors.json: posted as the fallback user")
     # Action: by live id (ours), then by slug clash (demo or other posts).
-    mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"]), None)
-    demo = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
-    clash = next((x for x in posts if x["slug"] == slug and x is not mine and x is not demo), None)
+    mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"] and x.get("status") != "trash"), None)
+    live_posts = [x for x in posts if x.get("status") != "trash"]  # a trashed post (a replaced demo copy) no longer counts
+    demo = next((x for x in live_posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
+    clash = next((x for x in live_posts if x["slug"] == slug and x is not mine and x is not demo), None)
     page_clash = next((x for x in pages if x["slug"] == slug), None)
     rec["existing"] = mine
     if mine:
