@@ -1,0 +1,9 @@
+/* Weekly diary admin screen: layout only; colours come from WordPress admin. */
+.mbc-diary__range label { margin-inline-end: 0.25em; }
+.mbc-diary__list, .mbc-diary__orphans { margin: 0; padding: 0; list-style: none; max-width: 60rem; }
+.mbc-diary__row { margin: 0 0 1.25em; }
+.mbc-diary__line { margin: 0 0 0.35em; font-size: 14px; }
+.mbc-diary__label { display: block; margin-bottom: 0.2em; }
+.mbc-diary__status { margin-inline-start: 0.5em; }
+.mbc-diary__rich { max-width: 60rem; padding: 0.5em 1em; border: 1px solid currentcolor; background: Canvas; color: CanvasText; }
+.mbc-diary__rich p { margin: 0 0 0.6em; }
