@@ -1,767 +1,827 @@
-#!/usr/bin/python3
-"""Import recent posts from the LIVE site into the SANDBOX as demo content.
+#!/usr/bin/env python3
+"""Import posts from the LIVE site into the SANDBOX, on demand.
 
-Read-only towards live: LiveReader can only GET. It has no method, body or
-credentials parameter, sends no cookies or Authorization header, only
-follows redirects within the live host, and only fetches
-/wp-json/wp/v2/{posts,categories,media} and /wp-content/uploads/ files.
-All writes go through SandboxWriter, which refuses any host other than the
-sandbox and is the only place credentials are used.
+Read-only towards live: every live request goes through LiveReader (import_live_demo_posts.py),
+which can only GET, sends no credentials, follows redirects only within the live host and fetches
+only the public REST API and /wp-content/uploads/ files. Live URLs are built inside that class,
+never on the command line. All writes go through SandboxWriter (sandbox host only).
 
-Dry run by default (reads live and sandbox, writes nothing). --apply writes
-to the sandbox. --self-test statically checks this file's own safety
-properties (no network).
+Dry run by default: prints a table (live id, date, title, categories, images, action, warnings)
+and writes a report. --apply writes to the sandbox. --self-test checks this file statically.
 
-Idempotent: a post is matched on meta mbc_live_post_id, an image on meta
-mbc_live_source_url. Every imported post carries mbc_demo_import=1 so it
-can be removed cleanly later (CLAUDE.md cutover checklist).
+Selection: --since YYYY-MM-DD, --until YYYY-MM-DD, --ids 1,2, --category slug[,slug], --limit N
+(default 50; 0 = no limit). Posts the sandbox already holds are skipped unless live changed them
+(live modified date is stored as meta); --force re-imports.
+
+Content is stored as clean HTML (WordPress's Classic content, which the block editor opens in a
+Classic block) with YouTube embeds as core/embed blocks. It is NOT converted to core blocks: the
+cleaned HTML round-trips exactly and stays diffable; paragraphs, headings and lists convert in
+one click in the editor if ever wanted.
+
+Needs Pillow for images (apply only): run with ~/.venvs/mbc-test/bin/python.
 
 Usage:
-  python3 bin/import_live_posts.py --self-test
-  python3 bin/import_live_posts.py                 # dry run
-  python3 bin/import_live_posts.py --ids 12,34     # choose specific live posts
-  python3 bin/import_live_posts.py --apply
+  ~/.venvs/mbc-test/bin/python bin/import_live_posts.py --self-test
+  ~/.venvs/mbc-test/bin/python bin/import_live_posts.py --since 2026-07-18          # dry run
+  ~/.venvs/mbc-test/bin/python bin/import_live_posts.py --ids 123,456 --apply
 """
 import argparse
 import ast
-import base64
+import datetime as dt
+import hashlib
 import html
-import http.client
+import io
 import json
 import mimetypes
 import re
 import sys
-import time
 import urllib.parse
 from html.parser import HTMLParser
 from pathlib import Path
 
-LIVE_BASE = "https://moortownbaptistchurch.org.uk"
-LIVE_HOST = "moortownbaptistchurch.org.uk"
-SANDBOX_HOST = "new.moortownbaptistchurch.org.uk"
-USER_AGENT = "MBC-demo-import/1.0 (John, Moortown Baptist Church; read-only public GETs)"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import import_live_demo_posts as base  # noqa: E402  (LiveReader, SandboxWriter and the shared helpers)
+from import_live_demo_posts import LiveError, LiveReader, SandboxWriter, host_of, load_env, plain, short, unwrap_elementor  # noqa: E402
 
-POST_FIELDS = "id,date,date_gmt,slug,link,title,excerpt,content,categories,featured_media"
-DEFAULT_COUNT = 10
-MAX_PAGES = 5            # never scan more than 5 pages of 10 posts
-LIVE_TIMEOUT = 60        # seconds to wait for a live response once connected
-CONNECT_TIMEOUT = 8      # seconds per TCP connect attempt (the host sometimes stalls connects 20-68 s)
-CONNECT_ATTEMPTS = 4     # connect attempts before giving up
-CONNECT_BACKOFF = (1, 2, 4)  # seconds between connect attempts
-LIVE_RETRIES = 3         # retries after the first attempt
-LIVE_BACKOFF = (3, 8, 20)  # seconds before retries 1, 2, 3
-LIVE_PAUSE = 2.0         # minimum seconds between live requests
-SANDBOX_TIMEOUT = 240    # sandbox writes can be slow
-SANDBOX_WRITE_PAUSE = 1.0  # seconds between sandbox writes
+LIVE_HOST = base.LIVE_HOST
+_QuickConnect = base._QuickConnect  # re-exported so the check-script logger can hook connect retries
+CACHE_DIR = Path.home() / "src" / "mbc-images" / "live-cache"
+REPORT_DIR = Path.home() / "src" / "mbc-tests" / "logs"
+POST_FIELDS = ("id,date,date_gmt,modified_gmt,slug,link,status,title,excerpt,content,categories,tags,"
+               "featured_media,author,_links,_embedded")
+EMBED = "author,wp:featuredmedia,wp:term"
 
-ELEMENTOR_RE = re.compile(r"elementor-|data-elementor", re.I)
-IMG_RE = re.compile(r"<img\b[^>]*>", re.I)
-HREF_RE = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']([^"']+)["']""", re.I)
-FILE_EXT = (".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".mp3", ".mp4",
-            ".jpg", ".jpeg", ".png", ".gif", ".webp")
+MAX_SIDE = 1500          # post preset (docs/image-standards.md): longest side, never upscaled
+CAP_BYTES = 250 * 1000   # post preset cap
+QUALITIES = (80, 77, 74, 72, 70)  # start at 80, lower only if over the cap, never below 70
+OVERSIZED_CHARS = 60000
+DEFAULT_LIMIT = 50
 
+# The live categories (docs/newsletter/category-map.md) and the two renames (the minister's blog and message).
+KNOWN_LIVE_SLUGS = {"news", "notices", "haddons-blog", "grahams-blog", "children", "romania", "news-archive", "mission",
+                    "china-mission", "grahams-message", "choir", "a-short-history-of-mbc", "cass-blog", "covid19",
+                    "church-at-home", "church-at-home-past-services", "nathans-blog"}
+RENAMES = {"grahams-blog": ("ministers-blog", "Minister's Blog"),
+           "grahams-message": ("ministers-message", "Minister's Message")}
+# Media the demo import uploaded (CLAUDE.md cutover list): never reused, they are deleted at cutover.
+DEMO_MEDIA = {670, 671, 672, 673, 675, 676, 678, 680, 681, 683, 684, 686, 688, 689, 692, 693, 695, 696, 697}
 
-def host_of(url):
-    return urllib.parse.urlsplit(url).netloc.lower().removeprefix("www.")
-
-
-def short(url):
-    return url if len(url) < 90 else url[:87] + "..."
-
-
-class LiveError(Exception):
-    pass
+READ_MORE_RE = re.compile(r"\s*(?:…|\.\.\.|\[…\])?\s*Read\s+more\s*(?:…|\.\.\.|»)?\s*$", re.I)
+YT_ID = r"[\w-]{6,}"
+YT_IFRAME_RE = re.compile(r"""<iframe\b[^>]*?\bsrc\s*=\s*["'](?:https?:)?//(?:www\.)?youtube(?:-nocookie)?\.com/embed/(%s)[^"']*["'][^>]*>\s*</iframe>""" % YT_ID, re.I | re.S)
+YT_URL_RE = re.compile(r"https?://(?:www\.)?(?:youtube\.com/watch\?(?:[^\s<\"']*&)?v=|youtu\.be/)(%s)[^\s<\"']*" % YT_ID, re.I)
+YT_PARA_RE = re.compile(r"<p>\s*(?:<a\b[^>]*>)?\s*(%s)\s*(?:</a>)?\s*</p>" % YT_URL_RE.pattern, re.I)
+SIZE_SUFFIX_RE = re.compile(r"-(?:scaled|\d{2,5}x\d{2,5})(?=\.[a-z0-9]+$)", re.I)
 
 
-class _QuickConnect(http.client.HTTPSConnection):
-    """HTTPS connection with a short connect timeout and quick retries.
+# ============================================================ content cleaning
 
-    From John's IP, TCP connects to the server intermittently stall for
-    20-68 s (about 1 in 10). A fresh attempt almost always succeeds at once,
-    so connect with a short timeout and retry instead of waiting it out. Once
-    connected, the (longer) read timeout applies. Connections are reused
-    (keep-alive) by the clients below.
-    """
-
-    read_timeout = LIVE_TIMEOUT
-    on_retry = None  # optional callback(message), set by test tooling to log and count connect retries
-
-    def connect(self):
-        last = None
-        for attempt in range(CONNECT_ATTEMPTS):
-            self.timeout = CONNECT_TIMEOUT
-            try:
-                super().connect()
-                self.sock.settimeout(self.read_timeout)
-                return
-            except OSError as exc:  # includes socket timeouts
-                last = exc
-                self.close()
-                if attempt < CONNECT_ATTEMPTS - 1:
-                    if self.on_retry:
-                        self.on_retry(f"connect to {self.host} failed ({exc}); retry {attempt + 1}")
-                    time.sleep(CONNECT_BACKOFF[attempt])
-        raise last
+VOID = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "embed", "area", "col", "param", "track"}
+DROP = {"script", "style", "noscript", "template", "svg", "form", "button", "select", "textarea", "head", "title",
+        "canvas", "audio", "video", "object", "embed", "iframe", "map"}
+BLOCK = {"p", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "blockquote", "hr", "table", "figure", "pre", "dl"}
+INLINE = {"a", "strong", "em", "br", "img", "sup", "sub", "code"}
+KEEP = BLOCK | INLINE | {"li", "thead", "tbody", "tfoot", "tr", "th", "td", "figcaption", "dt", "dd"}
+MAP = {"b": "strong", "i": "em", "h1": "h2"}
+ATTRS = {"a": ("href",), "img": ("src", "alt", "width", "height"), "th": ("colspan", "rowspan"), "td": ("colspan", "rowspan"), "ol": ("start",)}
 
 
-class LiveReader:
-    """GET-only reader for the live site. Gentle: paced, retried, keep-alive."""
+class Node:
+    __slots__ = ("tag", "attrs", "kids")
 
-    def __init__(self):
-        self._conns = {}
-        self._last = 0.0
-        self.request_count = 0
-
-    def _pace(self):
-        wait = LIVE_PAUSE - (time.monotonic() - self._last)
-        if wait > 0:
-            time.sleep(wait)
-        self._last = time.monotonic()
-
-    def _conn(self, netloc):
-        if netloc not in self._conns:
-            conn = _QuickConnect(netloc, timeout=CONNECT_TIMEOUT)
-            conn.read_timeout = LIVE_TIMEOUT
-            self._conns[netloc] = conn
-        return self._conns[netloc]
-
-    def _drop(self):
-        for conn in self._conns.values():
-            conn.close()
-        self._conns.clear()
-
-    def _once(self, url, hops=0):
-        """One GET (following same-host redirects). Returns (status, headers, body)."""
-        if host_of(url) != LIVE_HOST:
-            raise LiveError(f"not the live host: {short(url)}")
-        parts = urllib.parse.urlsplit(url)
-        target = (parts.path or "/") + (("?" + parts.query) if parts.query else "")
-        conn = self._conn(parts.netloc)
-        for first_try in (True, False):  # one immediate retry if a kept-alive connection went stale
-            try:
-                conn.request("GET", target, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
-                resp = conn.getresponse()
-                body = resp.read()
-                break
-            except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
-                conn.close()
-                if not first_try:
-                    raise
-        headers = {k.lower(): v for k, v in resp.getheaders()}
-        if resp.status in (301, 302, 303, 307, 308) and headers.get("location"):
-            if hops >= 3:
-                raise LiveError(f"too many redirects for {short(url)}")
-            nxt = urllib.parse.urljoin(url, headers["location"])
-            if host_of(nxt) != LIVE_HOST:
-                raise LiveError(f"refusing redirect to another host: {short(nxt)}")
-            return self._once(nxt, hops + 1)
-        return resp.status, headers, body
-
-    def _fetch(self, url):
-        if host_of(url) != LIVE_HOST:
-            raise LiveError(f"not the live host: {short(url)}")
-        reason = "unknown"
-        for attempt in range(LIVE_RETRIES + 1):
-            self._pace()
-            self.request_count += 1
-            try:
-                status, headers, body = self._once(url)
-                if status < 400:
-                    return body, headers
-                if status < 500 and status != 429:
-                    raise LiveError(f"HTTP {status} for {short(url)}")
-                reason = f"HTTP {status}"
-            except (http.client.HTTPException, OSError) as exc:  # timeouts are transient
-                reason = str(exc) or type(exc).__name__
-                self._drop()
-            if attempt < LIVE_RETRIES:
-                delay = LIVE_BACKOFF[attempt]
-                print(f"  live request failed ({reason}); retry {attempt + 1}/{LIVE_RETRIES} in {delay}s", file=sys.stderr)
-                time.sleep(delay)
-        raise LiveError(f"gave up on {short(url)} after {LIVE_RETRIES + 1} attempts: {reason}")
-
-    def get_json(self, route, params=None):
-        url = f"{LIVE_BASE}/wp-json/wp/v2/{route}"
-        if params:
-            url += "?" + urllib.parse.urlencode(params)
-        body, headers = self._fetch(url)
-        return json.loads(body), headers
-
-    def get_bytes(self, url):
-        if not urllib.parse.urlsplit(url).path.startswith("/wp-content/uploads/"):
-            raise LiveError(f"only /wp-content/uploads/ files are fetched: {short(url)}")
-        body, _ = self._fetch(url)
-        return body
+    def __init__(self, tag, attrs=None):
+        self.tag, self.attrs, self.kids = tag, dict(attrs or {}), []
 
 
-class SandboxWriter:
-    """The only client that uses credentials, and only for the sandbox."""
-
-    def __init__(self, env):
-        base = env["WP_URL"].rstrip("/")
-        if host_of(base) != SANDBOX_HOST:
-            sys.exit(f"Refusing to write: WP_URL host is not {SANDBOX_HOST}")
-        self.base = base
-        self._netloc = urllib.parse.urlsplit(base).netloc
-        self._conn = None
-        token = base64.b64encode(f"{env['WP_USER']}:{env['WP_APP_PASSWORD']}".encode()).decode()
-        self._auth = f"Basic {token}"
-        self._last_write = 0.0
-
-    def _connection(self):
-        if self._conn is None:
-            self._conn = _QuickConnect(self._netloc, timeout=CONNECT_TIMEOUT)
-            self._conn.read_timeout = SANDBOX_TIMEOUT
-        return self._conn
-
-    def _reset(self):
-        if self._conn is not None:
-            self._conn.close()
-        self._conn = None
-
-    def fetch_public(self, path, retries=2):
-        """GET a public sandbox page as a visitor would (no credentials sent). Returns (status, body text)."""
-        if not path.startswith("/"):
-            sys.exit(f"fetch_public needs a site path, got {path!r}")
-        for attempt in range(retries + 1):
-            try:
-                conn = self._connection()
-                try:
-                    conn.request("GET", path, headers={"User-Agent": USER_AGENT})
-                    resp = conn.getresponse()
-                except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
-                    conn.close()
-                    conn.request("GET", path, headers={"User-Agent": USER_AGENT})
-                    resp = conn.getresponse()
-                return resp.status, resp.read().decode("utf-8", "replace")
-            except (http.client.HTTPException, OSError) as exc:
-                self._reset()
-                if attempt >= retries:
-                    raise
-                time.sleep(2)
-
-    def call(self, method, route, params=None, body=None, raw=None, headers=None, retries=0):
-        path = f"/wp-json/wp/v2/{route}"
-        if params:
-            path += "?" + urllib.parse.urlencode(params)
-        data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
-        hdrs = {"Authorization": self._auth, "User-Agent": USER_AGENT}
-        if raw is None and body is not None:
-            hdrs["Content-Type"] = "application/json"
-        hdrs.update(headers or {})
-        safe = method in ("GET", "OPTIONS")
-        if not safe:
-            wait = SANDBOX_WRITE_PAUSE - (time.monotonic() - self._last_write)
-            if wait > 0:
-                time.sleep(wait)
-            self._last_write = time.monotonic()
-        for attempt in range((retries if safe else 0) + 1):
-            try:
-                conn = self._connection()
-                try:
-                    conn.request(method, path, body=data, headers=hdrs)
-                    resp = conn.getresponse()
-                except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
-                    conn.close()
-                    if not safe:  # a write may have reached the server: never resend blindly
-                        raise
-                    conn.request(method, path, body=data, headers=hdrs)
-                    resp = conn.getresponse()
-                payload = resp.read()
-                break
-            except (http.client.HTTPException, OSError) as exc:
-                self._reset()
-                if attempt >= (retries if safe else 0):
-                    sys.exit(f"Sandbox network error on {method} {route}: {exc or type(exc).__name__}"
-                             + ("" if safe else " (the script is idempotent: re-run to continue)"))
-                time.sleep(2)
-        if resp.status >= 400:
-            sys.exit(f"Sandbox HTTP {resp.status} on {method} {route}: {payload.decode(errors='replace')[:300]}")
-        return json.loads(payload), {k.lower(): v for k, v in resp.getheaders()}
-
-
-# ---------------------------------------------------------------- helpers
-
-def load_env():
-    env = {}
-    path = Path.home() / ".config" / "mbc" / "wp.env"
-    try:
-        for line in path.read_text().splitlines():
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                env[k.replace("export ", "").strip()] = v.strip().strip("'\"")
-    except OSError as exc:
-        sys.exit(f"Cannot read {path}: {exc}")
-    for key in ("WP_URL", "WP_USER", "WP_APP_PASSWORD"):
-        if not env.get(key):
-            sys.exit(f"{key} missing from {path}")
-    return env
-
-
-def plain(text):
-    return html.unescape(re.sub(r"<[^>]+>", "", text or "")).strip()
-
-
-def is_elementor(post):
-    return bool(ELEMENTOR_RE.search(post["content"]["rendered"]))
-
-
-def live_uploads(url):
-    parts = urllib.parse.urlsplit(url)
-    return host_of(url) == LIVE_HOST and parts.path.startswith("/wp-content/uploads/")
-
-
-def inline_images(content):
-    seen, out = set(), []
-    for tag in IMG_RE.findall(content):
-        m = re.search(r"""\bsrc\s*=\s*["']([^"']+)["']""", tag, re.I)
-        if m and live_uploads(html.unescape(m.group(1))) and m.group(1) not in seen:
-            seen.add(m.group(1))
-            out.append(html.unescape(m.group(1)))
-    return out
-
-
-def live_links(content):
-    """hrefs pointing at the live domain (pages and files). Reported, never rewritten."""
-    out = []
-    for href in HREF_RE.findall(content):
-        href = html.unescape(href)
-        if host_of(href) == LIVE_HOST:
-            kind = "file" if urllib.parse.urlsplit(href).path.lower().endswith(FILE_EXT) or "/wp-content/" in href else "page"
-            out.append((kind, href))
-    return out
-
-
-def rewrite_images(content, mapping):
-    def fix(match):
-        tag = match.group(0)
-        m = re.search(r"""\bsrc\s*=\s*["']([^"']+)["']""", tag, re.I)
-        if not m:
-            return tag
-        new = mapping.get(html.unescape(m.group(1)))
-        if not new:
-            return tag
-        tag = tag.replace(m.group(0), f'src="{new}"')
-        tag = re.sub(r"""\s(?:srcset|sizes)\s*=\s*["'][^"']*["']""", "", tag, flags=re.I)
-        return re.sub(r"\bwp-image-\d+\b\s*", "", tag)
-    return IMG_RE.sub(fix, content)
-
-
-STYLE_ATTR_RE = re.compile(r'\sstyle\s*=\s*"([^"]*)"', re.I)
-FONT_TAG_RE = re.compile(r"<font\b[^>]*>", re.I)
-FONT_ATTR_RE = re.compile(r'\s(?:color|face|size|bgcolor)\s*=\s*"[^"]*"', re.I)
-DROPPED_STYLES = {"color", "background", "background-color", "font-family", "font-size", "line-height", "text-shadow"}
-
-
-def clean_inline_styles(content):
-    """Remove colour, background and font declarations from inline styles.
-
-    Imported text must take its colours and fonts from the theme tokens (and
-    so from every look), not from hard-coded values copied from the old site.
-    Other declarations (font-weight, text-align, ...) are kept.
-    """
-    def fix(match):
-        kept = [d.strip() for d in match.group(1).split(";")
-                if d.strip() and d.split(":")[0].strip().lower() not in DROPPED_STYLES]
-        return f' style="{"; ".join(kept)}"' if kept else ""
-
-    content = STYLE_ATTR_RE.sub(fix, content)
-    return FONT_TAG_RE.sub(lambda m: FONT_ATTR_RE.sub("", m.group(0)), content)
-
-
-# ------------------------------------------------------- Elementor unwrap
-
-KNOWN_WIDGETS = {"text-editor", "image", "gallery", "heading"}
-ATTR_NOISE_RE = re.compile(r"""\s(?:data-(?:elementor|e-|id|element_type|settings|widget_type)[\w-]*)\s*=\s*(?:"[^"]*"|'[^']*')""", re.I)
-
-
-class _Unwrap(HTMLParser):
-    """Collect the inner HTML of each elementor-widget-container, in order."""
+class _Builder(HTMLParser):
+    """Forgiving HTML to a small tree. Dropped elements (script, iframe, ...) are skipped with their content."""
 
     def __init__(self):
         super().__init__(convert_charrefs=False)
-        self.parts = []          # list of (widget_type, inner_html)
-        self._buf, self._depth, self._type = [], 0, ""
+        self.root = Node("#root")
+        self.stack = [self.root]
+        self.skip = None   # (tag, depth) while inside a dropped element
+        self.dropped = []  # (tag, src) of dropped iframes/videos/objects, for the report
+
+    def _add(self, node):
+        self.stack[-1].kids.append(node)
 
     def handle_starttag(self, tag, attrs):
-        a = dict(attrs)
-        if self._depth == 0:
-            if a.get("data-widget_type"):
-                self._type = a["data-widget_type"].split(".")[0]
-            if tag == "div" and "elementor-widget-container" in (a.get("class") or "").split():
-                self._depth, self._buf = 1, []
+        a = {k: (v or "") for k, v in attrs}
+        if self.skip:
+            if tag == self.skip[0] and tag not in VOID:
+                self.skip[1] += 1
             return
-        if tag not in ("img", "br", "hr", "input", "meta", "link", "source"):
-            self._depth += 1
-        self._buf.append(self.get_starttag_text())
+        if tag in DROP:
+            if tag in ("iframe", "video", "object", "embed", "audio"):
+                self.dropped.append((tag, a.get("src", "")))
+            if tag not in VOID:
+                self.skip = [tag, 1]
+            return
+        # implied end tags (a new <p> or <li> closes an open one)
+        if tag in BLOCK | {"li"} and self.stack[-1].tag == ("li" if tag == "li" else "p"):
+            self.stack.pop()
+        node = Node(tag, a)
+        self._add(node)
+        if tag not in VOID:
+            self.stack.append(node)
 
     def handle_startendtag(self, tag, attrs):
-        if self._depth:
-            self._buf.append(self.get_starttag_text())
+        self.handle_starttag(tag, attrs)
+        if tag not in VOID and not self.skip and self.stack[-1].tag == tag:
+            self.stack.pop()
 
     def handle_endtag(self, tag):
-        if not self._depth:
+        if self.skip:
+            if tag == self.skip[0]:
+                self.skip[1] -= 1
+                if self.skip[1] <= 0:
+                    self.skip = None
             return
-        self._depth -= 1
-        if self._depth:
-            self._buf.append(f"</{tag}>")
-        else:
-            self.parts.append((self._type, "".join(self._buf)))
+        for i in range(len(self.stack) - 1, 0, -1):
+            if self.stack[i].tag == tag:
+                del self.stack[i:]
+                return
 
     def handle_data(self, data):
-        if self._depth:
-            self._buf.append(data)
+        if not self.skip:
+            self._add(data)
 
     def handle_entityref(self, name):
-        if self._depth:
-            self._buf.append(f"&{name};")
+        if not self.skip:
+            self._add(f"&{name};")
 
     def handle_charref(self, name):
-        if self._depth:
-            self._buf.append(f"&#{name};")
+        if not self.skip:
+            self._add(f"&#{name};")
 
 
-def gallery_to_images(inner):
-    """Flatten an Elementor gallery to plain full-size <img> elements."""
-    imgs = []
-    for tag in re.findall(r"<a\b[^>]*\be-gallery-item\b[^>]*>", inner):
-        href = re.search(r"""\bhref\s*=\s*["']([^"']+)["']""", tag)
-        title = re.search(r"""data-elementor-lightbox-title\s*=\s*["']([^"']*)["']""", tag)
-        if href:
-            imgs.append(f'<p><img src="{href.group(1)}" alt="{html.escape(html.unescape(title.group(1)) if title else "", quote=True)}"></p>')
-    return "\n".join(imgs)
+def _esc(value):
+    return html.escape(html.unescape(value), quote=True)
 
 
-def unwrap_elementor(content):
-    """Reduce Elementor-built post HTML to its text and images.
+def _has_content(inner):
+    text = re.sub(r"<(?!img\b)[^>]+>", "", inner)
+    text = html.unescape(text).replace("\xa0", " ").strip()
+    return bool(text) or "<img" in inner
 
-    Returns (clean_html, widget_type_counts). Widgets are emitted in
-    document order; galleries become plain images; Elementor classes and
-    data attributes are removed.
+
+def _flatten(node):
+    """Items of a node's children: ('inline', html) or ('block', html); wrapper elements are looked through."""
+    items = []
+    for kid in node.kids:
+        if isinstance(kid, str):
+            items.append(("inline", re.sub(r"[ \t\r\n]+", " ", kid)))
+            continue
+        tag = MAP.get(kid.tag, kid.tag)
+        if tag not in KEEP:
+            items.extend(_flatten(kid))  # div, span, section, font, ...: keep the content, lose the wrapper
+        else:
+            rendered = _render(kid, tag)
+            if rendered:
+                items.append(("block" if tag in BLOCK | {"li", "thead", "tbody", "tfoot", "tr", "th", "td", "figcaption", "dt", "dd"} else "inline", rendered))
+    return items
+
+
+def _paragraphs(items):
+    """Blocks as they are; runs of inline items become <p>."""
+    out, run = [], []
+
+    def flush():
+        inner = "".join(run).strip()
+        run.clear()
+        inner = re.sub(r"^(?:\s|<br>)+|(?:\s|<br>)+$", "", inner)
+        if _has_content(inner):
+            out.append(f"<p>{inner}</p>")
+
+    for kind, text in items:
+        if kind == "inline":
+            run.append(text)
+        else:
+            flush()
+            out.append(text)
+    flush()
+    return "\n".join(out)
+
+
+def _clean_href(value):
+    href = html.unescape(value).strip()
+    if re.match(r"^\s*(javascript|data|vbscript):", href, re.I):
+        return ""
+    return href
+
+
+def _render(node, tag):
+    if tag == "br":
+        return "<br>"
+    if tag == "hr":
+        return "<hr>"
+    if tag == "img":
+        a = node.attrs
+        src = a.get("src", "")
+        if src.startswith("data:") or not src:
+            src = a.get("data-src") or a.get("data-lazy-src") or a.get("data-orig-src") or ""
+        if not src or src.startswith("data:"):
+            return ""
+        parts = [f'src="{_esc(src)}"', f'alt="{_esc(a.get("alt", ""))}"']
+        for k in ("width", "height"):
+            if re.fullmatch(r"\d{1,5}", a.get(k, "")):
+                parts.append(f'{k}="{a[k]}"')
+        return "<img " + " ".join(parts) + ">"
+    inner_items = _flatten(node)
+    blocks = [text for kind, text in inner_items if kind == "block"]
+    if blocks and tag in ("li", "td", "th", "dd") and all(b.startswith(("<ul", "<ol")) for b in blocks):
+        inner = "".join(text for _, text in inner_items).strip()  # text plus a nested list: no <p> wrapper
+    elif blocks and tag in ("li", "blockquote", "td", "th", "figure", "dd"):
+        inner = _paragraphs(inner_items)
+    else:
+        inner = "".join(text for _, text in inner_items).strip()
+    if tag in ("ul", "ol", "table", "thead", "tbody", "tfoot", "tr", "dl"):
+        inner = "".join(text for _, text in inner_items if text.strip())
+    if not _has_content(inner) and tag not in ("table", "thead", "tbody", "tfoot", "tr", "td", "th"):
+        return ""
+    attrs = ""
+    if tag == "a":
+        href = _clean_href(node.attrs.get("href", ""))
+        if not href:
+            return inner  # an anchor without a usable link: keep the text
+        attrs = f' href="{_esc(href)}"'
+        if node.attrs.get("target", "").lower() == "_blank":
+            attrs += ' target="_blank" rel="noopener noreferrer"'
+    else:
+        for k in ATTRS.get(tag, ()):
+            v = node.attrs.get(k, "")
+            if v and re.fullmatch(r"[\w .-]{1,20}", v):
+                attrs += f' {k}="{_esc(v)}"'
+    return f"<{tag}{attrs}>{inner}</{tag}>"
+
+
+def youtube_block(video_id):
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    return ('<!-- wp:embed {"url":"%s","type":"video","providerNameSlug":"youtube","responsive":true,'
+            '"className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->\n'
+            '<figure class="wp-block-embed is-type-video is-provider-youtube wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio">'
+            '<div class="wp-block-embed__wrapper">\n%s\n</div></figure>\n<!-- /wp:embed -->') % (url, url)
+
+
+def clean_content(raw):
+    """Live rendered HTML to clean HTML. Returns {"html", "widgets", "dropped", "empty"}.
+
+    Keeps headings, paragraphs, lists, links, images, simple tables and quotes; YouTube iframes, Elementor
+    video widgets and bare YouTube links become core/embed blocks. Removes Elementor wrappers and classes,
+    ids, inline styles, data attributes, scripts, empty containers and other embeds (reported in "dropped").
     """
-    parser = _Unwrap()
-    parser.feed(content)
-    out, counts = [], {}
-    for wtype, inner in parser.parts:
-        counts[wtype or "unknown"] = counts.get(wtype or "unknown", 0) + 1
-        out.append(gallery_to_images(inner) if wtype == "gallery" else inner)
-    clean = "\n\n".join(x.strip() for x in out if x.strip())
-    clean = ATTR_NOISE_RE.sub("", clean)
-    def drop_elementor_classes(match):
-        kept = [t for t in match.group(1).split() if not t.startswith("elementor")]
-        return f'class="{" ".join(kept)}"' if kept else ""
+    raw = raw or ""
+    widgets = {}
+    if re.search(r"elementor-|data-elementor", raw, re.I):
+        # Elementor video widgets keep the YouTube link in data-settings, outside the widget container:
+        # put it into the container as a paragraph so it survives the unwrap (and becomes an embed below).
+        pieces, pos = [], 0
+        for m in re.finditer(r"<div\b[^>]*elementor-widget-video[^>]*>", raw):
+            settings = html.unescape((re.search(r'data-settings="([^"]*)"', m.group(0)) or [None, ""])[1]).replace("\\/", "/")
+            url = re.search(r'"youtube_url"\s*:\s*"([^"]+)"', settings)
+            box = raw.find('<div class="elementor-widget-container">', m.end())
+            if url and box != -1:
+                end = box + len('<div class="elementor-widget-container">')
+                pieces.append(raw[pos:end] + f"<p>{url.group(1)}</p>")
+                pos = end
+        raw = "".join(pieces) + raw[pos:]
+        raw, widgets = unwrap_elementor(raw)
+    raw = YT_IFRAME_RE.sub(lambda m: f"<p>https://www.youtube.com/watch?v={m.group(1)}</p>", raw)
+    parser = _Builder()
+    parser.feed(raw)
+    parser.close()
+    out = _paragraphs(_flatten(parser.root))
+    out = YT_PARA_RE.sub(lambda m: "\n" + youtube_block(m.group(2)) + "\n", out)
+    out = re.sub(r"\n{3,}", "\n\n", out).strip()
+    dropped = [(t, s) for t, s in parser.dropped if not (t == "iframe" and "youtube" in s)]
+    return {"html": out, "widgets": widgets, "dropped": dropped, "empty": not out}
 
-    clean = re.sub(r'\bclass\s*=\s*"([^"]*)"', drop_elementor_classes, clean)
-    return re.sub(r"[ \t]+>", ">", clean), counts
+
+def normalise_media_url(url):
+    """The original file's URL: no -scaled and no -WxH size suffix, no query or fragment."""
+    u = urllib.parse.urlsplit(html.unescape(url))
+    path = SIZE_SUFFIX_RE.sub("", u.path)
+    return urllib.parse.urlunsplit((u.scheme or "https", u.netloc, path, "", ""))
 
 
-# ------------------------------------------------------------- self-test
+def live_upload(url):
+    u = urllib.parse.urlsplit(html.unescape(url))
+    return host_of(url) == LIVE_HOST and u.path.startswith("/wp-content/uploads/")
+
+
+IMG_TAG_RE = re.compile(r"<img\b[^>]*>", re.I)
+
+
+def content_images(clean_html):
+    """[{src, alt, key}] for each distinct image (key = normalised original URL), in order; external ones flagged."""
+    seen, out = set(), []
+    for tag in IMG_TAG_RE.findall(clean_html):
+        src = html.unescape(re.search(r'src="([^"]*)"', tag).group(1))
+        alt = html.unescape((re.search(r'alt="([^"]*)"', tag) or [None, ""])[1])
+        key = normalise_media_url(src) if live_upload(src) else src
+        if key not in seen:
+            seen.add(key)
+            out.append({"src": src, "alt": alt, "key": key, "live": live_upload(src)})
+    return out
+
+
+HREF_RE = re.compile(r'<a\b[^>]*?\bhref="([^"]*)"', re.I)
+
+
+def content_links(clean_html):
+    return [html.unescape(h) for h in HREF_RE.findall(clean_html)]
+
+
+def rewrite_content(clean_html, media, post_by_slug, post_by_id):
+    """Sandbox version of the content. media: key -> {"id","url","width","height"}; post_by_*: live slug/id -> sandbox path.
+    Returns (html, live_links_left) where live_links_left are hrefs still pointing at live."""
+    def fix_img(m):
+        tag = m.group(0)
+        src = html.unescape(re.search(r'src="([^"]*)"', tag).group(1))
+        key = normalise_media_url(src) if live_upload(src) else src
+        item = media.get(key)
+        if not item:
+            return tag
+        alt = (re.search(r'alt="([^"]*)"', tag) or [None, ""])[1]
+        size = f' width="{item["width"]}" height="{item["height"]}"' if item.get("width") and item.get("height") else ""
+        return f'<img class="wp-image-{item["id"]}" src="{_esc(item["url"])}" alt="{alt}"{size}>'
+    out = IMG_TAG_RE.sub(fix_img, clean_html)
+    left = []
+
+    def fix_link(m):
+        href = html.unescape(m.group(1))
+        if host_of(href) != LIVE_HOST:
+            return m.group(0)
+        u = urllib.parse.urlsplit(href)
+        key = normalise_media_url(href)
+        if key in media:
+            return m.group(0).replace(m.group(1), _esc(media[key]["url"]))
+        slug = u.path.strip("/").split("/")[-1] if u.path.strip("/") else ""
+        q = urllib.parse.parse_qs(u.query)
+        target = post_by_slug.get(slug) if slug and "/" not in u.path.strip("/") else None
+        if not target and q.get("p", [""])[0].isdigit():
+            target = post_by_id.get(int(q["p"][0]))
+        if not target and u.path in ("", "/") and not u.query:
+            target = "/"
+        if target:
+            return m.group(0).replace(m.group(1), _esc(target + (("#" + u.fragment) if u.fragment else "")))
+        left.append(href)
+        return m.group(0)
+    out = re.sub(r'<a\b[^>]*?\bhref="([^"]*)"', fix_link, out, flags=re.I)
+    return out, left
+
+
+def clean_excerpt(rendered):
+    text = html.unescape(re.sub(r"<[^>]+>", " ", rendered or ""))
+    text = re.sub(r"\s+", " ", text.replace("\xa0", " ")).strip()
+    text = READ_MORE_RE.sub("", text).strip()
+    return text
+
+
+# ============================================================ mapping
+
+def map_category(live_slug, live_name):
+    """(sandbox slug, sandbox name, known) for a live category."""
+    if live_slug in RENAMES:
+        return RENAMES[live_slug][0], RENAMES[live_slug][1], True
+    return live_slug, html.unescape(live_name), live_slug in KNOWN_LIVE_SLUGS
+
+
+def map_author(live_author, users):
+    """Sandbox user id for a live author: slug, then name; else the single 'MBC' user; else None."""
+    name = html.unescape((live_author or {}).get("name", "")).strip().lower()
+    slug = (live_author or {}).get("slug", "").lower()
+    for u in users:
+        if slug and u["slug"].lower() == slug:
+            return u["id"], "matched"
+    for u in users:
+        if name and u["name"].strip().lower() == name:
+            return u["id"], "matched"
+    for u in users:
+        if u["slug"].lower() == "mbc" or u["name"].strip().lower() == "mbc":
+            return u["id"], "mbc"
+    return None, "none"
+
+
+# ============================================================ images
+
+def process_image(data, post_date):
+    """Downscale per the post preset. Returns (bytes, extension, mime, notes). Needs Pillow."""
+    try:
+        from PIL import Image, ImageOps
+    except ImportError:
+        sys.exit("Pillow is needed to process images: run with ~/.venvs/mbc-test/bin/python")
+    notes = []
+    img = Image.open(io.BytesIO(data))
+    if getattr(img, "is_animated", False):
+        notes.append("animated image kept as it is")
+        return data, "." + (img.format or "gif").lower(), Image.MIME.get(img.format, "image/gif"), notes
+    img = ImageOps.exif_transpose(img)
+    alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+    w, h = img.size
+    if max(w, h) > MAX_SIDE:
+        scale = MAX_SIDE / max(w, h)
+        img = img.resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.LANCZOS)
+    else:
+        notes.append(f"kept at {w}x{h} (never upscaled)")
+    buf = io.BytesIO()
+    if alpha:
+        img.convert("RGBA").save(buf, "PNG", optimize=True)
+        ext, mime = ".png", "image/png"
+    else:
+        img = img.convert("RGB")
+        ext, mime = ".jpg", "image/jpeg"
+        for q in QUALITIES:
+            buf = io.BytesIO()
+            img.save(buf, "JPEG", quality=q, optimize=True, progressive=True, subsampling=2)
+            if buf.tell() <= CAP_BYTES:
+                break
+    if buf.tell() > CAP_BYTES:
+        notes.append(f"OVER THE CAP: {buf.tell() // 1000} kB")
+    check = Image.open(io.BytesIO(buf.getvalue()))
+    leaked = [k for k in ("exif", "icc_profile", "xmp", "comment") if check.info.get(k)]
+    if leaked:
+        raise RuntimeError(f"metadata left in processed image: {leaked}")
+    return buf.getvalue(), ext, mime, notes
+
+
+def media_filename(key, ext, post_date):
+    stem = Path(urllib.parse.urlsplit(key).path).stem
+    stem = re.sub(r"[^a-z0-9]+", "-", stem.lower()).strip("-")[:60] or "image"
+    return f"{stem}-{post_date.replace('-', '')}{ext}"
+
+
+class Importer:
+    def __init__(self, live, sb, apply, force):
+        self.live, self.sb, self.apply, self.force = live, sb, apply, force
+        self.media = {}      # key -> {"id","url","width","height"}
+        self.broken = []     # (post id, url, reason)
+        self.image_notes = []
+
+    def download(self, key, src):
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        candidates = [key] + ([src] if src != key else [])
+        last = None
+        for url in candidates:
+            cached = CACHE_DIR / (hashlib.sha1(url.encode()).hexdigest()[:16] + "-" + Path(urllib.parse.urlsplit(url).path).name)
+            if cached.exists():
+                return cached.read_bytes()
+            try:
+                data = self.live.get_bytes(url)
+                cached.write_bytes(data)
+                return data
+            except LiveError as exc:
+                last = exc
+        raise last
+
+    def ensure_media(self, key, src, alt, post_date, post_id):
+        if key in self.media:
+            return self.media[key]
+        if not live_upload(src):
+            return None
+        try:
+            data = self.download(key, src)
+            out, ext, mime, notes = process_image(data, post_date)
+        except (LiveError, OSError, RuntimeError, ValueError) as exc:
+            self.broken.append((post_id, src, str(exc)[:120]))
+            return None
+        name = media_filename(key, ext, post_date)
+        made, _ = self.sb.call("POST", "media", raw=out, headers={"Content-Type": mime, "Content-Disposition": f'attachment; filename="{name}"'})
+        self.sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": {"mbc_live_source_url": key}})
+        detail = made.get("media_details", {})
+        self.media[key] = {"id": made["id"], "url": made["source_url"], "width": detail.get("width"), "height": detail.get("height")}
+        self.image_notes.append(f"{name}: {len(out) // 1000} kB" + (f" ({'; '.join(notes)})" if notes else ""))
+        print(f"  uploaded {name} -> media {made['id']} ({len(out) // 1000} kB)")
+        return self.media[key]
+
+
+# ============================================================ selection and planning
+
+def fetch_live_posts(live, args):
+    params = {"_embed": EMBED, "_fields": POST_FIELDS, "orderby": "date", "order": "desc"}
+    if args.ids:
+        params["include"] = ",".join(str(i) for i in args.ids)
+        params["per_page"] = min(100, len(args.ids))
+    else:
+        if args.since:
+            params["after"] = f"{args.since}T00:00:00"
+        if args.until:
+            params["before"] = (dt.date.fromisoformat(args.until) + dt.timedelta(days=1)).isoformat() + "T00:00:00"
+        if args.category:
+            cats, _ = live.get_json("categories", {"slug": args.category, "per_page": 100, "_fields": "id,slug"})
+            found = {c["slug"] for c in cats}
+            for slug in args.category.split(","):
+                if slug.strip() not in found:
+                    sys.exit(f"Category not found on live: {slug}")
+            params["categories"] = ",".join(str(c["id"]) for c in cats)
+        params["per_page"] = min(100, args.limit) if args.limit else 100
+    posts, page = [], 1
+    while True:
+        params["page"] = page
+        data, headers = live.get_json("posts", params)
+        posts += data
+        if args.ids or (args.limit and len(posts) >= args.limit) or page >= int(headers.get("x-wp-totalpages", 1)) or page >= 40:
+            break
+        page += 1
+    if args.limit:
+        posts = posts[:args.limit]
+    return posts
+
+
+def terms_of(post):
+    cats, tags = [], []
+    for group in (post.get("_embedded") or {}).get("wp:term", []) or []:
+        for t in group:
+            (cats if t.get("taxonomy") == "category" else tags if t.get("taxonomy") == "post_tag" else []).append(t)
+    return cats, tags
+
+
+def sandbox_state(sb):
+    posts = base.sandbox_pages(sb, "posts", {"status": "any"}) + base.sandbox_pages(sb, "posts", {"status": "trash"})
+    pages = base.sandbox_pages(sb, "pages", {"status": "any"})
+    media = base.sandbox_pages(sb, "media", {})
+    cats = base.sandbox_pages(sb, "categories", {})
+    tags = base.sandbox_pages(sb, "tags", {})
+    users, _ = sb.call("GET", "users", {"per_page": 100, "context": "edit", "_fields": "id,slug,name"}, retries=2)
+    return posts, pages, media, cats, tags, users
+
+
+def plan_post(p, state, force):
+    posts, pages, media, cats, tags, users = state
+    slug = p["slug"]
+    rec = {"id": p["id"], "slug": slug, "date": p["date"], "date_gmt": p["date_gmt"], "modified_gmt": p.get("modified_gmt", ""),
+           "title": plain(p["title"]["rendered"]), "warnings": [], "live": p}
+    clean = clean_content(p["content"]["rendered"])
+    rec["clean"] = clean
+    rec["images"] = content_images(clean["html"])
+    feat = ((p.get("_embedded") or {}).get("wp:featuredmedia") or [None])[0]
+    rec["feat"] = feat if feat and feat.get("source_url") else None
+    rec["links"] = content_links(clean["html"])
+    c, t = terms_of(p)
+    rec["cats"], rec["tags"] = c, t
+    rec["unmapped"] = [x["slug"] for x in c if not map_category(x["slug"], x["name"])[2]]
+    rec["author"] = ((p.get("_embedded") or {}).get("author") or [None])[0]
+    if clean["empty"]:
+        rec["warnings"].append("content is empty after cleaning")
+    if len(clean["html"]) > OVERSIZED_CHARS:
+        rec["warnings"].append(f"oversized content ({len(clean['html']) // 1000} kB of HTML)")
+    for tag, src in clean["dropped"]:
+        rec["warnings"].append(f"dropped <{tag}> {short(src) if src else ''}".strip())
+    odd = sorted(set(clean["widgets"]) - base.KNOWN_WIDGETS - {"video"})
+    if odd:
+        rec["warnings"].append(f"unreviewed Elementor widgets: {', '.join(odd)}")
+    noalt = [i for i in rec["images"] if not i["alt"].strip()]
+    if noalt:
+        rec["warnings"].append(f"{len(noalt)} image(s) without alt text")
+    if rec["feat"] and not (rec["feat"].get("alt_text") or "").strip():
+        rec["warnings"].append("featured image without alt text")
+    ext_imgs = [i for i in rec["images"] if not i["live"]]
+    if ext_imgs:
+        rec["warnings"].append(f"{len(ext_imgs)} image(s) hosted elsewhere (left as they are)")
+    if rec["unmapped"]:
+        rec["warnings"].append("unmapped categories: " + ", ".join(rec["unmapped"]))
+    uid, how = map_author(rec["author"], users)
+    rec["author_id"] = uid
+    if how == "none":
+        rec["warnings"].append("author not matched and no 'MBC' user: left as the importing user")
+    # Action: by live id (ours), then by slug clash (demo or other posts).
+    mine = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_id") == p["id"]), None)
+    demo = next((x for x in posts if (x.get("meta") or {}).get("mbc_live_post_id") == p["id"] and not (x.get("meta") or {}).get("mbc_live_id")), None)
+    clash = next((x for x in posts if x["slug"] == slug and x is not mine and x is not demo), None)
+    page_clash = next((x for x in pages if x["slug"] == slug), None)
+    rec["existing"] = mine
+    if mine:
+        same = (mine["meta"].get("mbc_live_modified") or "") == rec["modified_gmt"]
+        rec["action"] = "skip: unchanged" if same and not force else "update"
+    elif demo:
+        rec["action"] = f"skip: demo copy exists (sandbox #{demo['id']})"
+    elif clash or page_clash:
+        other = clash or page_clash
+        rec["action"] = f"skip: slug clash with sandbox {'post' if clash else 'page'} #{other['id']}"
+    else:
+        rec["action"] = "create"
+    return rec
+
+
+def category_ids(sb, recs, state, apply):
+    """Map live categories to sandbox ids, creating missing ones when applying. Returns ({live slug: id}, created, parent notes)."""
+    cats = {c["slug"]: c for c in state[3]}
+    created, notes, out = [], [], {}
+    for rec in recs:
+        for x in rec["cats"]:
+            if x["slug"] in out:
+                continue
+            slug, name, _ = map_category(x["slug"], x["name"])
+            if slug in cats:
+                out[x["slug"]] = cats[slug]["id"]
+                continue
+            created.append(slug)
+            if not apply:
+                out[x["slug"]] = None
+                continue
+            body = {"name": name, "slug": slug}
+            if x.get("parent"):
+                notes.append(f"{slug}: parent (live category #{x['parent']}) not recreated; imported as a top-level category")
+            made, _ = sb.call("POST", "categories", body=body)
+            cats[slug] = made
+            out[x["slug"]] = made["id"]
+            print(f"  created category {name!r} ({slug}) id {made['id']}")
+    return out, created, notes
+
+
+def tag_ids(sb, recs, state, apply):
+    tags = {t["slug"]: t for t in state[4]}
+    out, created = {}, []
+    for rec in recs:
+        for x in rec["tags"]:
+            if x["slug"] in out:
+                continue
+            if x["slug"] in tags:
+                out[x["slug"]] = tags[x["slug"]]["id"]
+                continue
+            created.append(x["slug"])
+            if not apply:
+                out[x["slug"]] = None
+                continue
+            made, _ = sb.call("POST", "tags", body={"name": html.unescape(x["name"]), "slug": x["slug"]})
+            tags[x["slug"]] = made
+            out[x["slug"]] = made["id"]
+    return out, created
+
+
+# ============================================================ report
+
+def write_report(args, recs, summary, extra, applied):
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPORT_DIR / f"import-{dt.datetime.now():%Y%m%d-%H%M%S}.md"
+    lines = [f"# Live post import: {'APPLIED' if applied else 'dry run'}", "",
+             f"Selection: {' '.join(sys.argv[1:]) or '(defaults)'}", "", "## Counts", ""]
+    for k, v in summary.items():
+        lines.append(f"- {k}: {v}")
+    lines += ["", "## Posts", "", "| Live id | Date | Title | Categories | Images | Action | Warnings |", "|---|---|---|---|---|---|---|"]
+    for r in recs:
+        cats = ", ".join(map_category(c["slug"], c["name"])[0] for c in r["cats"]) or "-"
+        warn = "; ".join(r["warnings"]).replace("|", "/") or "-"
+        lines.append(f"| {r['id']} | {r['date'][:10]} | {r['title'][:60].replace('|', '/')} | {cats} | {len(r['images']) + (1 if r['feat'] else 0)} | {r['action']} | {warn} |")
+    for title, items in extra.items():
+        lines += ["", f"## {title}", ""]
+        lines += [f"- {i}" for i in items] or ["- none"]
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+# ============================================================ self-test
 
 def self_test():
-    """Static checks of this file's own safety properties. No network."""
+    """Static checks of this file (no network), then the shared live client's own checks."""
     src = Path(__file__).read_text()
     tree = ast.parse(src)
-    parents = {c: p for p in ast.walk(tree) for c in ast.iter_child_nodes(p)}
-
-    def cls_of(node):
-        while node in parents:
-            node = parents[node]
-            if isinstance(node, ast.ClassDef):
-                return node.name
-        return None
-
-    def classdef(name):
-        return next(n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == name)
-
     results = []
 
     def check(ok, text):
         results.append(ok)
         print(("PASS " if ok else "FAIL ") + text)
 
-    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
-    # 1. Anything that sends data over a connection lives in the two clients.
-    sends = [n for n in calls if n.func.attr in ("request", "putrequest", "urlopen", "build_opener", "create_connection", "send", "sendall")]
-    check(len(sends) >= 2 and all(cls_of(n) in ("LiveReader", "SandboxWriter") for n in sends),
-          f"requests are only sent from LiveReader or SandboxWriter ({len(sends)} call sites)")
-    # 2. Every request the live reader sends is a literal GET.
-    live_sends = [n for n in sends if cls_of(n) == "LiveReader"]
-    check(bool(live_sends) and all(n.func.attr == "request" and n.args and isinstance(n.args[0], ast.Constant)
-                                   and n.args[0].value == "GET" for n in live_sends),
-          f"every LiveReader request is method 'GET' as a literal ({len(live_sends)} call site)")
-    # 3. connect() is only ever called by the shared connection class.
-    connects = [n for n in calls if n.func.attr == "connect"]
-    check(all(cls_of(n) == "_QuickConnect" for n in connects), "connect() is only called inside _QuickConnect")
-    # 4. No credentials near the live client or the shared connection class.
-    bad = []
-    for cname in ("LiveReader", "_QuickConnect"):
-        for n in ast.walk(classdef(cname)):
-            text = n.value if isinstance(n, ast.Constant) and isinstance(n.value, str) else \
-                (n.id if isinstance(n, ast.Name) else (n.attr if isinstance(n, ast.Attribute) else ""))
-            if re.search(r"authorization|password|token|wp_user|cookie|_auth", text, re.I):
-                bad.append((cname, text))
-    check(not bad, f"no credential or cookie references in the live client{(' ' + str(bad)) if bad else ''}")
-    # 5. LiveReader exposes only get_json and get_bytes.
-    public = {f.name for f in classdef("LiveReader").body if isinstance(f, ast.FunctionDef) and not f.name.startswith("_")}
-    check(public == {"get_json", "get_bytes"}, f"LiveReader public methods are {sorted(public)}")
-    # 6. The sandbox client never mentions the live host.
-    names = {n.id for n in ast.walk(classdef("SandboxWriter")) if isinstance(n, ast.Name)}
-    check(not names & {"LIVE_BASE", "LIVE_HOST", "LiveReader"}, "SandboxWriter does not reference the live host or reader")
-    # 7. Only whitelisted imports (no urllib.request, no sockets, no subprocess).
-    allowed = {"argparse", "ast", "base64", "html", "html.parser", "http.client", "json", "mimetypes", "pathlib",
-               "re", "sys", "time", "urllib.parse"}
+    allowed = {"argparse", "ast", "datetime", "hashlib", "html", "html.parser", "io", "json", "mimetypes", "pathlib", "re", "sys",
+               "urllib.parse", "import_live_demo_posts", "PIL"}
     imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
     imported |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
     check(imported <= allowed, f"imports limited to the whitelist (extra: {sorted(imported - allowed) or 'none'})")
-    # 8. Runtime guards refuse before any network use.
-    refused = []
-    for fn, arg in ((LiveReader()._fetch, "https://" + SANDBOX_HOST + "/"), (LiveReader().get_bytes, LIVE_BASE + "/wp-admin/x.php")):
-        try:
-            fn(arg)
-            refused.append(False)
-        except LiveError:
-            refused.append(True)
-    check(all(refused), "live client refuses a non-live host and any path outside /wp-content/uploads/")
-    try:
-        SandboxWriter({"WP_URL": LIVE_BASE, "WP_USER": "x", "WP_APP_PASSWORD": "x"})
-        check(False, "sandbox client refuses the live host")
-    except SystemExit:
-        check(True, "sandbox client refuses the live host")
+    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
+    net = [n for n in calls if n.func.attr in ("request", "urlopen", "putrequest", "connect", "create_connection", "send", "sendall", "getresponse")]
+    check(not net, "no network call is made in this file (only through LiveReader and SandboxWriter)")
+    live_calls = [n for n in calls if isinstance(n.func.value, ast.Attribute) and n.func.value.attr == "live" or (isinstance(n.func.value, ast.Name) and n.func.value.id == "live")]
+    check(live_calls and {n.func.attr for n in live_calls} <= {"get_json", "get_bytes"}, "the live reader is only used through get_json and get_bytes")
+    routes = [n.args[0].value for n in live_calls if n.func.attr == "get_json" and n.args and isinstance(n.args[0], ast.Constant)]
+    nonconst = [n for n in live_calls if n.func.attr == "get_json" and not (n.args and isinstance(n.args[0], ast.Constant))]
+    check(not nonconst and set(routes) <= {"posts", "categories"}, f"live routes are literals and only {sorted(set(routes))}")
+    verbs = {n.args[0].value for n in calls if n.func.attr == "call" and n.args and isinstance(n.args[0], ast.Constant)}
+    check(verbs <= {"GET", "POST", "OPTIONS"}, f"the sandbox is only read or created/updated with GET, POST and OPTIONS, never delete ({sorted(verbs)})")
+    print("-- shared client checks (import_live_demo_posts.py) --")
+    check(base.self_test(), "the shared live client's own self-test passes")
     print("\nSELF-TEST", "PASSED" if all(results) else "FAILED")
     return all(results)
 
 
-# ------------------------------------------------------------------ main
-
-def select_posts(live, ids, count, unwrap):
-    """Return (selected, flagged_elementor). Elementor posts are skipped unless unwrap is set."""
-    if ids:
-        posts, _ = live.get_json("posts", {"include": ",".join(map(str, ids)), "per_page": len(ids),
-                                           "orderby": "date", "order": "desc", "_fields": POST_FIELDS})
-        found = {p["id"] for p in posts}
-        for missing in sorted(set(ids) - found):
-            print(f"  live post {missing}: not found (published posts only)")
-        return posts, [p for p in posts if is_elementor(p)]
-    selected, flagged = [], []
-    for page in range(1, MAX_PAGES + 1):
-        posts, headers = live.get_json("posts", {"per_page": 10, "page": page, "orderby": "date", "order": "desc",
-                                                 "_fields": POST_FIELDS})
-        for p in posts:
-            if is_elementor(p):
-                flagged.append(p)
-                if unwrap and len(selected) < count:
-                    selected.append(p)
-            elif len(selected) < count:
-                selected.append(p)
-        if len(selected) >= count or page >= int(headers.get("x-wp-totalpages", page)):
-            break
-    return selected, flagged
-
-
-def sandbox_pages(sb, route, params):
-    out, page = [], 1
-    while True:
-        data, headers = sb.call("GET", route, dict(params, per_page=100, page=page, context="edit"), retries=2)
-        out += data
-        if page >= int(headers.get("x-wp-totalpages", 1)):
-            return out
-        page += 1
-
-
-def build_body(p, live_cats, cat_map, feat, media):
-    """The sandbox post body for live post p, or None if it needs a category or image
-    that is not on the sandbox yet. media maps live URL -> {"id", "url"}."""
-    content = p["content"]["rendered"]
-    mapping = {}
-    for url in inline_images(content):
-        if url not in media:
-            return None
-        mapping[url] = media[url]["url"]
-    categories = []
-    for cid in p["categories"]:
-        name = live_cats.get(cid)
-        if name is not None:
-            if name.lower() not in cat_map:
-                return None
-            categories.append(cat_map[name.lower()])
-    body = {
-        "title": plain(p["title"]["rendered"]),
-        "slug": p["slug"],
-        "status": "publish",
-        "date": p["date"],
-        "date_gmt": p["date_gmt"],
-        "content": rewrite_images(content, mapping),
-        "excerpt": plain(p["excerpt"]["rendered"]),
-        "categories": categories,
-        "meta": {"mbc_demo_import": 1, "mbc_live_post_id": p["id"]},
-    }
-    f = feat.get(p["featured_media"])
-    if f and f.get("source_url"):
-        if f["source_url"] not in media:
-            return None
-        body["featured_media"] = media[f["source_url"]]["id"]
-    return body
-
-
-def matches_existing(existing, body):
-    return (existing["title"]["raw"] == body["title"] and existing["content"]["raw"] == body["content"]
-            and existing["excerpt"]["raw"] == body["excerpt"] and existing["date_gmt"] == body["date_gmt"]
-            and sorted(existing["categories"]) == sorted(body["categories"])
-            and existing["featured_media"] == body.get("featured_media", 0))
-
+# ============================================================ main
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--apply", action="store_true", help="write to the sandbox (default: dry run)")
-    ap.add_argument("--self-test", action="store_true", help="check this script's safety properties and exit")
-    ap.add_argument("--ids", help="comma-separated live post IDs to import instead of the latest clean ones")
-    ap.add_argument("--count", type=int, default=DEFAULT_COUNT)
-    ap.add_argument("--unwrap-elementor", action="store_true",
-                    help="include Elementor-built posts, reduced to plain text and images (galleries flattened)")
+    ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--since", help="YYYY-MM-DD")
+    ap.add_argument("--until", help="YYYY-MM-DD (inclusive)")
+    ap.add_argument("--ids", help="comma-separated live post IDs")
+    ap.add_argument("--category", help="live category slug(s), comma-separated")
+    ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"most posts to consider (default {DEFAULT_LIMIT}; 0 = no limit)")
+    ap.add_argument("--force", action="store_true", help="re-import posts even if live has not changed")
     args = ap.parse_args()
     if args.self_test:
         sys.exit(0 if self_test() else 1)
+    for d in (args.since, args.until):
+        if d:
+            try:
+                dt.date.fromisoformat(d)
+            except ValueError:
+                sys.exit(f"Not a date (YYYY-MM-DD): {d}")
+    args.ids = [int(x) for x in args.ids.split(",")] if args.ids else []
 
-    ids = [int(x) for x in args.ids.split(",")] if args.ids else []
     sb = SandboxWriter(load_env())
     live = LiveReader()
-    print(f"{'APPLY' if args.apply else 'DRY RUN'}: live (GET only, {LIVE_PAUSE:.0f}s between requests) -> sandbox")
-
-    # Live: posts, then small cached lookups for categories and featured images.
-    selected, flagged = select_posts(live, ids, args.count, args.unwrap_elementor)
-    widget_counts = {}
-    for p in selected:  # the content that will actually be imported
-        p["content"]["rendered"] = clean_inline_styles(p["content"]["rendered"]) if not (is_elementor(p) and args.unwrap_elementor) else p["content"]["rendered"]
-        if is_elementor(p) and args.unwrap_elementor:
-            p["content"]["rendered"], counts = unwrap_elementor(p["content"]["rendered"])
-            for k, v in counts.items():
-                widget_counts[k] = widget_counts.get(k, 0) + v
-            p["content"]["rendered"] = clean_inline_styles(p["content"]["rendered"])
-            p["_unwrapped"] = True
-    cat_ids = sorted({c for p in selected for c in p["categories"]})
-    live_cats = {}
-    if cat_ids:
-        cats, _ = live.get_json("categories", {"include": ",".join(map(str, cat_ids)), "per_page": 100,
-                                               "_fields": "id,name,slug"})
-        live_cats = {c["id"]: html.unescape(c["name"]) for c in cats}
-    feat = {}
-    for mid in sorted({p["featured_media"] for p in selected if p["featured_media"]}):
-        try:
-            data, _ = live.get_json(f"media/{mid}", {"_fields": "id,source_url,alt_text"})
-            feat[mid] = data
-        except LiveError as exc:
-            print(f"  featured media {mid}: {exc}")
-
-    # Sandbox: current state.
+    print(f"{'APPLY' if args.apply else 'DRY RUN'}: live (GET only) -> sandbox")
+    posts = fetch_live_posts(live, args)
+    state = sandbox_state(sb)
     schema, _ = sb.call("OPTIONS", "posts", retries=2)
-    meta_ok = {"mbc_live_post_id", "mbc_demo_import"} <= set(schema.get("schema", {}).get("properties", {}).get("meta", {}).get("properties", {}))
-    mschema, _ = sb.call("OPTIONS", "media", retries=2)
-    meta_ok &= "mbc_live_source_url" in mschema.get("schema", {}).get("properties", {}).get("meta", {}).get("properties", {})
-    if not meta_ok:
-        msg = "sandbox does not expose the demo meta keys (deploy inc/demo-import.php first)"
+    props = schema.get("schema", {}).get("properties", {}).get("meta", {}).get("properties", {})
+    if not {"mbc_live_id", "mbc_live_modified", "_mbc_needs_consent_review"} <= set(props):
+        msg = "the sandbox does not expose the import meta keys (deploy inc/live-import.php first)"
         if args.apply:
             sys.exit("Refusing to apply: " + msg)
         print("WARNING:", msg)
-    sb_posts = {p["meta"].get("mbc_live_post_id"): p for p in sandbox_pages(sb, "posts", {"status": "any"})
-                if p.get("meta", {}).get("mbc_live_post_id")}
-    sb_media = {m["meta"].get("mbc_live_source_url"): m for m in sandbox_pages(sb, "media", {})
-                if m.get("meta", {}).get("mbc_live_source_url")}
-    sb_cats = {html.unescape(c["name"]).lower(): c["id"] for c in sandbox_pages(sb, "categories", {})}
+    recs = [plan_post(p, state, args.force) for p in posts]
+    todo = [r for r in recs if r["action"] in ("create", "update")]
 
-    # Plan.
-    media = {u: {"id": m["id"], "url": m["source_url"]} for u, m in sb_media.items()}
-    new_cats, new_images, report = set(), set(), []
-    counts = {"create": 0, "update": 0, "unchanged": 0}
-    for n, p in enumerate(selected, 1):
-        title = plain(p["title"]["rendered"])
-        names = [live_cats.get(c, f"#{c}") for c in p["categories"]]
-        imgs = inline_images(p["content"]["rendered"])
-        fsrc = feat.get(p["featured_media"], {}).get("source_url")
-        unseen = [u for u in ([fsrc] if fsrc else []) + imgs if u not in sb_media]
-        new_cats |= {c for c in names if c.lower() not in sb_cats}
-        new_images |= set(unseen)
-        links = live_links(p["content"]["rendered"])
-        existing = sb_posts.get(p["id"])
-        body = build_body(p, live_cats, sb_cats, feat, media)
-        if not existing:
-            action = "create"
-        elif body is not None and matches_existing(existing, body):
-            action = "unchanged"
-        else:
-            action = "update"
-        counts[action] += 1
-        print(f"[{n}] live #{p['id']}  {p['date'][:10]}  {title[:60]!r}  -> {action}{'  [Elementor, unwrapped]' if p.get('_unwrapped') else ''}")
-        print(f"     categories: " + ", ".join(f"{c}{'' if c.lower() in sb_cats else ' (new)'}" for c in names or ["(none)"]))
-        print(f"     featured: {'yes' if fsrc else 'no'}{' (to upload)' if fsrc and fsrc not in sb_media else ''}; "
-              f"inline images: {len(imgs)} ({len([u for u in imgs if u not in sb_media])} to upload); live-domain links: {len(links)}")
-        if links:
-            report.append((p["id"], title, links))
-    print(f"\nPlan: {counts['create']} to create, {counts['update']} to update, {counts['unchanged']} unchanged")
-    print(f"Selected {len(selected)} post(s); categories to create: {sorted(new_cats) or 'none'}; images to upload: {len(new_images)}")
-    if widget_counts:
-        odd = sorted(set(widget_counts) - KNOWN_WIDGETS)
-        print(f"\nElementor widgets unwrapped: {widget_counts}" + (f"  UNREVIEWED TYPES: {odd}" if odd else ""))
-    left = [p for p in flagged if p not in selected]
-    if left:
-        print(f"\nElementor markup found, not selected: {len(left)} post(s) (use --unwrap-elementor to include)")
-        for p in left[:10]:
-            print(f"  live #{p['id']}  {p['date'][:10]}  {plain(p['title']['rendered'])[:70]!r}")
-        if len(left) > 10:
-            print(f"  ... and {len(left) - 10} more")
-    print("\nLinks in selected content that point at the live domain (reported, NOT rewritten):")
-    if not report:
-        print("  none")
-    for pid, title, links in report:
-        print(f"  live #{pid} {title[:50]!r}:")
-        for kind, href in links[:12]:
-            print(f"    [{kind}] {short(href)}")
-        if len(links) > 12:
-            print(f"    ... and {len(links) - 12} more")
-    print(f"\nLive requests made: {live.request_count}")
+    counts = {"live posts selected": len(recs)}
+    for key in ("create", "update", "skip"):
+        counts[key] = len([r for r in recs if r["action"].startswith(key)])
+    print(f"\n{'live id':>8}  {'date':10}  {'title':44}  {'categories':28}  img  action")
+    for r in recs:
+        cats = ",".join(map_category(c["slug"], c["name"])[0] for c in r["cats"]) or "-"
+        print(f"{r['id']:>8}  {r['date'][:10]}  {r['title'][:44]:44}  {cats[:28]:28}  {len(r['images']) + (1 if r['feat'] else 0):>3}  {r['action']}")
+        for w in r["warnings"]:
+            print(f"{'':>10}! {w}")
+    print(f"\nPlan: {counts['create']} create, {counts['update']} update, {counts['skip']} skip (of {len(recs)})")
+
+    applied = False
+    cat_new, tag_new, parent_notes = [], [], []
+    if args.apply and todo:
+        applied = True
+        cmap, cat_new, parent_notes = category_ids(sb, todo, state, True)
+        tmap, tag_new = tag_ids(sb, todo, state, True)
+        imp = Importer(live, sb, True, args.force)
+        # Known sandbox posts a link may point at: those already imported plus this batch.
+        by_slug = {x["slug"]: f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
+        by_slug.update({r["slug"]: f"/{r['slug']}/" for r in todo})
+        by_id = {int(x["meta"]["mbc_live_id"]): f"/{x['slug']}/" for x in state[0] if (x.get("meta") or {}).get("mbc_live_id")}
+        by_id.update({r["id"]: f"/{r['slug']}/" for r in todo})
+        for m in state[2]:  # media already uploaded from live (not the demo ones)
+            key = (m.get("meta") or {}).get("mbc_live_source_url")
+            if key and m["id"] not in DEMO_MEDIA:
+                d = m.get("media_details") or {}
+                imp.media[normalise_media_url(key) if live_upload(key) else key] = {"id": m["id"], "url": m["source_url"], "width": d.get("width"), "height": d.get("height")}
+        for r in todo:
+            print(f"\nlive #{r['id']} {r['title'][:60]!r}: {r['action']}")
+            day = r["date"][:10]
+            for im in r["images"]:
+                imp.ensure_media(im["key"], im["src"], im["alt"], day, r["id"])
+            feat_id = 0
+            if r["feat"]:
+                fm = imp.ensure_media(normalise_media_url(r["feat"]["source_url"]), r["feat"]["source_url"], r["feat"].get("alt_text", ""), day, r["id"])
+                feat_id = fm["id"] if fm else 0
+            content, left = rewrite_content(r["clean"]["html"], imp.media, by_slug, by_id)
+            r["left_links"] = left
+            body = {"title": r["title"], "slug": r["slug"], "status": "publish", "date": r["date"], "date_gmt": r["date_gmt"],
+                    "content": content, "excerpt": clean_excerpt(r["live"]["excerpt"]["rendered"]),
+                    "categories": [cmap[c["slug"]] for c in r["cats"] if cmap.get(c["slug"])],
+                    "tags": [tmap[t["slug"]] for t in r["tags"] if tmap.get(t["slug"])], "featured_media": feat_id,
+                    "meta": {"mbc_live_id": r["id"], "mbc_live_modified": r["modified_gmt"], "_mbc_needs_consent_review": 1}}
+            if r["author_id"]:
+                body["author"] = r["author_id"]
+            if not body["categories"]:
+                del body["categories"]
+            if r["existing"]:
+                made, _ = sb.call("POST", f"posts/{r['existing']['id']}", body=body)
+            else:
+                made, _ = sb.call("POST", "posts", body=body)
+            r["sandbox_id"], r["sandbox_link"] = made["id"], made["link"]
+            if made["slug"] != r["slug"]:
+                r["warnings"].append(f"sandbox slug became {made['slug']}")
+            print(f"  -> sandbox post {made['id']}  {made['link']}")
+    else:
+        for r in todo:
+            r["left_links"] = [h for h in r["links"] if host_of(h) == LIVE_HOST]
+        cmap, cat_new, parent_notes = category_ids(sb, todo, state, False)
+        _, tag_new = tag_ids(sb, todo, state, False)
+
+    extra = {"Categories to create / created": cat_new, "Unmapped categories (not in docs/newsletter/category-map.md)": sorted({s for r in recs for s in r["unmapped"]}),
+             "Category parents not recreated": parent_notes, "Tags created": tag_new}
+    ext = {}
+    for r in recs:
+        for h in r["links"]:
+            if host_of(h) not in (LIVE_HOST, "") and h.startswith("http"):
+                ext.setdefault(host_of(h), set()).add(r["id"])
+    extra["External links (host: live post ids)"] = [f"{h}: {sorted(ids)}" for h, ids in sorted(ext.items())]
+    extra["Links still pointing at live (not imported posts)"] = [f"live #{r['id']}: {short(h)}" for r in todo for h in (r.get("left_links") or [])]
+    extra["Broken images"] = [f"live #{p}: {short(u)} ({why})" for p, u, why in (imp.broken if applied else [])]
+    extra["Images uploaded"] = imp.image_notes if applied else []
+    extra["Oversized content"] = [f"live #{r['id']}: {w}" for r in recs for w in r["warnings"] if w.startswith("oversized")]
+    if applied:
+        extra["Created / updated"] = [f"live #{r['id']} -> sandbox #{r['sandbox_id']} {r['sandbox_link']}" for r in todo]
+    path = write_report(args, recs, counts, extra, applied)
+    print(f"\nLive requests made: {live.request_count}\nReport: {path}")
     if not args.apply:
         print("Dry run only: nothing was written. Re-run with --apply to import.")
-        return
-
-    # Apply.
-    cat_map = dict(sb_cats)
-    for name in sorted(new_cats):
-        made, _ = sb.call("POST", "categories", body={"name": name})
-        cat_map[name.lower()] = made["id"]
-        print(f"created category {name!r} (id {made['id']})")
-    media_cache = {u: {"id": m["id"], "url": m["source_url"]} for u, m in sb_media.items()}
-
-    def ensure_image(url, alt=""):
-        if url in media_cache:
-            return media_cache[url]
-        data = live.get_bytes(url)
-        name = Path(urllib.parse.urlsplit(url).path).name
-        mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
-        made, _ = sb.call("POST", "media", raw=data, headers={"Content-Type": mime,
-                          "Content-Disposition": f'attachment; filename="{name}"'})
-        sb.call("POST", f"media/{made['id']}", body={"alt_text": alt, "meta": {"mbc_live_source_url": url}})
-        media_cache[url] = {"id": made["id"], "url": made["source_url"]}
-        print(f"uploaded {name} (media {made['id']})")
-        return media_cache[url]
-
-    for p in selected:
-        for url in inline_images(p["content"]["rendered"]):
-            ensure_image(url)
-        f = feat.get(p["featured_media"])
-        if f and f.get("source_url"):
-            ensure_image(f["source_url"], f.get("alt_text", ""))
-        body = build_body(p, live_cats, cat_map, feat, media_cache)
-        existing = sb_posts.get(p["id"])
-        if existing:
-            if matches_existing(existing, body):
-                print(f"live #{p['id']}: unchanged (sandbox post {existing['id']})")
-                continue
-            sb.call("POST", f"posts/{existing['id']}", body=body)
-            print(f"live #{p['id']}: updated sandbox post {existing['id']}")
-        else:
-            made, _ = sb.call("POST", "posts", body=body)
-            print(f"live #{p['id']}: created sandbox post {made['id']}")
-    print(f"\nDone. Live requests made: {live.request_count}")
 
 
 if __name__ == "__main__":
