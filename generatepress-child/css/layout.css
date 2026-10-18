@@ -30,17 +30,6 @@
 }
 
 /* ---- Single post ---- */
-.mbc-post__cats {
-	margin: 0 0 var(--mbc-space-xs);
-	font-size: var(--mbc-step--1);
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-}
-
-.mbc-post__cats:empty {
-	display: none;
-}
-
 .mbc-post__meta {
 	margin: 0 0 var(--mbc-space-l);
 	color: var(--mbc-text-muted);

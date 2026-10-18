@@ -1,6 +1,6 @@
 <?php
 /**
- * Breadcrumbs: "Section > Page" on child pages, "News > Post" on news posts.
+ * Breadcrumbs: "Section > Page" on child pages, "News > Post" (or "News > Category > Post") on news posts.
  *
  * Not on the front page, the top-level pages (the four section hubs, News,
  * Contact Us) or anything else with nothing above it. A nav landmark with an
@@ -43,6 +43,13 @@ function mbc_breadcrumb_trail( $post = null ) {
             'name' => wp_strip_all_tags( get_the_title( $news ) ),
             'url'  => get_permalink( $news ),
         );
+        $category = mbc_breadcrumb_category( $post );
+        if ( $category ) {
+            $trail[] = array(
+                'name' => $category->name,
+                'url'  => get_category_link( $category ),
+            );
+        }
     } else {
         return array();
     }
@@ -51,6 +58,25 @@ function mbc_breadcrumb_trail( $post = null ) {
         'url'  => get_permalink( $post ),
     );
     return $trail;
+}
+
+/**
+ * The post's category for the trail: its lowest-ID category other than News and Uncategorized, or null.
+ *
+ * @param WP_Post $post The post.
+ * @return WP_Term|null
+ */
+function mbc_breadcrumb_category( $post ) {
+    $terms = array_filter( (array) get_the_category( $post->ID ), static function ( $t ) {
+        return ! in_array( $t->slug, array( 'news', 'uncategorized' ), true );
+    } );
+    if ( ! $terms ) {
+        return null;
+    }
+    usort( $terms, static function ( $a, $b ) {
+        return $a->term_id <=> $b->term_id;
+    } );
+    return $terms[0];
 }
 
 /**

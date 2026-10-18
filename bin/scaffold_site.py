@@ -504,6 +504,19 @@ def write_report(rows, bad):
         "| Baptism | `/baptism/` | `/about-us/what-we-believe/` |",
         "| Sunday School | `/sunday-school/` | `/whats-on/sunday-mornings/` |",
     ]
+    lines += [
+        "",
+        "## Category redirect for cutover",
+        "",
+        "Live has the same URL, so this holds on live too.",
+        "",
+        "| Old path | Redirect to (301) |",
+        "|---|---|",
+        "| `/category/news/` | `/news/` |",
+        "| `/category/news/page/N/` | `/news/?query-1-page=N` |",
+        "",
+        "The theme does this itself (`inc/archives.php`); no server rule is needed.",
+    ]
     if bad:
         lines += ["", "Published pages not returning 200 after the run: " + ", ".join(f"{i} ({l})" for i, l in bad)]
     DOCS.mkdir(exist_ok=True)

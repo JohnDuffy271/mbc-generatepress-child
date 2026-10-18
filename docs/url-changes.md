@@ -38,3 +38,14 @@ snapshot above (they were drafts), so confirm the exact paths on the live-old ma
 | Welcome | `/welcome/` | `/about-us/who-we-are/` |
 | Baptism | `/baptism/` | `/about-us/what-we-believe/` |
 | Sunday School | `/sunday-school/` | `/whats-on/sunday-mornings/` |
+
+## Category redirect for cutover
+
+Live has the same URL, so this holds on live too.
+
+| Old path | Redirect to (301) |
+|---|---|
+| `/category/news/` | `/news/` |
+| `/category/news/page/N/` | `/news/?query-1-page=N` |
+
+The theme does this itself (`inc/archives.php`); no server rule is needed.

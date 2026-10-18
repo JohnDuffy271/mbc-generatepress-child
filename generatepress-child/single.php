@@ -19,7 +19,6 @@ get_header();
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'mbc-page__article' ); ?>>
             <?php mbc_breadcrumbs(); ?>
             <header class="mbc-post__header">
-                <p class="mbc-post__cats"><?php echo wp_kses_post( get_the_category_list( ', ' ) ); ?></p>
                 <h1 class="mbc-page__title"><?php the_title(); ?></h1>
                 <p class="mbc-post__meta">
                     <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
